@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin • Orders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root { --green:#218838; --accent:#b7410e; --dark:#111; --bg:#f0f8f0; --card-bg:#fff; --shadow:0 4px 12px rgba(0,0,0,.06); --pill-bg:#eef2ef; --pill-text:#3a3a3a; --border-color:#eee; }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif; background:var(--bg); color:#222}
+
+    .navbar{
+      background:var(--card-bg); padding:10px 6%;
+      box-shadow:var(--shadow);
+      display:flex; justify-content:space-between; align-items:center;
+      position:sticky; top:0; z-index:1000;
+    }
+    .brand{display:flex; align-items:center; gap:10px; color:var(--green); text-decoration:none; font-weight:700}
+    .brand video{width:36px; height:auto; border-radius:4px}
+    .nav a{color:#333; text-decoration:none; margin-left:16px; font-weight:500}
+    .nav a:hover{color:var(--green)}
+
+    .wrap{max-width:1200px; margin:24px auto; padding:0 6%}
+    h1{margin:0 0 16px; color:var(--green); font-size:28px}
+
+    .filters{
+      background:var(--card-bg); border-radius:12px; padding:12px; margin-bottom:16px;
+      box-shadow:var(--shadow);
+      display:flex; gap:12px; flex-wrap:wrap;
+    }
+    .filters input, .filters select, .filters button{
+      padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:14px; background:var(--card-bg)
+    }
+    .filters button{background:var(--green); color:var(--card-bg); border:none; font-weight:600; cursor:pointer}
+    .filters button:hover{background:var(--accent)}
+    .btn-ghost { background:#f3f6f3; color:#333; }
+    .btn { border:none; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; }
+    .filters .actions { display:flex; gap:10px; align-items:center; }
+    .table-card{
+      background:var(--card-bg); border-radius:12px; box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    table{width:100%; border-collapse:collapse; table-layout:auto}
+    thead{background:#fafafa}
+    th, td{padding:12px 14px; border-bottom:1px solid var(--border-color); text-align:left; vertical-align:top}
+    th{font-weight:600; color:#333}
+    tbody tr:nth-child(odd){background:var(--card-bg)}
+    tbody tr:nth-child(even){background:#fcfdfc}
+
+
+    .pill{padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700; display:inline-block; background:var(--pill-bg); color:var(--pill-text)}
+
+    /* Specific pill colors for each status */
+    .pill.NEW { background-color: #f0f0f0; color: #4a4a4a; }
+    .pill.PAID { background-color: #e6f7e9; color: var(--green); }
+    .pill.SHIPPED { background-color: #e0f2fe; color: #0c5678; }
+    .pill.DELIVERED { background-color: #dff0d8; color: #4f8a10; }
+
+    @media (max-width: 760px){
+      thead{display:none}
+      table, tbody, tr, td{display:block; width:100%}
+      tr{border-bottom:8px solid #f3f6f3}
+      td{
+        padding:10px 14px; border:none; border-bottom:1px solid #eef1ee;
+        display:flex; gap:10px; justify-content:space-between; align-items:flex-start;
+      }
+      td:last-child{border-bottom:none}
+      td::before{
+        content: attr(data-label);
+        flex:0 0 45%;
+        font-weight:600; color:#444;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar">
+  <a th:href="@{/admin}" class="brand">
+    <video th:src="@{/images/Spice-Jar.mp4}" autoplay muted loop playsinline></video>
+    <span>SpiceJar Admin</span>
+  </a>
+  <nav class="nav">
+    <a th:href="@{/admin}">Dashboard</a>
+    <a th:href="@{/admin/menu}">menu</a>
+    <a th:href="@{/admin/categories}">Categories</a>
+    <a th:href="@{/admin/orders}">Orders</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <h1><i class="fa-solid fa-receipt"></i> Orders</h1>
+
+  <form class="filters" th:action="@{/admin/orders}" method="get">
+    <input type="text" name="q" th:value="${param.q}" placeholder="Search (customer, address, item)"/>
+    <input type="date" name="from" th:value="${param.from}"/>
+    <input type="date" name="to" th:value="${param.to}"/>
+    <select name="sort">
+      <option value="">Sort By</option>
+      <option value="dateAsc" th:selected="${param.sort == 'dateAsc'}">Date (Ascending)</option>
+      <option value="dateDesc" th:selected="${param.sort == 'dateDesc'}">Date (Descending)</option>
+    </select>
+    <div class="actions">
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-filter"></i>&nbsp;Filter</button>
+      <a class="btn btn-ghost" th:href="@{/admin/orders}">Reset</a>
+    </div>
+  </form>
+
+  <section class="table-card">
+    <table>
+      <thead>
+      <tr>
+        <th style="width:80px;">Order</th>
+        <th style="width:170px;">Placed On</th>
+        <th>Customer</th>
+        <th>Address</th>
+        <th style="width:120px;">Items</th>
+        <th style="width:110px;">SubTotal</th>
+        <th style="width:110px;">Tax</th>
+        <th style="width:110px;">Total</th>
+
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="o: ${orders}">
+        <td data-label="Order" th:text="${o.id}">1</td>
+        <td data-label="Placed On" th:text="${#temporals.format(o.createdAt, 'MMM d, yyyy • h:mm a')}">Aug 29, 2025 • 9:45 AM</td>
+        <td data-label="Customer" th:text="${o.customerName}">John Doe</td>
+        <td data-label="Address" th:text="${o.address}">123 Main St…</td>
+        <td data-label="Items" th:text="${#lists.size(o.items)}">1</td>
+        <td data-label="SubTotal" th:text="${#numbers.formatDecimal(o.subtotal,1,'COMMA',2,'POINT')}">25.00</td>
+        <td data-label="Tax" th:text="${#numbers.formatDecimal(o.tax,1,'COMMA',2,'POINT')}"></td>
+        <td data-label="Total" th:text="${#numbers.formatDecimal(o.grandTotal,1,'COMMA',2,'POINT')}">
+
+
+      </tr>
+
+      <tr th:if="${#lists.isEmpty(orders)}">
+        <td colspan="6" style="text-align:center; padding:18px; color:#777">No orders yet.</td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+</body>
+</html>

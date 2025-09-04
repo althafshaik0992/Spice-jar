@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>My Orders • The Spice Jar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+        :root {
+            --green:#218838; --accent:#b7410e; --dark:#111; --bg:#f6fbf6;
+            --card:#fff; --shadow:0 8px 20px rgba(0,0,0,.06);
+        }
+        *{ box-sizing:border-box }
+        body{ margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:var(--bg); color:#222 }
+
+        /* Public navbar */
+        .navbar{
+            background:#fff; padding:6px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex; justify-content:space-between; align-items:center;
+            position:sticky; top:0; z-index:1000; height:60px;
+        }
+        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
+        .brand-logo video{width:36px; height:auto; border-radius:4px}
+        .nav-links{display:flex; align-items:center; gap:18px}
+        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
+        .nav-links a:hover{color:var(--green)}
+
+        .dropdown{position:relative}
+        .dropdown-toggle{background:none; border:none; cursor:pointer; font-size:15px; color:#333; display:flex; align-items:center; gap:6px}
+        .dropdown-menu{
+            display:none; position:absolute; right:0; top:100%;
+            background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
+            border-radius:6px; overflow:hidden; min-width:180px
+        }
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a, .dropdown-menu span{display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap}
+        .dropdown-menu a:hover{background:#f4f4f4}
+
+        /* Page */
+        .wrap{max-width:1100px; margin:24px auto; padding:0 6%}
+        h1{margin:0 0 16px; color:var(--green); font-size:26px}
+
+        .card{background:var(--card); border-radius:12px; box-shadow:var(--shadow); overflow:hidden}
+        table{width:100%; border-collapse:collapse}
+        thead{background:#fafafa}
+        th, td{padding:12px 14px; border-bottom:1px solid #eee; text-align:left; vertical-align:top}
+        th{font-weight:600; color:#333}
+        tbody tr:nth-child(odd){background:#fff}
+        tbody tr:nth-child(even){background:#fcfdfc}
+
+        .btn-link{ text-decoration:none; color:var(--green); font-weight:600 }
+
+        /* Status pill (class name is the raw status, e.g., NEW/PAID/SHIPPED/DELIVERED) */
+        .pill{padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700; display:inline-block}
+        .pill.NEW { background:#f0f0f0; color:#4a4a4a }
+        .pill.PAID { background:#e6f7e9; color:#137a2a }
+        .pill.SHIPPED { background:#e0f2fe; color:#0c5678 }
+        .pill.DELIVERED { background:#dff0d8; color:#4f8a10 }
+
+        /* Responsive: stack to cards on small screens */
+        @media (max-width: 760px){
+            thead{display:none}
+            table, tbody, tr, td{display:block; width:100%}
+            tr{border-bottom:8px solid #f3f6f3}
+            td{
+                padding:10px 14px; border:none; border-bottom:1px solid #eef1ee;
+                display:flex; gap:10px; justify-content:space-between; align-items:flex-start;
+            }
+            td:last-child{border-bottom:none}
+            td::before{
+                content: attr(data-label);
+                flex:0 0 45%;
+                font-weight:600; color:#444;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a th:href="@{/}" class="brand-logo">
+        <video th:src="@{/images/Spice-Jar.mp4}" autoplay muted loop playsinline></video>
+        <span>SpiceJar</span>
+    </a>
+
+    <div class="nav-links">
+        <a th:href="@{/}">Home</a>
+        <a th:href="@{/menu}">Menu</a>
+        <a th:href="@{/cart}">Cart</a>
+        <a th:href="@{/orders}">My Orders</a>
+
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fas fa-user"></i> Account
+            </button>
+            <div class="dropdown-menu">
+                <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
+                <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+
+                <span th:if="${session.USER != null}">
+          Welcome, <span th:text="${session.USER.username}">user</span>
+        </span>
+                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
+                <a th:if="${session.USER != null}" th:href="@{/profile/view}">My profile</a>
+                <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="wrap">
+    <h1><i class="fa-solid fa-box"></i> My Orders</h1>
+
+    <section class="card">
+        <table>
+            <thead>
+            <tr>
+                <th style="width:90px;">Order #</th>
+                <th style="width:170px;">Placed On</th>
+                <th>Items</th>
+                <th style="width:120px;">SubTotal</th>
+                <th style="width:120px;">Tax</th>
+                <th style="width:120px;">Total</th>
+
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="o : ${orders}">
+                <td data-label="Order #">
+                    <a class="btn-link" th:href="@{'/orders' + ${o.id}}" th:text="${o.id}">1</a>
+                </td>
+
+                <td data-label="Placed On"
+                    th:text="${#temporals.format(o.createdAt, 'MMM d, yyyy • h:mm a')}">
+                    Aug 29, 2025 • 9:45 AM
+                </td>
+
+                <td data-label="Items">
+                    <div th:if="${o.items != null and !#lists.isEmpty(o.items)}">
+                        <div th:each="it, iStat : ${o.items}" th:if="${iStat.index < 3}">
+                            <span th:text="${it.productName}">Turmeric</span>
+                            × <span th:text="${it.quantity}">1</span>
+                        </div>
+                        <div style="color:#777; font-size:13px" th:if="${#lists.size(o.items) > 3}">
+                            + <span th:text="${#lists.size(o.items) - 3}">0</span> more
+                        </div>
+                    </div>
+                    <span style="color:#777" th:if="${o.items == null or #lists.isEmpty(o.items)}">—</span>
+                </td>
+
+                <!-- Totals -->
+                      <td data-label="SubTotal">
+                        <span class="value"
+                              th:text="${#numbers.formatDecimal(o.subtotal,1,'COMMA',2,'POINT')}">
+        $0.00
+      </span>
+                    </td>
+                <td data-label="Tax">
+                        <span class="value"
+                              th:text="${#numbers.formatDecimal(o.tax,1,'COMMA',2,'POINT')}">
+        $0.00
+      </span>
+                    </td>
+                <td data-label="Total">
+                        <span class="value"
+                              th:text="${#numbers.formatDecimal(o.grandTotal,1,'COMMA',2,'POINT')}">
+        $0.00
+      </span>
+                </td>
+                <td data-label="Action">
+                    <a th:href="@{'/orders/' + ${o.id}}" class="btn-link">View</a>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(orders)}">
+                <td colspan="5" style="text-align:center; padding:18px; color:#777">
+                    No orders yet.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+
+</body>
+</html>
