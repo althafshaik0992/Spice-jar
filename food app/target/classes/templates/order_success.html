@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Order Placed • The Spice Jar</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <style>
+        :root{ --green:#218838; --accent:#b7410e; --dark:#111; --bg:#f0f8f0; }
+        *{ box-sizing:border-box; }
+        body{ margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:var(--bg); color:#222; }
+
+        .navbar{
+            background:#fff; padding:8px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex; justify-content:space-between; align-items:center;
+            position:sticky; top:0; z-index:10; height:60px;
+        }
+        .brand-logo{ display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px; }
+        .brand-logo video{ width:36px; border-radius:4px; }
+
+        .wrap{ max-width:1100px; margin:24px auto; padding:0 6%; }
+
+        .success-head{ display:flex; align-items:center; gap:14px; margin:8px 0 10px; }
+        .success-icon{
+            width:52px; height:52px; border-radius:50%; background:var(--green);
+            display:grid; place-items:center; color:#fff; font-size:22px;
+            box-shadow:0 8px 18px rgba(0,0,0,.15);
+        }
+        .title{ font-size:36px; line-height:1.1; color:var(--green); margin:0; }
+        .subtitle{ margin:6px 0 22px; color:#4b4b4b; }
+
+        .grid-cards{ display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:18px; }
+        @media (max-width: 1000px){ .grid-cards{ grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 560px){ .grid-cards{ grid-template-columns: 1fr; } }
+
+        .info{ background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.06); padding:14px 16px; }
+        .info .label{ font-size:12px; font-weight:700; color:#6c757d; letter-spacing:.04em; margin-bottom:6px; text-transform:uppercase; }
+        .info .value{ font-weight:700; color:#222; }
+
+        .table-card{ background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.06); overflow:hidden; margin-top:8px; }
+        table{ width:100%; border-collapse:collapse; table-layout:fixed; }
+        th, td{ padding:12px 14px; border-bottom:1px solid #eee; }
+        thead th{ background:#fafafa; font-weight:700; color:#333; font-size:14px; text-align:left; }
+        tbody td{ vertical-align:middle; }
+        .th-item{ width:50%; }
+        .td-item{ white-space:normal; overflow-wrap:break-word; word-break:break-word; }
+        .num{ text-align:right; }
+        @media (max-width: 560px){ .num{ text-align:left; } }
+
+        .totals{
+            background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.06);
+            padding:14px 16px; margin-top:16px;
+        }
+        .row{ display:flex; justify-content:space-between; margin:8px 0; }
+        .row.total{ font-weight:800; font-size:18px; }
+        .row .label{ color:#444; }
+        .row .value{ min-width:120px; text-align:right; }
+
+        .links{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+        .btn{
+            display:inline-flex; align-items:center; gap:10px; background:var(--green); color:#fff; text-decoration:none;
+            padding:12px 18px; border-radius:12px; font-weight:700; box-shadow:0 6px 14px rgba(0,0,0,.12);
+        }
+        .btn:hover{ background:var(--accent); }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a th:href="@{/}" class="brand-logo">
+        <video th:src="@{/images/Spice-Jar.mp4}" autoplay muted loop playsinline></video>
+        <span>SpiceJar</span>
+    </a>
+</nav>
+
+<div class="wrap">
+    <div class="success-head">
+        <div class="success-icon"><i class="fa-solid fa-check"></i></div>
+        <h1 class="title">Order placed successfully!</h1>
+    </div>
+    <p class="subtitle">We’ve received your order and will email you a confirmation shortly.</p>
+
+    <!-- Summary cards -->
+    <section class="grid-cards">
+        <div class="info">
+            <div class="label">Order ID</div>
+            <div class="value" th:text="${order.id}">12345</div>
+        </div>
+        <div class="info">
+            <div class="label">Placed On</div>
+            <div class="value" th:text="${#temporals.format(order.createdAt, 'MMM d, yyyy • h:mm a')}">Aug 29, 2025 • 9:33 AM</div>
+        </div>
+        <div class="info">
+            <div class="label">Customer</div>
+            <div class="value" th:text="${order.customerName}">Customer Name</div>
+        </div>
+        <div class="info">
+            <div class="label">Shipping Address</div>
+            <div class="value" th:text="${order.address}">123 Main St</div>
+        </div>
+    </section>
+
+    <!-- Items -->
+    <section class="table-card">
+        <table>
+            <thead>
+            <tr>
+                <th class="th-item">Item</th>
+                <th style="width:90px;">Qty</th>
+                <th style="width:120px;">Price</th>
+                <th style="width:140px;">Line Total</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="it : ${order.items}">
+                <td class="td-item" th:text="${it.productName}">Spice</td>
+                <td th:text="${it.quantity}">1</td>
+                <td class="num"
+                    th:text="${#numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">10.00</td>
+                <td class="num"
+                    th:text="${#numbers.formatDecimal(it.lineTotal,1,'COMMA',2,'POINT')}">10.00</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Totals -->
+    <section class="totals">
+        <div class="row">
+            <span class="label">Subtotal</span>
+            <span class="value"
+                  th:text="${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">
+        $0.00
+      </span>
+        </div>
+        <div class="row">
+            <span class="label">Tax (8%)</span>
+            <span class="value"
+                  th:text="${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">
+        $0.00
+      </span>
+        </div>
+        <div class="row total">
+            <span class="label">Total</span>
+            <span class="value"
+                  th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">
+        $0.00
+      </span>
+        </div>
+    </section>
+
+    <!-- Actions -->
+    <div class="links">
+        <a class="btn" th:href="@{/}">
+            <i class="fa-solid fa-house"></i> Back to Home
+        </a>
+        <a class="btn" th:href="@{/orders}">
+            <i class="fa-solid fa-receipt"></i> View My Orders
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>My Profile • The Spice Jar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root { --green:#218838; --accent:#b7410e; --bg:#f6fbf6; --card:#fff; --muted:#6b7280; }
+        body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:var(--bg);color:#111}
+        .navbar{background:#fff;padding:10px 6%;box-shadow:0 2px 6px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000}
+        .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--green);font-weight:800}
+        .brand video{width:36px;border-radius:6px}
+        .nav a{color:#333;text-decoration:none;margin-left:16px;font-weight:600}
+        .nav a:hover{color:var(--green)}
+
+        .wrap{max-width:920px;margin:24px auto;padding:0 6%}
+        .cover{background:linear-gradient(135deg,#22c55e22,#b7410e22), url('/images/spices-about.jpeg') center/cover; height:200px; border-radius:16px}
+        .card{background:var(--card);border-radius:14px;box-shadow:0 10px 24px rgba(0,0,0,.07);padding:20px;margin-top:-64px;position:relative}
+
+        .top{display:flex;gap:18px;align-items:center}
+        .avatar{width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 6px 16px rgba(0,0,0,.12);background:#eef2ef}
+        .placeholder{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;background:#eef2ef;border:3px solid #fff;box-shadow:0 6px 16px rgba(0,0,0,.12);color:#7a7a7a;font-size:42px}
+
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+        .field{background:#fafafa;border:1px solid #eee;border-radius:10px;padding:12px}
+        .label{font-weight:700;color:#444;margin-bottom:4px}
+        .value{color:#111}
+        @media (max-width: 760px){ .grid{grid-template-columns:1fr} }
+        .actions{margin-top:16px}
+        .btn{display:inline-flex;align-items:center;gap:8px;border:none;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;text-decoration:none}
+        .btn-primary{background:var(--green);color:#fff}
+        .btn-primary:hover{background:var(--accent)}
+    </style>
+</head>
+<body>
+<header class="navbar">
+    <a th:href="@{/}" class="brand">
+        <video th:src="@{/images/Spice-Jar.mp4}" autoplay muted loop></video>
+        <span>SpiceJar</span>
+    </a>
+    <nav class="nav">
+        <a th:href="@{/}">Home</a>
+        <a th:href="@{/menu}">menu</a>
+        <a th:href="@{/cart}">Cart</a>
+        <a th:href="@{/orders}">My Orders</a>
+    </nav>
+</header>
+
+<div class="wrap">
+    <div class="cover"></div>
+
+    <section class="card">
+        <div class="top">
+            <img th:if="${user.avatarUrl != null and !#strings.isEmpty(user.avatarUrl)}"
+                 th:src="@{${user.avatarUrl}}" alt="Avatar" class="avatar"/>
+            <div th:if="${user.avatarUrl == null or #strings.isEmpty(user.avatarUrl)}" class="placeholder">
+                <i class="fa-regular fa-user"></i>
+            </div>
+            <div>
+                <h2 style="margin:0" th:text="${user.firstName + ' ' + user.lastName}">Your Name</h2>
+                <div style="color:#6b7280" th:text="${user.email}">you@example.com</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="field">
+                <div class="label">Phone</div>
+                <div class="value" th:text="${user.phone}">—</div>
+            </div>
+            <div class="field">
+                <div class="label">Username</div>
+                <div class="value" th:text="${user.username}">—</div>
+            </div>
+            <div class="field" style="grid-column:1 / -1">
+                <div class="label">Address</div>
+                <div class="value" th:text="${user.address}">—</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a class="btn btn-primary" th:href="@{/profile}">
+                <i class="fa-solid fa-pen"></i> Edit Profile
+            </a>
+        </div>
+    </section>
+</div>
+</body>
+</html>

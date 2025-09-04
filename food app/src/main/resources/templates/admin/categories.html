@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Categories</title><link rel="stylesheet" th:href="@{/css/styles.css}"></head>
+<body>
+<header><div class="container"><a href="/" class="brand">BISTRO Admin</a><nav><a th:href="@{/admin}">Dashboard</a> <a th:href="@{/admin/menu}">menu</a> <a th:href="@{/admin/categories}">Categories</a> <a th:href="@{/admin/orders}">Orders</a></nav></div></header>
+<main class="container">
+  <h1>Categories</h1>
+  <form th:action="@{/admin/categories}" method="post" class="auth-box">
+    <input name="name" placeholder="Category name" required>
+    <input name="description" placeholder="Description">
+    <button type="submit">Add Category</button>
+  </form>
+  <table>
+    <tr><th>ID</th><th>Name</th><th>Description</th><th>Actions</th></tr>
+    <tr th:each="c: ${categories}">
+      <td th:text="${c.id}"></td>
+      <td th:text="${c.name}"></td>
+      <td th:text="${c.description}"></td>
+      <td>
+        <form th:action="@{/admin/categories/delete}" method="post" style="display:inline">
+          <input type="hidden" name="id" th:value="${c.id}"/>
+          <button type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+  </table>
+</main>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Payment Success • The Spice Jar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root{--green:#388E3C;--accent:#FF5722;--ink:#212121;--bg:#f0f4f0;--card:#fff;--shadow:0 10px 30px rgba(0,0,0,.06)}
+        body{
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: var(--card);
+            padding: 12px 6%;
+            box-shadow: 0 2px 6px rgba(0,0,0,.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--green);
+            font-weight: 700;
+            font-size: 24px;
+            gap: 8px;
+        }
+        .brand-logo video {
+            width: 50px;
+            height: auto;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+        }
+        .dropdown {
+            position: relative;
+        }
+        .dropdown-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #333;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        .dropdown-menu a {
+            display: block;
+            padding: 10px 16px;
+            text-decoration: none;
+            color: #333;
+            white-space: nowrap;
+        }
+        .dropdown-menu a:hover {
+            background: #f4f4f4;
+        }
+        .wrap {
+            max-width: 600px;
+            margin: auto;
+            padding: 24px 6%;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .ok {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: var(--green);
+            color: #fff;
+            display: inline-grid;
+            place-items: center;
+            font-size: 36px;
+            margin-bottom: 24px;
+        }
+        h1 {
+            color: var(--green);
+            font-size: 2.5rem;
+            margin: 0 0 8px;
+        }
+        .card {
+            background: var(--card);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-top: 24px;
+            width: 100%;
+            text-align: left;
+        }
+        .card p {
+            margin: 0;
+            padding: 6px 0;
+            border-bottom: 1px dashed #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        .card p:last-child {
+            border-bottom: none;
+        }
+        .card p b {
+            font-weight: 700;
+        }
+        .links {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+            justify-content: center;
+        }
+        .links a {
+            text-decoration: none;
+            font-weight: 800;
+            border-radius: 999px;
+            padding: 12px 24px;
+            transition: all 0.3s ease;
+        }
+        .links .view-orders {
+            background: var(--green);
+            color: #fff;
+        }
+        .links .view-orders:hover {
+            background: #28a745;
+        }
+        .links .home {
+            color: var(--green);
+            border: 1px solid var(--green);
+        }
+        .links .home:hover {
+            background: #e9f2ea;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <a href="/" class="brand-logo">
+        <video src="../static/images/spice jar (1).mp4" autoplay muted loop playsinline style="width: 50px; height: auto;"></video>
+        <span>SpiceJar</span>
+    </a>
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/menu">Menu</a>
+        <a href="/about-us">About Us</a>
+        <a href="/cart">Cart</a>
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fas fa-user"></i> Account
+            </button>
+            <div class="dropdown-menu">
+                <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
+                <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="wrap">
+    <div class="ok"><i class="fa-solid fa-check"></i></div>
+    <h1>Payment Successful</h1>
+    <p>Thanks! Your payment was processed.</p>
+
+
+    <div class="card">
+        <p><b>Transaction:</b> <span th:text="${payment.txnId}">TXN-...</span></p>
+        <p><b>Amount:</b> <span th:text="${#numbers.formatDecimal(payment.amount,1,'COMMA',2,'POINT')}">$0.00</span> <span th:text="${payment.currency}">USD</span></p>
+        <p><b>Status:</b> <span th:text="${payment.status}">SUCCEEDED</span></p>
+        <p><b>Order #</b> <span th:text="${order.id}">0</span></p>
+    </div>
+
+    <div class="links">
+        <a th:href="@{/orders}" class="view-orders"><i class="fa-solid fa-receipt"></i> View My Orders</a>
+        <a th:href="@{/}" class="home"><i class="fa-solid fa-house"></i> Home</a>
+    </div>
+</div>
+</body>
+</html>

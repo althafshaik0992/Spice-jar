@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Spice Jar • About</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <style>
+        :root{
+            --green:#218838; --accent:#b7410e; --ink:#111; --muted:#54616a;
+            --bg:#f3f7f3; --card:#fff; --ring: rgba(0,0,0,.05);
+            --radius:14px;
+        }
+        *{ box-sizing:border-box }
+        html,body{ margin:0; padding:0 }
+        body{
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            color:var(--ink); background:var(--bg); line-height:1.55;
+            text-rendering:optimizeLegibility; -webkit-font-smoothing:antialiased;
+        }
+
+        /* Navbar */
+        .navbar{
+            position:sticky; top:0; z-index:1000;
+            display:flex; align-items:center; justify-content:space-between;
+            gap:16px; padding:10px 6%;
+            background:#fff; border-bottom:1px solid #eef2ef;
+            box-shadow:0 4px 16px var(--ring);
+        }
+        .brand{display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--green)}
+        .brand video{height:32px; width:auto; border-radius:8px}
+        .brand span{font-weight:800; font-size:20px; letter-spacing:.2px}
+        .nav-links{display:flex; align-items:center; gap:18px; flex-wrap:wrap}
+        .nav-links a{color:#2b2b2b; text-decoration:none; font-weight:600}
+        .nav-links a:hover{color:var(--green)}
+
+        .dropdown{position:relative}
+        .dropdown-toggle{
+            display:flex; align-items:center; gap:8px; background:transparent; border:0; cursor:pointer;
+            font-weight:700; color:#2b2b2b; padding:8px 10px; border-radius:10px;
+        }
+        .dropdown-toggle:hover{background:#f5f7f5}
+        .dropdown-menu{
+            position:absolute; right:0; top:calc(100% + 8px); min-width:200px;
+            background:#fff; border:1px solid #eef2ef; border-radius:12px; box-shadow:0 10px 28px var(--ring);
+            display:none; overflow:hidden;
+        }
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a, .dropdown-menu span{
+            display:block; padding:10px 14px; text-decoration:none; color:#2b2b2b; font-weight:600;
+            white-space:nowrap
+        }
+        .dropdown-menu a:hover{background:#f7faf7}
+        .divider{height:1px; background:#eef2ef; margin:6px 0}
+
+        /* Hero */
+        .hero{
+            position:relative; display:grid; place-items:center; text-align:center;
+            min-height:46vh; padding:64px 6%; color:#fff; overflow:hidden;
+        }
+        .hero::before{
+            content:""; position:absolute; inset:0;
+            background: linear-gradient(160deg, rgba(33,136,56,.78), rgba(183,65,14,.68)),
+            url('https://images.unsplash.com/photo-1547844111-a83a45c3b173?q=80&w=2940&auto=format&fit=crop') center/cover no-repeat;
+            filter:saturate(1.03);
+        }
+        .hero-inner{position:relative; max-width:920px}
+        .eyebrow{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.14); font-weight:700; letter-spacing:.2px}
+        .hero h1{margin:.6rem 0 .4rem; font-size:clamp(28px,4.4vw,42px); line-height:1.1}
+        .hero p{color:#eef4ee; margin:.2rem 0 0; font-weight:500}
+
+        /* Section shell */
+        .wrap{max-width:1180px; padding:0 6%; margin:32px auto}
+        .card{
+            background:var(--card); border-radius:var(--radius); box-shadow:0 16px 40px var(--ring);
+            padding:26px;
+        }
+        .lead{text-align:center; max-width:900px; margin:0 auto 16px; color:var(--muted)}
+
+        /* Two-column content */
+        .two-col{
+            display:grid; grid-template-columns: 1.2fr .8fr; gap:28px; align-items:center;
+        }
+        @media (max-width: 920px){ .two-col{ grid-template-columns: 1fr; } }
+        .two-col h2{color:var(--green); margin:0 0 10px}
+        .two-col p{margin:.5rem 0}
+        .two-col img{width:100%; height:auto; border-radius:16px; box-shadow:0 20px 50px var(--ring)}
+
+        /* Feature list */
+        .features{display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:16px; margin-top:10px}
+        @media (max-width: 760px){ .features{grid-template-columns:1fr} }
+        .feat{
+            background:#fafdfb; border:1px solid #eef2ef; border-left:4px solid var(--green);
+            border-radius:12px; padding:14px 16px;
+        }
+        .feat strong{color:#1f7a34}
+
+        /* CTA band */
+        .cta{
+            margin-top:28px; text-align:center; background:#f6fbf6; border:1px solid #eef2ef;
+            border-radius:16px; padding:26px;
+        }
+        .cta h3{color:var(--green); margin:0 0 10px}
+        .btn{
+            display:inline-flex; align-items:center; gap:10px;
+            padding:12px 18px; border-radius:12px; font-weight:800; text-decoration:none; cursor:pointer; border:0;
+        }
+        .btn-primary{background:var(--green); color:#fff}
+        .btn-primary:hover{background:var(--accent)}
+
+        /* Footer */
+        .footer{
+            margin-top:42px; background:#0f1010; color:#fff; text-align:center; padding:18px;
+            font-size:14px; letter-spacing:.2px
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a th:href="@{ / }" class="brand">
+        <video th:src="@{ /images/Spice-Jar.mp4 }" autoplay muted loop playsinline></video>
+        <span>SpiceJar</span>
+    </a>
+
+    <div class="nav-links">
+        <a th:href="@{ / }">Home</a>
+        <a th:href="@{ /about-us }">About Us</a>
+        <a th:href="@{ /menu }">Menu</a>
+        <a th:href="@{ /cart }">Cart</a>
+
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fas fa-user"></i> Account
+            </button>
+            <div class="dropdown-menu">
+                <!-- Not logged in -->
+                <a th:if="${session.USER == null}" th:href="@{ /login }">Login</a>
+                <a th:if="${session.USER == null}" th:href="@{ /register }">Register</a>
+
+                <!-- Logged in -->
+                <span th:if="${session.USER != null}">
+          Welcome, <span th:text="${session.USER.username}">User</span>
+        </span>
+                <div class="divider" th:if="${session.USER != null}"></div>
+                <a th:if="${session.USER != null}" th:href="@{ /orders }">My Orders</a>
+                <a th:if="${session.USER != null}" th:href="@{ /profile/view }">My Profile</a>
+                <a th:if="${session.USER != null}" th:href="@{ /logout }">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+    <div class="hero-inner">
+        <span class="eyebrow"><i class="fa-solid fa-mortar-pestle"></i> Since 2025</span>
+        <h1>About The Spice Jar</h1>
+        <p>Celebrating centuries of spice heritage—sourced with care, blended with love.</p>
+    </div>
+</header>
+
+<!-- CONTENT -->
+<main class="wrap">
+    <!-- Story -->
+    <section class="card" style="margin-bottom:20px">
+        <p class="lead">
+            Welcome to The Spice Jar, where every jar holds a story—a story of history, culture, and incredible flavor.
+            Our journey began with a deep admiration for the world’s oldest and most vibrant spice traditions, especially the rich heritage of Indian spices.
+        </p>
+    </section>
+
+    <!-- Two column block -->
+    <section class="two-col card" style="margin-bottom:20px">
+        <div>
+            <h2>India: The Spice Bowl of the World</h2>
+            <p>
+                For thousands of years, India’s diverse climate—from the tropical south to the cooler north—has nurtured an astonishing variety of spices.
+                These weren’t just ingredients; they were treasures that shaped economies and trade routes. Ancient civilizations sailed to India in search of prized peppercorns, cinnamon, cloves, and cardamom.
+            </p>
+            <p>
+                At The Spice Jar, we honor this legacy. We work with trusted growers to bring you a collection that represents the heart and soul of Indian cuisine.
+            </p>
+        </div>
+        <div>
+            <img th:src="@{ /images/spices-about.jpeg }" alt="Bowls of colorful Indian spices"/>
+        </div>
+    </section>
+
+    <!-- Foundations -->
+    <section class="card" style="margin-bottom:20px">
+        <h2 style="color:var(--green); margin:0 0 6px">The Pillars of Indian Flavor</h2>
+        <p class="lead" style="margin-bottom:14px">
+            These essentials form the backbone of countless dishes and masalas:
+        </p>
+        <div class="features">
+            <div class="feat">
+                <strong>Turmeric (Haldi)</strong> — Vibrant golden color, earthy notes, and a cornerstone of Ayurvedic tradition.
+            </div>
+            <div class="feat">
+                <strong>Cumin (Jeera)</strong> — Warm, nutty aroma; often the first whisper of flavor in the pan.
+            </div>
+            <div class="feat">
+                <strong>Coriander (Dhania)</strong> — Sweet, citrusy, and grounding—vital in many blends.
+            </div>
+            <div class="feat">
+                <strong>Black Pepper (Kali Mirch)</strong> — Once called “black gold,” it adds classic pungent heat.
+            </div>
+            <div class="feat" style="grid-column:1 / -1">
+                <strong>Cardamom (Elaichi)</strong> — Complex and aromatic; shines in curries, desserts, and chai.
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta card">
+        <h3>Ready to spice up your kitchen?</h3>
+        <p class="lead" style="margin:6px 0 14px">Browse our curated collection and discover your next favorite blend.</p>
+        <a th:href="@{/menu}" class="btn btn-primary">
+            <i class="fa-solid fa-store"></i> Explore Our Spices
+        </a>
+    </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+    &copy; <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2025</span> The Spice Jar. All rights reserved.
+</footer>
+
+</body>
+</html>
