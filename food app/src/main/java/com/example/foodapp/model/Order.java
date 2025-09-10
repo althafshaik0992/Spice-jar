@@ -35,6 +35,16 @@ public class Order {
 
     private String status;
 
+
+    // Contact + address
+    private String email;
+    private String phone;
+    private String street;
+    private String city;
+    private String state;
+    private String zip;
+    private String country;
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "order_id")
     private List<OrderItem> items;

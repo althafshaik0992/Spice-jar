@@ -135,6 +135,39 @@ public class AdminController {
         return "redirect:/admin/catalog";
     }
 
+    @PostMapping("/products/update")
+    public String updateProduct(@RequestParam Long id,
+                                @RequestParam String name,
+                                @RequestParam(required = false) String description,
+                                @RequestParam BigDecimal price,
+                                @RequestParam Long categoryId) {
+
+        // Find the existing product by ID
+        Product product = productService.findById(id);
+
+        // Check if the product exists before attempting to update
+        if (product == null) {
+            // You could redirect with an error message, but throwing an exception is clear for a developer
+            throw new IllegalArgumentException("Invalid product ID: " + id);
+        }
+
+        // Find the category
+        Category cat = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid category ID: " + categoryId));
+
+        // Update fields
+        product.setName(name);
+        product.setDescription(description);
+        product.setPrice(price);
+        product.setCategory(cat);
+        // Note: Image is not updated via this form to keep the process simple.
+
+        productService.save(product);
+        return "redirect:/admin/catalog";
+    }
+
+
+
     /* -------------------- ORDERS -------------------- */
 
     @GetMapping("/orders")

@@ -16,4 +16,6 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     List<Order> findByUserIdOrderByCreatedAtDesc(Long userId);
     // src/main/java/com/example/foodapp/repository/OrderRepository.java
 
+    Optional<Order> findTopByUserIdOrderByCreatedAtDesc(Long userId);
+
 }
