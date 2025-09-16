@@ -1,169 +1,123 @@
-//// src/main/java/com/example/foodapp/service/OrderEmailService.java
-//package com.example.foodapp.service;
+//package com.spicejar.service;
 //
 //import com.example.foodapp.model.Order;
-//import com.example.foodapp.model.OrderItem;
-//import com.example.foodapp.model.User;
-//
 //import jakarta.mail.Address;
 //import jakarta.mail.Message;
-//import jakarta.mail.PasswordAuthentication;
 //import jakarta.mail.Session;
 //import jakarta.mail.Transport;
 //import jakarta.mail.internet.InternetAddress;
 //import jakarta.mail.internet.MimeMessage;
-//
+//import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.beans.factory.annotation.Value;
 //import org.springframework.stereotype.Service;
 //import org.thymeleaf.context.Context;
 //import org.thymeleaf.spring6.SpringTemplateEngine;
 //
-//import java.math.BigDecimal;
 //import java.nio.charset.StandardCharsets;
 //import java.time.Year;
 //import java.time.format.DateTimeFormatter;
-//import java.util.*;
+//import java.util.Map;
+//import java.util.Properties;
+//import java.util.UUID;
 //
 //@Service
 //public class OrderEmailService {
 //
+//    @Autowired
+//    private SpringTemplateEngine templateEngine;
+//
 //    // === SMTP/auth (same keys you used in ContactService) ===
+//    @Value("${mail.host}")
+//    private String host;
+//    @Value("${mail.port}")
+//    private int port;
+//    @Value("${mail.auth}")
+//    private boolean auth;
+//    @Value("${mail.starttls.enable}")
+//    private boolean starttls;
 //    @Value("${mail.username}")
 //    private String username;
-//
 //    @Value("${mail.password}")
 //    private String password;
 //
 //    // optional branded from name
 //    @Value("${mail.fromName:The Spice Jar}")
 //    private String fromName;
-//
-//    // optional BCC for your records (comma-separated). Can be blank.
+//    @Value("${mail.fromAddr:no-reply@localhost}")
+//    private String fromAddr;
 //    @Value("${mail.orders.bcc:}")
 //    private String ordersBcc;
 //
-//    // SMTP details with sensible defaults for Gmail
-//    @Value("${mail.smtp.host:smtp.gmail.com}")
-//    private String host;
-//
-//    @Value("${mail.smtp.port:587}")
-//    private int port;
-//
-//    @Value("${mail.smtp.starttls:true}")
-//    private boolean starttls;
-//
-//    @Value("${mail.smtp.auth:true}")
-//    private boolean auth;
-//
-//    private final SpringTemplateEngine thymeleaf;
-//
-//    public OrderEmailService(SpringTemplateEngine thymeleaf) {
-//        this.thymeleaf = thymeleaf;
-//    }
-//
 //    /**
-//     * Renders templates/email/order_confirmation.html and sends it to the customer.
+//     * Sends an order confirmation email to the customer.
+//     * @param order The Order object containing all the details.
 //     */
-//    public void sendOrderConfirmation(User user, Order order) throws Exception {
-//        // ---- Build template model ----
-//        String firstName = nonEmpty(user.getFirstName()) ? user.getFirstName()
-//                : (nonEmpty(user.getUsername()) ? user.getUsername() : "friend");
-//
-//        String orderNumber = "#" + order.getId();
-//        String orderDate = order.getCreatedAt() != null
-//                ? order.getCreatedAt().format(DateTimeFormatter.ofPattern("MMM d, yyyy • h:mm a"))
-//                : "";
-//
-//        String status = nonEmpty(order.getStatus()) ? order.getStatus() : "PAID";
-//
-//        // Items -> simple String map rows for email safety
-//        List<Map<String, String>> items = new ArrayList<>();
-//        if (order.getItems() != null) {
-//            for (OrderItem it : order.getItems()) {
-//                int qty = it.getQuantity() == null ? 0 : it.getQuantity();
-//                BigDecimal price = it.getPrice() == null ? BigDecimal.ZERO : it.getPrice();
-//                BigDecimal line = price.multiply(BigDecimal.valueOf(qty));
-//
-//                items.add(Map.of(
-//                        "name", nonNull(it.getProductName()),
-//                        "qty", String.valueOf(qty),
-//                        "price", price.toPlainString(),
-//                        "lineTotal", line.toPlainString()
-//                ));
-//            }
+//    public void sendOrderConfirmationEmail(Order order) {
+//        if (!nonEmpty(order.getEmail())) {
+//            // No email address, cannot send confirmation
+//            return;
 //        }
 //
-//        // Money fields (adapt if your entity already stores tax/grand total)
-//        BigDecimal subtotal = nz(order.getTotal());
-//        BigDecimal tax = nz(order.getTax());
-//        BigDecimal grandTotal = order.getGrandTotal() != null ? order.getGrandTotal() : subtotal.add(tax);
+//        try {
+//            String subject = "Your Order is Confirmed! #" + order.getId();
+//            String preheader = "Thanks for your order — it’s on the way!";
 //
-//        // Links & assets (replace with your real URLs/CDN)
-//        Map<String, String> links = Map.of(
-//                "home",   "https://your-domain.example/",
-//                "orders", "https://your-domain.example/orders/" + order.getId(),
-//                "help",   "https://your-domain.example/help",
-//                "unsub",  "https://your-domain.example/unsubscribe"
-//        );
-//        Map<String, String> assets = Map.of(
-//                "logo", "https://your-cdn.example/spicejar-logo.png"
-//        );
+//            // 1. Prepare Thymeleaf context
+//            Context ctx = new Context();
+//            ctx.setVariable("order", order);
+//            ctx.setVariable("subject", subject);
+//            ctx.setVariable("preheader", preheader);
+//            ctx.setVariable("firstName", order.getCustomerName());
+//            ctx.setVariable("orderNumber", order.getId());
+//            ctx.setVariable("status", order.getStatus());
+//            ctx.setVariable("orderDate", order.getCreatedAt().format(DateTimeFormatter.ofPattern("MMM dd, yyyy")));
+//            ctx.setVariable("shippingAddress", String.format("%s, %s, %s %s", order.getStreet(), order.getCity(), order.getState(), order.getZip()));
+//            ctx.setVariable("items", order.getItems());
+//            ctx.setVariable("subtotal", String.format("$%.2f", order.getSubtotal()));
+//            ctx.setVariable("tax", String.format("$%.2f", order.getTax()));
+//            ctx.setVariable("total", String.format("$%.2f", order.getGrandTotal()));
 //
-//        // Thymeleaf context
-//        Context ctx = new Context();
-//        ctx.setVariable("subject", "Order Confirmed • " + orderNumber);
-//        ctx.setVariable("preheader", "Thanks for your order — it’s on the way!");
-//        ctx.setVariable("firstName", firstName);
-//        ctx.setVariable("orderNumber", orderNumber);
-//        ctx.setVariable("orderDate", orderDate);
-//        ctx.setVariable("status", status);
-//        ctx.setVariable("items", items);
-//        ctx.setVariable("subtotal", subtotal.toPlainString());
-//        ctx.setVariable("tax", tax.toPlainString());
-//        ctx.setVariable("total", grandTotal.toPlainString());
-//        ctx.setVariable("shippingAddress", nonNull(order.getAddress()));
-//        ctx.setVariable("year", Year.now().getValue());
-//        ctx.setVariable("links", links);
-//        ctx.setVariable("assets", assets);
+//            // Mocks for template variables
+//            ctx.setVariable("links", Map.of(
+//                    "home", "/",
+//                    "orders", "/orders",
+//                    "help", "/help",
+//                    "unsub", "/unsubscribe"
+//            ));
+//            ctx.setVariable("assets", Map.of(
+//                    "logo", "/images/spice-jar-logo.png"
+//            ));
+//            ctx.setVariable("year", Year.now().getValue());
 //
-//        // Template path: src/main/resources/templates/email/order_confirmation.html
-//        String html = thymeleaf.process("email/order_confirmation", ctx);
+//            // 2. Process Thymeleaf template to get HTML content
+//            String html = templateEngine.process("order_confirmation", ctx);
 //
-//        // ---- Build & send (Jakarta Mail, like your ContactService) ----
-//        Session session = Session.getInstance(smtpProps(), new jakarta.mail.Authenticator() {
-//            @Override
-//            protected PasswordAuthentication getPasswordAuthentication() {
-//                return new PasswordAuthentication(username, password);
-//            }
-//        });
+//            // 3. Build and send email
+//            Session mailSession = Session.getInstance(smtpProps());
+//            MimeMessage msg = new MimeMessage(mailSession);
 //
-//        MimeMessage msg = new MimeMessage(session);
-//        msg.setSentDate(new Date());
+//            msg.setFrom(new InternetAddress(fromAddr, fromName));
 //
-//        // Send FROM your authenticated mailbox
-//        msg.setFrom(new InternetAddress(username, fromName, StandardCharsets.UTF_8.name()));
-//
-//        // Reply-To the store mailbox (or customer if you want replies to go to them)
-//        if (nonEmpty(user.getEmail())) {
-//            Address[] reply = { new InternetAddress(user.getEmail()) };
-//            msg.setReplyTo(reply);
-//        }
-//
-//        // TO = customer
-//        msg.setRecipient(Message.RecipientType.TO, new InternetAddress(user.getEmail()));
-//        // Optional BCC (split by comma)
-//        if (nonEmpty(ordersBcc)) {
-//            for (String bcc : ordersBcc.split(",")) {
-//                if (nonEmpty(bcc)) {
-//                    msg.addRecipient(Message.RecipientType.BCC, new InternetAddress(bcc.trim()));
+//            // TO = customer
+//            msg.setRecipient(Message.RecipientType.TO, new InternetAddress(order.getEmail()));
+//            // Optional BCC (split by comma)
+//            if (nonEmpty(ordersBcc)) {
+//                for (String bcc : ordersBcc.split(",")) {
+//                    if (nonEmpty(bcc)) {
+//                        msg.addRecipient(Message.RecipientType.BCC, new InternetAddress(bcc.trim()));
+//                    }
 //                }
 //            }
+//
+//            msg.setSubject("Order Confirmed • " + order.getId(), StandardCharsets.UTF_8.name());
+//            msg.setContent(html, "text/html; charset=UTF-8");
+//
+//            Transport.send(msg);
+//
+//        } catch (Exception e) {
+//            // You may want to handle this more gracefully
+//            e.printStackTrace();
 //        }
-//
-//        msg.setSubject("Order Confirmed • " + orderNumber, StandardCharsets.UTF_8.name());
-//        msg.setContent(html, "text/html; charset=UTF-8");
-//
-//        Transport.send(msg);
 //    }
 //
 //    // ---------- helpers ----------
@@ -179,7 +133,7 @@
 //        return p;
 //    }
 //
-//    private static String nonNull(String s) { return s == null ? "" : s; }
-//    private static boolean nonEmpty(String s) { return s != null && !s.isBlank(); }
-//    private static BigDecimal nz(BigDecimal b) { return b == null ? BigDecimal.ZERO : b; }
+//    private boolean nonEmpty(String s) {
+//        return s != null && !s.trim().isEmpty();
+//    }
 //}

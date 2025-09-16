@@ -18,4 +18,9 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     Optional<Order> findTopByUserIdOrderByCreatedAtDesc(Long userId);
 
+
+    Optional<Order> findById(Long id);
+    void deleteAllByUserId(Long userId);
+
+
 }

@@ -169,24 +169,17 @@ public class AdminController {
 
 
     /* -------------------- ORDERS -------------------- */
-
     @GetMapping("/orders")
     public String orders(@RequestParam(required = false) String q,
                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                          @RequestParam(required = false) String sort,
                          Model m) {
-
-        // Use the new service method that handles both finding and filtering/sorting
-        List<Order> filteredOrders = orderService.findOrders(q, from, to, sort);
-        m.addAttribute("orders", filteredOrders);
-
-        // Keep current params so your form can reflect them
+        m.addAttribute("orders", orderService.findOrders(q, from, to, sort));
         m.addAttribute("q", q);
         m.addAttribute("from", from);
         m.addAttribute("to", to);
         m.addAttribute("sort", sort);
-
         return "admin/orders";
     }
 

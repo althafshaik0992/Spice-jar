@@ -5,16 +5,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Setter
 @Getter
 @Entity
-@Table(name = "orders") // keep table name "orders"
+@Table(name = "orders") // table name "orders"
 public class Order {
 
-    // --- getters/setters ---
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,11 +30,10 @@ public class Order {
 
     private LocalDateTime createdAt;
 
-    // store subtotal
+    // we’ll treat this as "snapshot subtotal" (persisted at save time)
     private BigDecimal total;
 
     private String status;
-
 
     // Contact + address
     private String email;
@@ -52,17 +51,28 @@ public class Order {
     public Order() {}
 
     // --- Derived calculations ---
+    /** Subtotal = sum of line items (or fallback to total if no items) */
     public BigDecimal getSubtotal() {
-        return total == null ? BigDecimal.ZERO : total;
+        if (items != null && !items.isEmpty()) {
+            return items.stream()
+                    .map(OrderItem::getLineTotal)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add)
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+        return total == null ? BigDecimal.ZERO : total.setScale(2, RoundingMode.HALF_UP);
     }
 
+    /** Tax = subtotal * 8% */
     public BigDecimal getTax() {
-        return getSubtotal().multiply(new BigDecimal("0.08"))
-                .setScale(2, java.math.RoundingMode.HALF_UP);
+        return getSubtotal()
+                .multiply(new BigDecimal("0.08"))
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
+    /** Grand total = subtotal + tax */
     public BigDecimal getGrandTotal() {
-        return getSubtotal().add(getTax())
-                .setScale(2, java.math.RoundingMode.HALF_UP);
+        return getSubtotal()
+                .add(getTax())
+                .setScale(2, RoundingMode.HALF_UP);
     }
 }

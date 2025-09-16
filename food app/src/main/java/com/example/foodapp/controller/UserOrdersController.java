@@ -38,7 +38,9 @@ public class UserOrdersController {
         List<Order> all = orderService.findByUser(userId);
         List<Order> filtered = orderService.filterUserOrders(all, q, from, to);
 
+
         m.addAttribute("orders", filtered);
+
         return "order"; // <-- match your HTML file name
     }
 

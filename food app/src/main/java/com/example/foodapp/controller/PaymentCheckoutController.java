@@ -1,8 +1,6 @@
-// src/main/java/com/example/foodapp/controller/PaymentCheckoutController.java
 package com.example.foodapp.controller;
 
 import com.example.foodapp.model.Order;
-import com.example.foodapp.model.Payment;
 import com.example.foodapp.service.OrderService;
 import com.example.foodapp.service.PaymentService;
 import com.example.foodapp.service.PaypalService;
@@ -14,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.Map;
 
 @Controller
@@ -22,130 +21,100 @@ public class PaymentCheckoutController {
 
     private final OrderService orderService;
     private final PaymentService paymentService;
-    private final StripeService stripeService;
     private final PaypalService paypalService;
+    private final StripeService stripeService;
 
     public PaymentCheckoutController(OrderService orderService,
                                      PaymentService paymentService,
-                                     StripeService stripeService,
-                                     PaypalService paypalService) {
+                                     PaypalService paypalService,
+                                     StripeService stripeService) {
         this.orderService = orderService;
         this.paymentService = paymentService;
-        this.stripeService = stripeService;
         this.paypalService = paypalService;
+        this.stripeService = stripeService;
     }
 
-    @Value("${paypal.client.id}")
-    private String paypalClientId;
-    @Value("${paypal.currency:USD}")
+    @Value("${app.paypal.currency:USD}")
     private String paypalCurrency;
 
-    /** 3) Unified payment page (Card / PayPal / COD). */
+    /** Show the payment choice page for an order */
     @GetMapping("/checkout")
-    public String paymentCheckout(@RequestParam(required = false) Long orderId,
-                                  HttpSession session,
-                                  Model m) {
+    public String page(@RequestParam Long orderId, HttpSession session, Model m){
         if (session.getAttribute("USER") == null) return "redirect:/login";
-        Long userId = extractUserId(session.getAttribute("USER"));
-        if (userId == null) return "redirect:/login";
-
-        com.example.foodapp.model.Order order;
-        if (orderId == null) {
-            order = orderService.findLatestForUser(userId); // implement in OrderService/Repository
-            if (order == null) return "redirect:/cart/view";
-            return "redirect:/payment/checkout?orderId=" + order.getId();
-        } else {
-            order = orderService.findById(orderId);
-            if (order == null) return "redirect:/orders";
-            if (!userId.equals(order.getUserId())) return "redirect:/orders";
-        }
-
+        Order order = orderService.findById(orderId);
+        if (order == null) return "redirect:/orders";
+        // optional: ensure belongs to current user
         m.addAttribute("order", order);
-        m.addAttribute("paypalClientId", paypalClientId);
-        m.addAttribute("paypalCurrency", paypalCurrency);
-        return "payment"; // your payment.html
+        return "payment"; // the HTML above
     }
 
-
-    /** Stripe: create PaymentIntent + save Payment row */
-    @PostMapping("/init/stripe")
-    @ResponseBody
-    public Map<String, Object> initStripe(@RequestBody Map<String, Object> req) {
-        Long orderId = ((Number) req.get("orderId")).longValue();
-        Order order = orderService.findById(orderId);
-
-        Payment p = paymentService.start(order.getId(), order.getGrandTotal(), "USD", "STRIPE");
-        var init = stripeService.createPaymentIntent(p); // {clientSecret, publishableKey, stripePaymentIntentId}
-        // store provider id
-        paymentService.attachProviderPaymentId(p.getId(), init.get("stripePaymentIntentId"));
-
-        return Map.of(
-                "clientSecret", init.get("clientSecret"),
-                "publishableKey", init.get("publishableKey"),
-                "paymentId", p.getId()
-        );
-    }
-
-    /** PayPal: create order on PayPal and attach provider id */
-    @PostMapping("/paypal/create")
-    @ResponseBody
-    public Map<String, Object> paypalCreate(@RequestBody Map<String, Object> req) throws Exception {
-        Long orderId = ((Number) req.get("orderId")).longValue();
-        Order order = orderService.findById(orderId);
-
-        Payment p = paymentService.start(order.getId(), order.getGrandTotal(), "USD", "PAYPAL");
-        var create = paypalService.createOrder(p); // returns {id, status}
-        paymentService.attachProviderPaymentId(p.getId(), create.get("id"));
-        return Map.of("id", create.get("id"));
-    }
-
-    /** PayPal: capture and mark success */
-    @PostMapping("/paypal/capture")
-    @ResponseBody
-    public Map<String, Object> paypalCapture(@RequestBody Map<String, Object> req) throws Exception {
-        String paypalOrderId = (String) req.get("paypalOrderId");
-        var cap = paypalService.captureOrder(paypalOrderId); // {status, captureId, amount}
-
-        Payment p = paymentService.markSucceededByProviderPaymentId(
-                paypalOrderId, cap.get("captureId"), "PAYPAL");
-
-        orderService.markPaid(p.getOrderId());
-        return Map.of("ok", true, "paymentId", p.getId());
-    }
-
-    /** COD: mark pending and keep order pending */
+    /** COD: mark pending and return 200 */
     @PostMapping("/cod")
-    public ResponseEntity<?> cod(@RequestBody Map<String, Object> req) {
-        Long orderId = ((Number) req.get("orderId")).longValue();
-        Order order = orderService.findById(orderId);
-
-        Payment p = paymentService.start(order.getId(), order.getGrandTotal(), "USD", "COD");
-        paymentService.markPendingCod(p.getId());
+    @ResponseBody
+    public Map<String,Object> cod(@RequestBody Map<String,Object> body, HttpSession session){
+        if (session.getAttribute("USER") == null) return Map.of("ok", false);
+        Long orderId = ((Number) body.get("orderId")).longValue();
+        paymentService.markCodPending(orderId);
         orderService.markPendingCod(orderId);
-
-        return ResponseEntity.ok(Map.of("ok", true));
+        return Map.of("ok", true);
     }
 
-    /** Success page (optional): reuse your existing template */
+    /** Start PayPal: create order on PayPal and return approval URL */
+    @PostMapping("/paypal/start")
+    @ResponseBody
+    public Map<String,Object> startPaypal(@RequestBody Map<String,Object> body, HttpSession session){
+        if (session.getAttribute("USER") == null) return Map.of("ok", false);
+        Long orderId = ((Number) body.get("orderId")).longValue();
+        var out = paypalService.createOrder(orderId, paypalCurrency);
+        // out.approvalUrl is where the browser should go
+        return Map.of("ok", out.ok(), "approvalUrl", out.approvalUrl(), "paymentId", out.paymentId());
+    }
+
+    /** PayPal return (success) */
+    @GetMapping("/paypal/return")
+    public String paypalReturn(@RequestParam String token, @RequestParam(required=false) String PayerID){
+        // token == PayPal order id
+        var ok = paypalService.capture(token);
+        Long orderId = ok.orderId();
+        if (ok.ok()) {
+            orderService.markPaid(orderId);
+            return "redirect:/payment/success?orderId=" + orderId + "&paymentId=" + ok.paymentId();
+        }
+        return "redirect:/orders";
+    }
+
+    /** Start Stripe Checkout: create session & return its URL */
+    @PostMapping("/stripe/start")
+    @ResponseBody
+    public Map<String,Object> startStripe(@RequestBody Map<String,Object> body, HttpSession session){
+        if (session.getAttribute("USER") == null) return Map.of("ok", false);
+        Long orderId = ((Number) body.get("orderId")).longValue();
+        var out = stripeService.createCheckoutSession(orderId);
+        return Map.of("ok", out.ok(), "checkoutUrl", out.checkoutUrl(), "paymentId", out.paymentId());
+    }
+
+    /** Stripe success/cancel return URLs */
+    @GetMapping("/stripe/return")
+    public String stripeReturn(@RequestParam Long orderId, @RequestParam(required=false) String session_id){
+        if (session_id != null && stripeService.verifySession(session_id)) {
+            orderService.markPaid(orderId);
+            var paymentId = paymentService.findLatestByOrderId(orderId) != null
+                    ? paymentService.findLatestByOrderId(orderId).getId()
+                    : null;
+            return "redirect:/payment/success?orderId=" + orderId + (paymentId!=null?("&paymentId="+paymentId):"");
+        }
+        return "redirect:/orders";
+    }
+
+    /** Success page */
     @GetMapping("/success")
     public String success(@RequestParam Long orderId,
                           @RequestParam(required = false) Long paymentId,
-                          Model m) {
+                          Model m){
         var order = orderService.findById(orderId);
-        var payment = (paymentId != null)
-                ? paymentService.findById(paymentId)
-                : paymentService.findLatestByOrderId(orderId);
+        var payment = (paymentId != null) ? paymentService.findById(paymentId) : paymentService.findLatestByOrderId(orderId);
         m.addAttribute("order", order);
         m.addAttribute("payment", payment);
-        return "payment_success";
-    }
-
-    // ---- helpers ----
-    private Long extractUserId(Object sessionUser) {
-        try {
-            var m = sessionUser.getClass().getMethod("getId");
-            Object id = m.invoke(sessionUser);
-            return (id instanceof Number) ? ((Number) id).longValue() : null;
-        } catch (Exception e) { return null; }
+        return "order_success";
     }
 }

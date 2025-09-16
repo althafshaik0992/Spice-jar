@@ -4,6 +4,8 @@ package com.example.foodapp.controller;
 import com.example.foodapp.model.User;
 import com.example.foodapp.service.UserService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -116,6 +118,21 @@ public class ProfileController {
         } catch (IOException e) {
             e.printStackTrace();
             return "redirect:/profile?error=Upload+failed";
+        }
+    }
+
+
+    @DeleteMapping("profile/delete/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        // In a real application, you would also need to add authentication
+        // and authorization checks here to ensure the requesting user is
+        // authorized to delete this account (e.g., they are an admin or the user themselves).
+
+        boolean deleted = userService.deleteUser(userId);
+        if (deleted) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204 No Content for successful deletion.
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 Not Found if the user doesn't exist.
         }
     }
 }

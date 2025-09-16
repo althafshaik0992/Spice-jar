@@ -54,6 +54,56 @@
         input, select, textarea{
             width:100%; border:1px solid #e5e7eb; border-radius:10px; padding:12px; font-size:14px; background:#fff
         }
+        .navbar{
+            background:#fff; padding:6px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex; justify-content:space-between; align-items:center;
+            position:sticky; top:0; z-index:1000; height:60px;
+        }
+        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
+        .brand-logo video{width:36px; height:auto; border-radius:4px}
+        .nav-links{display:flex; align-items:center; gap:18px}
+        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
+        .nav-links a:hover{color:var(--green)}
+
+        /* Dropdowns */
+        .dropdown{position:relative}
+        .dropdown-toggle{
+            background:none; border:none; cursor:pointer; font-size:15px; color:#333;
+            display:flex; align-items:center; gap:6px
+        }
+        .dropdown-menu{
+            display:none; position:absolute; right:0; top:100%;
+            background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
+            border-radius:6px; overflow:hidden; min-width:180px
+        }
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a, .dropdown-menu span{
+            display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap
+        }
+        .dropdown-menu a:hover{background:#f4f4f4}
+        /* Cart count badge style */
+        .cart-icon-container {
+            position: relative;
+            display: inline-block;
+        }
+        .cart-count-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            text-align: center;
+        }
         textarea{min-height:140px; resize:vertical}
         .btn{
             display:inline-flex; gap:10px; align-items:center; border:none; border-radius:12px;
@@ -114,46 +164,63 @@
 
         /* Map */
         .map{border:0; width:100%; height:280px; border-radius:14px}
+
     </style>
 </head>
 <body>
 
 <!-- Navbar -->
+
+<!-- Navbar -->
 <nav class="navbar">
-    <a th:href="@{/}" class="brand">
-        <video th:src="@{/images/Spice-Jar.mp4}" autoplay muted loop playsinline></video>
+    <a href="/" class="brand-logo">
+        <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
         <span>SpiceJar</span>
     </a>
 
     <div class="nav-links">
-        <a th:href="@{/}">Home</a>
-        <a th:href="@{/products}">Menu</a>
-        <a th:href="@{/cart}">Cart</a>
-        <a th:href="@{/contact}">Contact</a>
-    </div>
-
-    <!-- Right side: Login button (if logged out) OR user dropdown (if logged in) -->
-    <div>
-        <!-- Logged OUT -->
-        <a th:if="${session.USER == null}" th:href="@{/login}"
-           class="btn btn-primary" style="text-decoration:none; padding:8px 14px; border-radius:10px;">
-            <i class="fa-solid fa-right-to-bracket"></i> Login
+        <a th:href="@{/menu}">Menu</a>
+        <a th:href="@{/about}">About Us</a>
+        <a class="nav-link" href="#"  th:href="@{/cart/view}" >
+            <div class="cart-icon-container">
+                <i class="fas fa-shopping-cart" style="font-size:24px"></i>
+                <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
+            </div>
         </a>
+        <a th:href="@{/contact}">Contact Us</a>
 
-        <!-- Logged IN -->
-        <div class="dropdown" th:if="${session.USER != null}" style="position:relative; display:inline-block;">
-            <button class="dropdown-toggle" style="background:none; border:1px solid #e5e7eb; padding:8px 12px; border-radius:10px; cursor:pointer;">
-                <i class="fas fa-user"></i>
-                <span th:text="${session.USER.username}">User</span>
+        <!-- Categories -->
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fa-solid fa-list"></i> Categories
             </button>
             <div class="dropdown-menu">
-                <a th:href="@{/profile/view}">My Profile</a>
-                <a th:href="@{/orders}">My Orders</a>
-                <a th:href="@{/logout}">Logout</a>
+                <a th:each="c : ${categories}"
+                   th:href="@{/category/{id}(id=${c.id})}"
+                   th:text="${c.name}">Category</a>
+            </div>
+        </div>
+
+        <!-- Account -->
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fas fa-user"></i> Account
+            </button>
+            <div class="dropdown-menu">
+                <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
+                <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+
+                <span th:if="${session.USER != null}">
+          Welcome, <span th:text="${session.USER.firstName}">user</span>
+        </span>
+                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
+                <a th:if="${session.USER != null}" th:href="@{/profile/view}">My Profile</a>
+                <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
             </div>
         </div>
     </div>
 </nav>
+
 
 <!-- Hero -->
 <header class="hero">

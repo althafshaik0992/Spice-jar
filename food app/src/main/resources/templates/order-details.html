@@ -131,9 +131,76 @@
             margin: 0;
             font-size: 16px;
         }
+        .navbar{
+            background:#fff; padding:6px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex; justify-content:space-between; align-items:center;
+            position:sticky; top:0; z-index:1000; height:60px;
+        }
+        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
+        .brand-logo video{width:36px; height:auto; border-radius:4px}
+        .nav-links{display:flex; align-items:center; gap:18px}
+        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
+        .nav-links a:hover{color:var(--green)}
+
+        /* Dropdowns */
+        .dropdown{position:relative}
+        .dropdown-toggle{
+            background:none; border:none; cursor:pointer; font-size:15px; color:#333;
+            display:flex; align-items:center; gap:6px
+        }
+        .dropdown-menu{
+            display:none; position:absolute; right:0; top:100%;
+            background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
+            border-radius:6px; overflow:hidden; min-width:180px
+        }
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a, .dropdown-menu span{
+            display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap
+        }
+        .dropdown-menu a:hover{background:#f4f4f4}
+        /* Cart count badge style */
+        .cart-icon-container {
+            position: relative;
+            display: inline-block;
+        }
+        .cart-count-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            text-align: center;
+        }
 
         .order-details strong {
             color: #333;
+        }
+
+        .status {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .status.paid {
+            background-color: var(--green);
+            color: #fff;
+        }
+        .status.pending {
+            background-color: #ffc107;
+            color: #000;
         }
 
         .item-list {
@@ -172,9 +239,151 @@
         .item-quantity {
             color: #777;
         }
+        .order-summary strong, .shipping-info strong, .payment-info strong {
+            color: #333;
+        }
+
+        .status {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .status.paid {
+            background-color: var(--green);
+            color: #fff;
+        }
+        .status.pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .item-list {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .item-list h2, .details-heading {
+            font-size: 20px;
+            color: var(--green);
+            margin: 0 0 10px;
+        }
+
+        .item-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .item-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .item-list li:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: 600;
+        }
+
+        .item-quantity {
+            color: #777;
+        }
+
+        .shipping-info p, .payment-info p {
+            margin: 0;
+            line-height: 1.6;
+        }
+        .order-cost-breakdown {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .order-cost-breakdown table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .order-cost-breakdown table td {
+            padding: 8px 0;
+            font-size: 15px;
+        }
+        .order-cost-breakdown table .total-row {
+            font-weight: bold;
+            font-size: 16px;
+            border-top: 2px dashed #ddd;
+        }
+        .text-right { text-align: right; }
+        .text-left { text-align: left; }
+        .flex-container {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .flex-item {
+            flex: 1 1 300px;
+        }
+
     </style>
 </head>
 <body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/" class="brand-logo">
+        <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
+        <span>SpiceJar</span>
+    </a>
+
+    <div class="nav-links">
+        <a th:href="@{/menu}">Menu</a>
+        <a th:href="@{/about}">About Us</a>
+        <a class="nav-link" href="#"  th:href="@{/cart/view}" >
+            <div class="cart-icon-container">
+                <i class="fas fa-shopping-cart" style="font-size:24px"></i>
+                <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
+            </div>
+        </a>
+        <a th:href="@{/contact}">Contact Us</a>
+
+        <!-- Categories -->
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fa-solid fa-list"></i> Categories
+            </button>
+            <div class="dropdown-menu">
+                <a th:each="c : ${categories}"
+                   th:href="@{/category/{id}(id=${c.id})}"
+                   th:text="${c.name}">Category</a>
+            </div>
+        </div>
+
+        <!-- Account -->
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fas fa-user"></i> Account
+            </button>
+            <div class="dropdown-menu">
+                <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
+                <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+
+                <span th:if="${session.USER != null}">
+          Welcome, <span th:text="${session.USER.firstName}">user</span>
+        </span>
+                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
+                <a th:if="${session.USER != null}" th:href="@{/profile/view}">My Profile</a>
+                <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
 
 <main class="wrap">
     <h1><i class="fa-solid fa-receipt"></i> Order <span th:text="${order.id}">#12345</span></h1>
@@ -182,8 +391,28 @@
     <section class="card">
         <div class="order-details">
             <p><strong>Order #</strong> <span th:text="${order.id}">12345</span></p>
+            <!-- Add a status field with dynamic styling -->
+            <p><strong>Status:</strong>
+                <span th:class="|status ${order.status.toLowerCase()}|"
+                      th:text="${order.status}">Pending Payment</span>
+            </p>
             <p><strong>Placed On:</strong> <span th:text="${#temporals.format(order.createdAt, 'MMM d, yyyy • h:mm a')}">Aug 29, 2025 • 9:45 AM</span></p>
-            <p><strong>Total:</strong> <span  th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">">10.00</span></p>
+            <p><strong>Total:</strong> <span  th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">10.00</span></p>
+        </div>
+
+        <div class="flex-container">
+            <section class="card flex-item">
+                <h2 class="details-heading"><i class="fa-solid fa-truck"></i> Shipping Information</h2>
+                <div class="shipping-info">
+                    <p><strong>Customer Name:</strong> <span th:text="${order.customerName}">Jane Doe</span></p>
+                    <p><strong>Email:</strong> <span th:text="${order.email}">jane.doe@example.com</span></p>
+                    <p><strong>Phone:</strong> <span th:text="${order.phone}">555-123-4567</span></p>
+                    <p><strong>Address:</strong></p>
+                    <p><span th:text="${order.street}">123 Main St</span></p>
+                    <p><span th:text="${order.city}">Anytown</span>, <span th:text="${order.state}">CA</span> <span th:text="${order.zip}">12345</span></p>
+                    <p><span th:text="${order.country}">USA</span></p>
+                </div>
+            </section>
         </div>
 
         <div class="item-list">

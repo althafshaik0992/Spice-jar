@@ -1,74 +1,171 @@
 package com.example.foodapp.service;
 
-import com.example.foodapp.model.Payment;
-import com.paypal.core.PayPalEnvironment;
-import com.paypal.core.PayPalHttpClient;
-import com.paypal.http.HttpResponse;
-import com.paypal.orders.*;
+import com.example.foodapp.model.Order;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class PaypalService {
 
-    private final PayPalHttpClient client;
+    private final OrderService orderService;
+    private final PaymentService paymentService;
+    private final RestTemplate restTemplate = new RestTemplate();
 
-    public PaypalService(
-            @Value("${paypal.client.id}") String clientId,
-            @Value("${paypal.client.secret}") String clientSecret,
-            @Value("${paypal.mode:sandbox}") String mode) {
+    public record StartOut(boolean ok, String approvalUrl, Long paymentId) {}
+    public record CaptureOut(boolean ok, Long orderId, Long paymentId) {}
 
-        PayPalEnvironment env = "live".equalsIgnoreCase(mode)
-                ? new PayPalEnvironment.Live(clientId, clientSecret)
-                : new PayPalEnvironment.Sandbox(clientId, clientSecret);
+    @Value("${app.url:http://localhost:8080}")
+    private String appUrl;
 
-        this.client = new PayPalHttpClient(env);
+    // your client/secret used in your internal HTTP client to PayPal REST
+    @Value("${paypal.client.id}")
+    private String clientId;
+    @Value("${paypal.client.secret}")
+    private String secret;
+    @Value("${paypal.api.url:https://api-m.sandbox.paypal.com}")
+    private String paypalApiUrl;
+
+    public PaypalService(OrderService orderService, PaymentService paymentService) {
+        this.orderService = orderService;
+        this.paymentService = paymentService;
     }
 
-    /** Create a PayPal Order for the given Payment row */
-    public Map<String,String> createOrder(Payment p) throws Exception {
-        OrdersCreateRequest req = new OrdersCreateRequest();
-        req.header("prefer", "return=representation");
+    public StartOut createOrder(Long orderId, String currency) {
+        try {
+            Order order = orderService.findById(orderId);
+            if (order == null) return new StartOut(false, null, null);
 
-        String amount = money(p.getAmount());
+            var payment = paymentService.start(orderId, order.getGrandTotal(), currency, "PAYPAL");
 
-        OrderRequest order = new OrderRequest();
-        order.checkoutPaymentIntent("CAPTURE");
-        PurchaseUnitRequest unit = new PurchaseUnitRequest()
-                .referenceId("pay-" + p.getId())
-                .amountWithBreakdown(new AmountWithBreakdown().currencyCode("USD").value(amount));
-        order.purchaseUnits(List.of(unit));
+            // --- REAL PAYPAL API INTEGRATION ---
+            // 1. Get an access token from PayPal
+            String accessToken = getAccessToken();
 
-        req.requestBody(order);
+            // 2. Build the PayPal order request body
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("intent", "CAPTURE");
 
-        HttpResponse<Order> resp = client.execute(req);
-        Map<String,String> out = new HashMap<>();
-        out.put("id", resp.result().id());
-        out.put("status", resp.result().status());
-        return out;
+            Map<String, Object> purchaseUnit = new HashMap<>();
+            Map<String, String> amount = new HashMap<>();
+            amount.put("currency_code", currency);
+            amount.put("value", order.getGrandTotal().toString());
+            purchaseUnit.put("amount", amount);
+            requestBody.put("purchase_units", List.of(purchaseUnit));
+
+            Map<String, Object> applicationContext = new HashMap<>();
+            applicationContext.put("return_url", appUrl + "/payment/paypal/return");
+            applicationContext.put("cancel_url", appUrl + "/orders");
+            requestBody.put("application_context", applicationContext);
+
+            // 3. Set up HTTP headers for the API call
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(accessToken);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+            // 4. Make the API call to create the order
+            var response = restTemplate.exchange(
+                    paypalApiUrl + "/v2/checkout/orders",
+                    HttpMethod.POST,
+                    entity,
+                    Map.class
+            );
+
+            // 5. Extract the PayPal order ID and approval URL from the response
+            Map<String, Object> responseBody = response.getBody();
+            String paypalOrderId = (String) responseBody.get("id");
+
+            String approvalUrl = null;
+            List<Map<String, Object>> links = (List<Map<String, Object>>) responseBody.get("links");
+            for (Map<String, Object> link : links) {
+                if ("approve".equals(link.get("rel"))) {
+                    approvalUrl = (String) link.get("href");
+                    break;
+                }
+            }
+
+            // Store the real PayPal order ID in our database
+            paymentService.attachProviderPaymentId(payment.getId(), paypalOrderId);
+            // --- END REAL PAYPAL API INTEGRATION ---
+
+            // The approval URL is where the browser should go
+            // Previously, we used a fake URL:
+            // String approvalUrl = appUrl + "/fake-paypal-approve?orderId=" + orderId + "&token=" + paypalOrderId;
+
+            return new StartOut(true, approvalUrl, payment.getId());
+        } catch (Exception e) {
+            System.err.println("Error creating PayPal order: " + e.getMessage());
+            return new StartOut(false, null, null);
+        }
     }
 
-    /** Capture a PayPal Order */
-    public Map<String,String> captureOrder(String paypalOrderId) throws Exception {
-        OrdersCaptureRequest req = new OrdersCaptureRequest(paypalOrderId);
-        req.requestBody(new OrderRequest());
+    public CaptureOut capture(String paypalOrderId) {
+        try {
+            // --- REAL PAYPAL API INTEGRATION ---
+            // 1. Get a new access token
+            String accessToken = getAccessToken();
 
-        HttpResponse<Order> resp = client.execute(req);
-        var capture = resp.result().purchaseUnits().get(0).payments().captures().get(0);
+            // 2. Set up HTTP headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(accessToken);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        Map<String,String> out = new HashMap<>();
-        out.put("status", capture.status());
-        out.put("captureId", capture.id());
-        out.put("amount", capture.amount().value());
-        return out;
+            // 3. Call PayPal's capture API
+            var response = restTemplate.exchange(
+                    paypalApiUrl + "/v2/checkout/orders/" + paypalOrderId + "/capture",
+                    HttpMethod.POST,
+                    entity,
+                    Map.class
+            );
+
+            // 4. Get the capture ID from the response
+            Map<String, Object> responseBody = response.getBody();
+            List<Map<String, Object>> purchaseUnits = (List<Map<String, Object>>) responseBody.get("purchase_units");
+            Map<String, Object> payments = (Map<String, Object>) purchaseUnits.get(0).get("payments");
+            List<Map<String, Object>> captures = (List<Map<String, Object>>) payments.get("captures");
+            String captureId = (String) captures.get(0).get("id");
+
+            // 5. Check if the payment was successful
+            String status = (String) responseBody.get("status");
+            if (!"COMPLETED".equals(status)) {
+                return new CaptureOut(false, null, null);
+            }
+
+            var p = paymentService.findByProviderPaymentId(paypalOrderId);
+            if (p == null) return new CaptureOut(false, null, null);
+
+            paymentService.markSucceededByProviderPaymentId(paypalOrderId, captureId, "PAYPAL");
+            return new CaptureOut(true, p.getOrderId(), p.getId());
+
+        } catch (Exception e) {
+            System.err.println("Error capturing PayPal payment: " + e.getMessage());
+            return new CaptureOut(false, null, null);
+        }
     }
 
-    private String money(BigDecimal v){
-        return v.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString();
+    private String getAccessToken() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setBasicAuth(clientId, secret);
+        String body = "grant_type=client_credentials";
+        HttpEntity<String> entity = new HttpEntity<>(body, headers);
+
+        var response = restTemplate.exchange(
+                paypalApiUrl + "/v1/oauth2/token",
+                HttpMethod.POST,
+                entity,
+                Map.class
+        );
+
+        return (String) response.getBody().get("access_token");
     }
 }

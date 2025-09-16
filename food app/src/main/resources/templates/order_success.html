@@ -63,6 +63,56 @@
             gap: 30px;
             margin-bottom: 30px;
         }
+        .navbar{
+            background:#fff; padding:6px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex; justify-content:space-between; align-items:center;
+            position:sticky; top:0; z-index:1000; height:60px;
+        }
+        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
+        .brand-logo video{width:36px; height:auto; border-radius:4px}
+        .nav-links{display:flex; align-items:center; gap:18px}
+        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
+        .nav-links a:hover{color:var(--green)}
+
+        /* Dropdowns */
+        .dropdown{position:relative}
+        .dropdown-toggle{
+            background:none; border:none; cursor:pointer; font-size:15px; color:#333;
+            display:flex; align-items:center; gap:6px
+        }
+        .dropdown-menu{
+            display:none; position:absolute; right:0; top:100%;
+            background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
+            border-radius:6px; overflow:hidden; min-width:180px
+        }
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a, .dropdown-menu span{
+            display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap
+        }
+        .dropdown-menu a:hover{background:#f4f4f4}
+        /* Cart count badge style */
+        .cart-icon-container {
+            position: relative;
+            display: inline-block;
+        }
+        .cart-count-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            text-align: center;
+        }
         .footer-column {
             flex: 1;
             min-width: 220px;
@@ -143,16 +193,147 @@
             padding:12px 18px; border-radius:12px; font-weight:700; box-shadow:0 6px 14px rgba(0,0,0,.12);
         }
         .btn:hover{ background:var(--accent); }
+
+        /* New styles for the added content */
+        .shipping-info {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.06);
+            padding: 14px 16px;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+        .shipping-info .label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #6c757d;
+            letter-spacing: .04em;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .shipping-info .value {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 20px;
+        }
+
+        .timeline {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.06);
+            padding: 20px 24px;
+            margin-bottom: 18px;
+        }
+        .timeline h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 16px;
+            color: #333;
+        }
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        .timeline-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #eee;
+            color: #888;
+            display: grid;
+            place-items: center;
+            font-size: 14px;
+            z-index: 1;
+        }
+        .timeline-item.active .timeline-icon {
+            background: var(--green);
+            color: #fff;
+        }
+        .timeline-item.active h4 {
+            color: var(--green);
+        }
+        .timeline-content {
+            margin-left: 12px;
+            flex: 1;
+        }
+        .timeline-content h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .timeline-content p {
+            font-size: 14px;
+            color: #666;
+            margin: 4px 0 0;
+        }
+        .timeline-line {
+            position: absolute;
+            left: 15px;
+            top: 32px;
+            bottom: 0;
+            width: 2px;
+            background: #e0e0e0;
+        }
     </style>
 </head>
 <body>
 
+
+<!-- Navbar -->
 <nav class="navbar">
-    <a th:href="@{/}" class="brand-logo">
-        <video th:src="@{/images/Spice-Jar.mp4}" autoplay muted loop playsinline></video>
+    <a href="/" class="brand-logo">
+        <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
         <span>SpiceJar</span>
     </a>
+
+    <div class="nav-links">
+        <a th:href="@{/menu}">Menu</a>
+        <a th:href="@{/about}">About Us</a>
+        <a class="nav-link" href="#"  th:href="@{/cart/view}" >
+            <div class="cart-icon-container">
+                <i class="fas fa-shopping-cart" style="font-size:24px"></i>
+                <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
+            </div>
+        </a>
+        <a th:href="@{/contact}">Contact Us</a>
+
+        <!-- Categories -->
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fa-solid fa-list"></i> Categories
+            </button>
+            <div class="dropdown-menu">
+                <a th:each="c : ${categories}"
+                   th:href="@{/category/{id}(id=${c.id})}"
+                   th:text="${c.name}">Category</a>
+            </div>
+        </div>
+
+        <!-- Account -->
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fas fa-user"></i> Account
+            </button>
+            <div class="dropdown-menu">
+                <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
+                <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+
+                <span th:if="${session.USER != null}">
+          Welcome, <span th:text="${session.USER.firstName}">user</span>
+        </span>
+                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
+                <a th:if="${session.USER != null}" th:href="@{/profile/view}">My Profile</a>
+                <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
+            </div>
+        </div>
+    </div>
 </nav>
+
 
 <div class="wrap">
     <div class="success-head">
@@ -178,6 +359,47 @@
         <div class="info">
             <div class="label">Shipping Address</div>
             <div class="value" th:text="${order.address}">123 Main St</div>
+        </div>
+    </section>
+
+    <!-- Shipping & Timeline -->
+    <section class="grid-cards" style="grid-template-columns: 1fr 1fr;">
+        <div class="shipping-info">
+            <div class="label">Estimated Delivery</div>
+            <!-- This is a placeholder value. In a real application, this would be calculated dynamically. -->
+            <div class="value">Within 5-7 business days</div>
+        </div>
+        <div class="timeline">
+            <h3>Order Status</h3>
+            <div class="timeline-line"></div>
+            <div class="timeline-item active">
+                <div class="timeline-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="timeline-content">
+                    <h4>Order Placed</h4>
+                    <p>We've received your order and it's being processed.</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-icon"><i class="fa-solid fa-box"></i></div>
+                <div class="timeline-content">
+                    <h4>Shipped</h4>
+                    <p>Your order is on its way to you.</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                <div class="timeline-content">
+                    <h4>Out for Delivery</h4>
+                    <p>Your package is with the delivery driver.</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-icon"><i class="fa-solid fa-house-chimney"></i></div>
+                <div class="timeline-content">
+                    <h4>Delivered</h4>
+                    <p>Your order has been delivered!</p>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -238,6 +460,9 @@
         <a class="btn" th:href="@{/orders}">
             <i class="fa-solid fa-receipt"></i> View My Orders
         </a>
+        <a class="btn" href="javascript:void(0)" onclick="shareOrder()">
+            <i class="fa-solid fa-share-nodes"></i> Share Order
+        </a>
     </div>
 </div>
 
@@ -270,5 +495,22 @@
         <p>&copy; 2025 The Spice Jar. All rights reserved.</p>
     </div>
 </footer>
+
+<script>
+    function shareOrder() {
+        if (navigator.share) {
+            navigator.share({
+                title: 'My Spice Jar Order',
+                text: 'I just placed an order at The Spice Jar! Check out their amazing spices.',
+                url: window.location.href,
+            }).then(() => {
+                console.log('Thanks for sharing!');
+            }).catch(console.error);
+        } else {
+            // Fallback for browsers that don't support the Web Share API
+            prompt("Copy this link to share your order:", window.location.href);
+        }
+    }
+</script>
 </body>
 </html>

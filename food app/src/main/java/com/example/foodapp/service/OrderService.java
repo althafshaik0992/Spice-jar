@@ -1,26 +1,21 @@
-// src/main/java/com/example/foodapp/service/OrderService.java
 package com.example.foodapp.service;
 
 import com.example.foodapp.model.Order;
+import com.example.foodapp.model.OrderItem;
 import com.example.foodapp.repository.OrderRepository;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
-
-    private static final BigDecimal TAX_RATE = new BigDecimal("0.08");
 
     private final OrderRepository repo;
 
@@ -28,129 +23,101 @@ public class OrderService {
         this.repo = repo;
     }
 
-    /* ---------------- Basic CRUD ---------------- */
-
     public Order save(Order o) {
         return repo.save(o);
-    }
-
-    public Order findById(Long id) {
-        return repo.findById(id).orElse(null);
     }
 
     public List<Order> findAll() {
         return repo.findAll();
     }
 
-    /* ---------------- Derived totals (when not persisted) ---------------- */
-
-    /** Returns subtotal (we store it in Order.total in your schema). */
-    public BigDecimal getSubtotal(Order o) {
-        return nz(o.getTotal());
+    public Order findById(Long id) {
+        return repo.findById(id).orElse(null);
     }
-
-    /** Returns tax = 8% of subtotal, rounded to 2dp. */
-    public BigDecimal getTax(Order o) {
-        return getSubtotal(o)
-                .multiply(TAX_RATE)
-                .setScale(2, RoundingMode.HALF_UP);
-    }
-
-    /** Returns grandTotal = subtotal + tax, rounded to 2dp. */
-    public BigDecimal getGrandTotal(Order o) {
-        return getSubtotal(o)
-                .add(getTax(o))
-                .setScale(2, RoundingMode.HALF_UP);
-    }
-
-    /** If you ever want to materialize totals into transient fields on the entity before rendering. */
-    public void applyTaxAndGrandTotal(Order o) {
-        // If you later add fields like o.setTax(), o.setGrandTotal(), set them here.
-        // Currently your templates often call order.subtotal/tax/grandTotal getters on the entity.
-        // If those getters don't exist on Order, compute in controller and put into the model.
-    }
-
-    private static BigDecimal nz(BigDecimal v) {
-        return v == null ? BigDecimal.ZERO : v;
-    }
-
-    /* ---------------- Queries / filters ---------------- */
 
     /**
-     * Filter by free text (customerName/address/username/item names) and date range,
-     * then sort in-memory by createdAt.
-     *
-     * REQUIREMENT: OrderRepository must extend JpaSpecificationExecutor<Order>.
+     * Returns the newest order placed by the given user, or null if none.
+     */
+    public Order findLatestForUser(Long userId) {
+        return repo.findTopByUserIdOrderByCreatedAtDesc(userId).orElse(null);
+    }
+
+    /**
+     * Filters and sorts orders for the admin/orders page.
+     * All parameters are optional:
+     *  - q: matches customerName, address, username, or any item.productName (best-effort)
+     *  - from/to: createdAt (inclusive from, inclusive to by day)
+     *  - sort: "dateAsc" | "dateDesc" (default newest first)
      */
     public List<Order> findOrders(String q, LocalDate from, LocalDate to, String sort) {
-        Specification<Order> spec = (root, query, cb) -> {
-            List<Predicate> preds = new ArrayList<>();
+        // load all first (simple + reliable); if you prefer DB-side filtering, we can convert to Specifications later
+        List<Order> list = repo.findAll();
 
-            // Date range on createdAt
-            if (from != null) {
-                preds.add(cb.greaterThanOrEqualTo(root.get("createdAt"), from.atStartOfDay()));
-            }
-            if (to != null) {
-                preds.add(cb.lessThan(root.get("createdAt"), to.plusDays(1).atStartOfDay()));
-            }
+        return list.stream()
+                .filter(o -> {
+                    if (from != null && (o.getCreatedAt() == null || o.getCreatedAt().toLocalDate().isBefore(from))) {
+                        return false;
+                    }
+                    if (to != null && (o.getCreatedAt() == null || o.getCreatedAt().toLocalDate().isAfter(to))) {
+                        return false;
+                    }
+                    if (q != null && !q.isBlank()) {
+                        String needle = q.toLowerCase().trim();
+                        boolean hit =
+                                (o.getCustomerName() != null && o.getCustomerName().toLowerCase().contains(needle)) ||
+                                        (o.getAddress() != null && o.getAddress().toLowerCase().contains(needle)) ||
+                                        (o.getUsername() != null && o.getUsername().toLowerCase().contains(needle));
+                        // item names (guard against nulls)
+                        if (!hit && o.getItems() != null) {
+                            hit = o.getItems().stream().anyMatch(it ->
+                                    it != null &&
+                                            it.getProductName() != null &&
+                                            it.getProductName().toLowerCase().contains(needle)
+                            );
+                        }
+                        return hit;
+                    }
+                    return true;
+                })
+                .sorted(getComparator(sort))
+                .collect(Collectors.toList());
+    }
 
-            // Free text across several fields + item productName
-            if (q != null && !q.isBlank()) {
-                String like = "%" + q.trim().toLowerCase() + "%";
-
-                Join<Object, Object> items = root.join("items", JoinType.LEFT);
-
-                Predicate pCustomer = cb.like(cb.lower(root.get("customerName")), like);
-                Predicate pAddress  = cb.like(cb.lower(root.get("address")), like);
-                Predicate pUser     = cb.like(cb.lower(root.get("username")), like);
-                Predicate pItem     = cb.like(cb.lower(items.get("productName")), like);
-
-                preds.add(cb.or(pCustomer, pAddress, pUser, pItem));
-
-                // Avoid duplicates when joining items
-                query.distinct(true);
-            }
-
-            return preds.isEmpty() ? cb.conjunction() : cb.and(preds.toArray(new Predicate[0]));
-        };
-
-        List<Order> result = repo.findAll(spec);
-
-        // In-memory sort options (you can expand this as needed)
-        if (sort != null) {
-            switch (sort) {
-                case "dateAsc"  -> result.sort(Comparator.comparing(Order::getCreatedAt));
-                case "dateDesc" -> result.sort(Comparator.comparing(Order::getCreatedAt).reversed());
-                default -> { /* no-op */ }
-            }
+    private Comparator<Order> getComparator(String sort) {
+        Comparator<Order> byDateAsc = Comparator.comparing(
+                Order::getCreatedAt,
+                // nulls last so null createdAt doesn’t crash
+                (a, b) -> {
+                    if (Objects.equals(a, b)) return 0;
+                    if (a == null) return 1;
+                    if (b == null) return -1;
+                    return a.compareTo(b);
+                }
+        );
+        if ("dateAsc".equalsIgnoreCase(sort)) {
+            return byDateAsc;
         }
-
-        return result;
+        // default newest first
+        return byDateAsc.reversed();
     }
-
-    /** Latest order for a user (used when orderId is not passed to payment page). */
-    public Order findLatestForUser(Long userId) {
-        Optional<Order> latest = repo.findTopByUserIdOrderByCreatedAtDesc(userId);
-        return latest.orElse(null);
-    }
-
-    /* ---------------- Status updates (safe) ---------------- */
 
     public Order markPaid(Long orderId) {
         Order o = findById(orderId);
-        if (o == null) {
-            throw new IllegalArgumentException("Order not found: " + orderId);
-        }
+        if (o == null) return null;
         o.setStatus("PAID");
-        return save(o);
+        return repo.save(o);
     }
 
-    public Order markPendingCod(Long orderId) {
+    public void markPendingCod(Long orderId) {
         Order o = findById(orderId);
-        if (o == null) {
-            throw new IllegalArgumentException("Order not found: " + orderId);
-        }
+        if (o == null) return;
         o.setStatus("PENDING_COD");
-        return save(o);
+        repo.save(o);
     }
+
+
+
+
+
+
 }
