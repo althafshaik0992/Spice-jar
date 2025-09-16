@@ -1,179 +1,206 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>Payment Success • The Spice Jar</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <meta charset="utf-8" />
+    <title>Payment Successful • The Spice Jar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
-        :root{--green:#388E3C;--accent:#FF5722;--ink:#212121;--bg:#f0f4f0;--card:#fff;--shadow:0 10px 30px rgba(0,0,0,.06)}
-        body{
-            margin: 0;
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--ink);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+        :root{ --green:#22c55e; --accent:#b7410e; --bg:#f6fbf6; }
+        *{ box-sizing: border-box }
+        /* Footer */
+        .site-footer{
+            background:#222;
+            color:#ccc;
+            padding:40px 6%;
+            margin-top:40px;
         }
-        .navbar {
-            background: var(--card);
-            padding: 12px 6%;
-            box-shadow: 0 2px 6px rgba(0,0,0,.05);
+        .footer-container {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            width: 100%;
-            box-sizing: border-box;
+            gap: 30px;
+            margin-bottom: 30px;
         }
-        .brand-logo {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            color: var(--green);
-            font-weight: 700;
-            font-size: 24px;
-            gap: 8px;
-        }
-        .brand-logo video {
-            width: 50px;
-            height: auto;
-        }
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-        .nav-links a {
-            text-decoration: none;
-            color: #333;
-        }
-        .dropdown {
-            position: relative;
-        }
-        .dropdown-toggle {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            color: #333;
-        }
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 100%;
-            background: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border-radius: 6px;
-            overflow: hidden;
-        }
-        .dropdown:hover .dropdown-menu {
-            display: block;
-        }
-        .dropdown-menu a {
-            display: block;
-            padding: 10px 16px;
-            text-decoration: none;
-            color: #333;
-            white-space: nowrap;
-        }
-        .dropdown-menu a:hover {
-            background: #f4f4f4;
-        }
-        .wrap {
-            max-width: 600px;
-            margin: auto;
-            padding: 24px 6%;
-            text-align: center;
+        .footer-column {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            min-width: 220px;
         }
-        .ok {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: var(--green);
+        .footer-column h3 {
             color: #fff;
-            display: inline-grid;
-            place-items: center;
-            font-size: 36px;
-            margin-bottom: 24px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--green);
+            padding-bottom: 8px;
+            display: inline-block;
         }
-        h1 {
-            color: var(--green);
-            font-size: 2.5rem;
-            margin: 0 0 8px;
+        .footer-column p {
+            line-height: 1.6;
+            font-size: 14px;
         }
-        .card {
-            background: var(--card);
-            border-radius: 14px;
-            box-shadow: var(--shadow);
-            padding: 24px;
-            margin-top: 24px;
-            width: 100%;
-            text-align: left;
-        }
-        .card p {
+        .footer-column ul {
+            list-style: none;
+            padding: 0;
             margin: 0;
-            padding: 6px 0;
-            border-bottom: 1px dashed #eee;
-            display: flex;
-            justify-content: space-between;
         }
-        .card p:last-child {
-            border-bottom: none;
-        }
-        .card p b {
-            font-weight: 700;
-        }
-        .links {
-            display: flex;
-            gap: 16px;
-            margin-top: 24px;
-            justify-content: center;
-        }
-        .links a {
+        .footer-column ul li a {
             text-decoration: none;
-            font-weight: 800;
-            border-radius: 999px;
-            padding: 12px 24px;
-            transition: all 0.3s ease;
+            color: #ccc;
+            display: block;
+            padding: 5px 0;
+            font-size: 14px;
+            transition: color 0.3s;
         }
-        .links .view-orders {
-            background: var(--green);
+        .footer-column ul li a:hover {
             color: #fff;
         }
-        .links .view-orders:hover {
-            background: #28a745;
+        .social-links a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 20px;
+            margin-right: 15px;
+            transition: color 0.3s;
         }
-        .links .home {
+        .social-links a:hover {
             color: var(--green);
-            border: 1px solid var(--green);
         }
-        .links .home:hover {
-            background: #e9f2ea;
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            font-size: 14px;
         }
+        .navbar{
+            background:#fff; padding:6px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex; justify-content:space-between; align-items:center;
+            position:sticky; top:0; z-index:1000; height:60px;
+        }
+        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
+        .brand-logo video{width:36px; height:auto; border-radius:4px}
+        .nav-links{display:flex; align-items:center; gap:18px}
+        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
+        .nav-links a:hover{color:var(--green)}
+
+        /* Dropdowns */
+        .dropdown{position:relative}
+        .dropdown-toggle{
+            background:none; border:none; cursor:pointer; font-size:15px; color:#333;
+            display:flex; align-items:center; gap:6px
+        }
+        .dropdown-menu{
+            display:none; position:absolute; right:0; top:100%;
+            background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
+            border-radius:6px; overflow:hidden; min-width:180px
+        }
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a, .dropdown-menu span{
+            display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap
+        }
+        .dropdown-menu a:hover{background:#f4f4f4}
+        /* Cart count badge style */
+        .cart-icon-container {
+            position: relative;
+            display: inline-block;
+        }
+        .cart-count-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            text-align: center;
+        }
+
+        /* Responsive footer */
+        @media (max-width: 768px) {
+            .footer-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .footer-column h3 {
+                border-bottom: none;
+                padding-bottom: 0;
+                margin-bottom: 10px;
+            }
+            .footer-column {
+                margin-bottom: 20px;
+            }
+        }
+        body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial; background:var(--bg); color:#111 }
+
+        .wrap{max-width:900px; margin:26px auto; padding:0 6%}
+        .card{background:#fff; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.08); padding:22px}
+
+        .hero{display:flex; align-items:center; gap:14px; margin:10px 0 12px}
+        .ok{width:54px; height:54px; border-radius:50%; background:var(--green); color:#fff; display:grid; place-items:center; font-size:22px}
+        h1{margin:0; font-size:28px}
+
+        .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:10px}
+        @media (max-width: 800px){ .grid{grid-template-columns:1fr} }
+
+        .info{background:#fafafa; border:1px solid #eee; border-radius:12px; padding:14px}
+        .label{font-size:12px; letter-spacing:.04em; color:#64748b; font-weight:800}
+        .val{font-weight:800; margin-top:6px}
+
+        table{width:100%; border-collapse:collapse; margin-top:12px}
+        th,td{padding:12px; border-bottom:1px solid #eee; text-align:left}
+        thead th{background:#f9faf9; font-weight:800}
+
+        .totals{margin-top:14px; background:#fff; border-radius:12px; border:1px solid #eee}
+        .row{display:flex; justify-content:space-between; padding:10px 14px}
+        .row.total{font-weight:900}
+
+        .actions{margin-top:18px; display:flex; gap:10px; flex-wrap:wrap}
+        .btn{display:inline-flex; align-items:center; gap:10px; padding:12px 16px; border-radius:12px; text-decoration:none; font-weight:800; background:#111; color:#fff}
+        .btn.alt{background:var(--green)}
+
     </style>
 </head>
 <body>
+
+<!-- Navbar -->
 <nav class="navbar">
     <a href="/" class="brand-logo">
-        <video src="../static/images/spice jar (1).mp4" autoplay muted loop playsinline style="width: 50px; height: auto;"></video>
+        <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
         <span>SpiceJar</span>
     </a>
+
     <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="/menu">Menu</a>
-        <a href="/about-us">About Us</a>
-        <a href="/cart">Cart</a>
+        <a th:href="@{/menu}">Menu</a>
+        <a th:href="@{/about}">About Us</a>
+        <a class="nav-link" href="#"  th:href="@{/cart/view}" >
+            <div class="cart-icon-container">
+                <i class="fas fa-shopping-cart" style="font-size:24px"></i>
+                <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
+            </div>
+        </a>
+        <a th:href="@{/contact}">Contact Us</a>
+
+        <!-- Categories -->
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fa-solid fa-list"></i> Categories
+            </button>
+            <div class="dropdown-menu">
+                <a th:each="c : ${categories}"
+                   th:href="@{/category/{id}(id=${c.id})}"
+                   th:text="${c.name}">Category</a>
+            </div>
+        </div>
+
+        <!-- Account -->
         <div class="dropdown">
             <button class="dropdown-toggle">
                 <i class="fas fa-user"></i> Account
@@ -181,28 +208,124 @@
             <div class="dropdown-menu">
                 <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+
+                <span th:if="${session.USER != null}">
+          Welcome, <span th:text="${session.USER.firstName}">user</span>
+        </span>
+                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
+                <a th:if="${session.USER != null}" th:href="@{/profile/view}">My Profile</a>
+                <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
             </div>
         </div>
     </div>
 </nav>
 
 <div class="wrap">
-    <div class="ok"><i class="fa-solid fa-check"></i></div>
-    <h1>Payment Successful</h1>
-    <p>Thanks! Your payment was processed.</p>
-
-
     <div class="card">
-        <p><b>Transaction:</b> <span th:text="${payment.txnId}">TXN-...</span></p>
-        <p><b>Amount:</b> <span th:text="${#numbers.formatDecimal(payment.amount,1,'COMMA',2,'POINT')}">$0.00</span> <span th:text="${payment.currency}">USD</span></p>
-        <p><b>Status:</b> <span th:text="${payment.status}">SUCCEEDED</span></p>
-        <p><b>Order #</b> <span th:text="${order.id}">0</span></p>
-    </div>
+        <div class="hero">
+            <div class="ok"><i class="fa-solid fa-check"></i></div>
+            <div>
+                <h1>Payment successful</h1>
+                <div style="color:#475569">Thanks! Your order has been confirmed.</div>
+            </div>
+        </div>
 
-    <div class="links">
-        <a th:href="@{/orders}" class="view-orders"><i class="fa-solid fa-receipt"></i> View My Orders</a>
-        <a th:href="@{/}" class="home"><i class="fa-solid fa-house"></i> Home</a>
+        <!-- Top info -->
+        <div class="grid">
+            <div class="info">
+                <div class="label">ORDER</div>
+                <div class="val">#<span th:text="${order.id}">123</span></div>
+            </div>
+            <div class="info">
+                <div class="label">PAID ON</div>
+                <div class="val" th:text="${#temporals.format(order.createdAt, 'MMM d, yyyy • h:mm a')}">Aug 29, 2025</div>
+            </div>
+            <div class="info">
+                <div class="label">CUSTOMER</div>
+                <div class="val" th:text="${order.customerName}">Customer Name</div>
+            </div>
+            <div class="info">
+                <div class="label">STATUS</div>
+                <div class="val" th:text="${payment != null ? payment.status : 'PAID'}">PAID</div>
+            </div>
+        </div>
+
+        <!-- Items -->
+        <table>
+            <thead>
+            <tr>
+                <th>Item</th>
+                <th style="width:90px;">Qty</th>
+                <th style="width:120px;">Price</th>
+                <th style="width:140px;">Line Total</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="it : ${order.items}">
+                <td th:text="${it.productName}">Spice</td>
+                <td th:text="${it.quantity}">1</td>
+                <td th:text="${#numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">$0.00</td>
+                <td th:text="${#numbers.formatDecimal(it.price.multiply(new java.math.BigDecimal(it.quantity)),1,'COMMA',2,'POINT')}">$0.00</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="totals">
+            <div class="row">
+                <div>Subtotal</div>
+                <div th:text="${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">$0.00</div>
+            </div>
+            <div class="row">
+                <div>Tax (8%)</div>
+                <div th:text="${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">$0.00</div>
+            </div>
+            <div class="row total">
+                <div>Total Paid</div>
+                <div th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">$0.00</div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <a class="btn alt" th:href="@{/orders}">
+                <i class="fa-solid fa-receipt"></i> View my orders
+            </a>
+            <a class="btn" th:href="@{/}">
+                <i class="fa-solid fa-house"></i> Back to home
+            </a>
+        </div>
     </div>
 </div>
+
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-column">
+            <h3>About Spice Jar</h3>
+            <p>Bringing the world's finest spices to your kitchen. Quality, aroma, and flavor guaranteed in every jar.</p>
+        </div>
+        <div class="footer-column">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a th:href="@{/menu}">Menu</a></li>
+                <li><a th:href="@{/about}">About Us</a></li>
+                <li><a th:href="@{/contact}">Contact</a></li>
+                <li><a href="#">FAQ</a></li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h3>Connect With Us</h3>
+            <div class="social-links">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 The Spice Jar. All rights reserved.</p>
+    </div>
+</footer>
 </body>
 </html>

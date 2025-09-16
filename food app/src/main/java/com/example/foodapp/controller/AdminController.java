@@ -135,25 +135,51 @@ public class AdminController {
         return "redirect:/admin/catalog";
     }
 
-    /* -------------------- ORDERS -------------------- */
+    @PostMapping("/products/update")
+    public String updateProduct(@RequestParam Long id,
+                                @RequestParam String name,
+                                @RequestParam(required = false) String description,
+                                @RequestParam BigDecimal price,
+                                @RequestParam Long categoryId) {
 
+        // Find the existing product by ID
+        Product product = productService.findById(id);
+
+        // Check if the product exists before attempting to update
+        if (product == null) {
+            // You could redirect with an error message, but throwing an exception is clear for a developer
+            throw new IllegalArgumentException("Invalid product ID: " + id);
+        }
+
+        // Find the category
+        Category cat = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid category ID: " + categoryId));
+
+        // Update fields
+        product.setName(name);
+        product.setDescription(description);
+        product.setPrice(price);
+        product.setCategory(cat);
+        // Note: Image is not updated via this form to keep the process simple.
+
+        productService.save(product);
+        return "redirect:/admin/catalog";
+    }
+
+
+
+    /* -------------------- ORDERS -------------------- */
     @GetMapping("/orders")
     public String orders(@RequestParam(required = false) String q,
                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                          @RequestParam(required = false) String sort,
                          Model m) {
-
-        // Use the new service method that handles both finding and filtering/sorting
-        List<Order> filteredOrders = orderService.findOrders(q, from, to, sort);
-        m.addAttribute("orders", filteredOrders);
-
-        // Keep current params so your form can reflect them
+        m.addAttribute("orders", orderService.findOrders(q, from, to, sort));
         m.addAttribute("q", q);
         m.addAttribute("from", from);
         m.addAttribute("to", to);
         m.addAttribute("sort", sort);
-
         return "admin/orders";
     }
 

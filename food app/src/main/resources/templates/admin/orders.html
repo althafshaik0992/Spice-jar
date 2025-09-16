@@ -120,7 +120,6 @@
         <th style="width:110px;">SubTotal</th>
         <th style="width:110px;">Tax</th>
         <th style="width:110px;">Total</th>
-
       </tr>
       </thead>
       <tbody>
@@ -128,13 +127,11 @@
         <td data-label="Order" th:text="${o.id}">1</td>
         <td data-label="Placed On" th:text="${#temporals.format(o.createdAt, 'MMM d, yyyy • h:mm a')}">Aug 29, 2025 • 9:45 AM</td>
         <td data-label="Customer" th:text="${o.customerName}">John Doe</td>
-        <td data-label="Address" th:text="${o.address}">123 Main St…</td>
+        <td data-label="Address" th:text="${o.street + ', ' + o.city + ', ' + o.state + ' ' + o.zip}">123 Main St…</td>
         <td data-label="Items" th:text="${#lists.size(o.items)}">1</td>
         <td data-label="SubTotal" th:text="${#numbers.formatDecimal(o.subtotal,1,'COMMA',2,'POINT')}">25.00</td>
         <td data-label="Tax" th:text="${#numbers.formatDecimal(o.tax,1,'COMMA',2,'POINT')}"></td>
         <td data-label="Total" th:text="${#numbers.formatDecimal(o.grandTotal,1,'COMMA',2,'POINT')}">
-
-
       </tr>
 
       <tr th:if="${#lists.isEmpty(orders)}">

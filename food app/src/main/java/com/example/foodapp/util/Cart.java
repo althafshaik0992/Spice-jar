@@ -2,71 +2,84 @@ package com.example.foodapp.util;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Cart {
 
-    private static final BigDecimal TAX_RATE = new BigDecimal("0.08"); // 8%
-    private final Map<Long, CartItem> items = new LinkedHashMap<>();
+    private List<CartItem> items = new ArrayList<>();
+    private List<CartItem> savedForLater = new ArrayList<>();
 
+    // === getters ===
     public List<CartItem> getItems() {
-        return new ArrayList<>(items.values());
+        return items;
     }
 
-    public boolean isEmpty() {
-        return items == null || items.isEmpty();
+    public List<CartItem> getSavedForLater() {
+        return savedForLater;
     }
 
-    public void add(CartItem item) {
-        CartItem existing = items.get(item.getProductId());
-        if (existing == null) {
-            items.put(item.getProductId(), item);
+    // === cart operations ===
+    public void addItem(CartItem item) {
+        // merge quantity if product already in cart
+        var existing = items.stream()
+                .filter(i -> i.getProductId().equals(item.getProductId()))
+                .findFirst();
+        if (existing.isPresent()) {
+            existing.get().setQty(existing.get().getQty() + item.getQty());
         } else {
-            existing.setQty(existing.getQty() + item.getQty());
+            items.add(item);
         }
     }
-
-    public void update(Long productId, int qty) {
-        if (!items.containsKey(productId)) return;
-        if (qty <= 0) {
-            items.remove(productId);
-        } else {
-            items.get(productId).setQty(qty);
-        }
+    public void addItem(Long productId, String name, int qty, BigDecimal price, String imageUrl) {
+        addItem(new CartItem(productId, name, qty, price, imageUrl));
     }
 
-    public void remove(Long productId) {
-        items.remove(productId);
+    public void removeItem(Long productId) {
+        items.removeIf(i -> i.getProductId().equals(productId));
+    }
+
+    public void addToSavedForLater(CartItem item) {
+        savedForLater.add(item);
     }
 
     public void clear() {
         items.clear();
+        savedForLater.clear();
     }
 
-    /** Subtotal (backward compatible with your existing templates) */
-    public BigDecimal getTotal() {
-        return getSubtotal();
+    public int size(){
+       return items.size();
     }
 
-    /** Subtotal of all items */
+    public boolean isEmpty() {
+        return items.isEmpty();
+    }
+
+    // === totals ===
     public BigDecimal getSubtotal() {
-        return items.values().stream()
-                .map(CartItem::getSubtotal) // price * qty inside CartItem
+        return items.stream()
+                .map(CartItem::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.HALF_UP);
     }
 
-    /** Tax amount = subtotal * 8% */
     public BigDecimal getTax() {
         return getSubtotal()
-                .multiply(TAX_RATE)
+                .multiply(new BigDecimal("0.08"))
                 .setScale(2, RoundingMode.HALF_UP);
     }
 
-    /** Grand total = subtotal + tax */
     public BigDecimal getGrandTotal() {
         return getSubtotal()
                 .add(getTax())
                 .setScale(2, RoundingMode.HALF_UP);
+    }
+
+
+    public int getTotalQuantity() {
+        return items.stream()
+                .mapToInt(CartItem::getQty)
+                .sum();
     }
 }

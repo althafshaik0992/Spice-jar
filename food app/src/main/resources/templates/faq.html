@@ -2,17 +2,99 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <title>My Profile • The Spice Jar</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>FAQ • The Spice Jar</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        :root { --green:#218838; --accent:#b7410e; --bg:#f6fbf6; --card:#fff; --muted:#6b7280; }
-        body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:var(--bg);color:#111}
-        .navbar{background:#fff;padding:10px 6%;box-shadow:0 2px 6px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000}
-        .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--green);font-weight:800}
-        .brand video{width:36px;border-radius:6px}
-        .nav a{color:#333;text-decoration:none;margin-left:16px;font-weight:600}
-        .nav a:hover{color:var(--green)}
+        :root { --green:#218838; --accent:#b7410e; --dark:#111; }
+        * { box-sizing: border-box; }
+        body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; background:#f0f8f0; color:#222; }
+
+        /* Navbar */
+        .navbar{
+            background:#fff; padding:6px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex; justify-content:space-between; align-items:center;
+            position:sticky; top:0; z-index:1000; height:60px;
+        }
+        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
+        .brand-logo video{width:36px; height:auto; border-radius:4px}
+        .nav-links{display:flex; align-items:center; gap:18px}
+        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
+        .nav-links a:hover{color:var(--green)}
+
+        /* Dropdowns */
+        .dropdown{position:relative}
+        .dropdown-toggle{
+            background:none; border:none; cursor:pointer; font-size:15px; color:#333;
+            display:flex; align-items:center; gap:6px
+        }
+        .dropdown-menu{
+            display:none; position:absolute; right:0; top:100%;
+            background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
+            border-radius:6px; overflow:hidden; min-width:180px
+        }
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a, .dropdown-menu span{
+            display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap
+        }
+        .dropdown-menu a:hover{background:#f4f4f4}
+
+        /* FAQ Section */
+        .faq-section {
+            padding: 40px 6%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-section h1 {
+            text-align: center;
+            color: var(--green);
+            margin-bottom: 30px;
+        }
+
+        .faq-item {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.08);
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 24px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .faq-question .icon {
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-question .icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            background: #f7faf7;
+            padding: 0 24px;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 200px; /* Adjust as needed */
+            padding: 16px 24px;
+        }
+
         /* Footer */
         .site-footer{
             background:#222;
@@ -76,7 +158,6 @@
             font-size: 14px;
         }
 
-        /* Responsive footer */
         @media (max-width: 768px) {
             .footer-container {
                 flex-direction: column;
@@ -91,34 +172,7 @@
                 margin-bottom: 20px;
             }
         }
-        .navbar{
-            background:#fff; padding:6px 6%;
-            box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex; justify-content:space-between; align-items:center;
-            position:sticky; top:0; z-index:1000; height:60px;
-        }
-        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
-        .brand-logo video{width:36px; height:auto; border-radius:4px}
-        .nav-links{display:flex; align-items:center; gap:18px}
-        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
-        .nav-links a:hover{color:var(--green)}
 
-        /* Dropdowns */
-        .dropdown{position:relative}
-        .dropdown-toggle{
-            background:none; border:none; cursor:pointer; font-size:15px; color:#333;
-            display:flex; align-items:center; gap:6px
-        }
-        .dropdown-menu{
-            display:none; position:absolute; right:0; top:100%;
-            background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
-            border-radius:6px; overflow:hidden; min-width:180px
-        }
-        .dropdown:hover .dropdown-menu{display:block}
-        .dropdown-menu a, .dropdown-menu span{
-            display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap
-        }
-        .dropdown-menu a:hover{background:#f4f4f4}
         /* Cart count badge style */
         .cart-icon-container {
             position: relative;
@@ -141,25 +195,6 @@
             height: 20px;
             text-align: center;
         }
-
-        .wrap{max-width:920px;margin:24px auto;padding:0 6%}
-        .cover{background:linear-gradient(135deg,#22c55e22,#b7410e22), url('/images/spices-about.jpeg') center/cover; height:200px; border-radius:16px}
-        .card{background:var(--card);border-radius:14px;box-shadow:0 10px 24px rgba(0,0,0,.07);padding:20px;margin-top:-64px;position:relative}
-
-        .top{display:flex;gap:18px;align-items:center}
-        .avatar{width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 6px 16px rgba(0,0,0,.12);background:#eef2ef}
-        .placeholder{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;background:#eef2ef;border:3px solid #fff;box-shadow:0 6px 16px rgba(0,0,0,.12);color:#7a7a7a;font-size:42px}
-
-        .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
-        .field{background:#fafafa;border:1px solid #eee;border-radius:10px;padding:12px}
-        .label{font-weight:700;color:#444;margin-bottom:4px}
-        .value{color:#111}
-        @media (max-width: 760px){ .grid{grid-template-columns:1fr} }
-        .actions{margin-top:16px}
-
-        .btn{display:inline-flex;align-items:center;gap:8px;border:none;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;text-decoration:none}
-        .btn-primary{background:var(--green);color:#fff}
-        .btn-primary:hover{background:var(--accent)}
     </style>
 </head>
 <body>
@@ -181,6 +216,7 @@
             </div>
         </a>
         <a th:href="@{/contact}">Contact Us</a>
+        <a th:href="@{/faq}">FAQ</a>
 
         <!-- Categories -->
         <div class="dropdown">
@@ -214,45 +250,60 @@
     </div>
 </nav>
 
-
-<div class="wrap">
-    <div class="cover"></div>
-
-    <section class="card">
-        <div class="top">
-            <img th:if="${user.avatarUrl != null and !#strings.isEmpty(user.avatarUrl)}"
-                 th:src="@{${user.avatarUrl}}" alt="Avatar" class="avatar"/>
-            <div th:if="${user.avatarUrl == null or #strings.isEmpty(user.avatarUrl)}" class="placeholder">
-                <i class="fa-regular fa-user"></i>
+<section class="faq-section">
+    <h1>Frequently Asked Questions</h1>
+    <div class="faq-list">
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>Where do you source your spices?</span>
+                <i class="fas fa-chevron-down icon"></i>
             </div>
-            <div>
-                <h2 style="margin:0" th:text="${user.firstName + ' ' + user.lastName}">Your Name</h2>
-                <div style="color:#6b7280" th:text="${user.email}">you@example.com</div>
+            <div class="faq-answer">
+                <p>We work directly with sustainable farms and cooperatives around the world to ensure the highest quality and freshness. We're committed to fair trade practices and ethical sourcing.</p>
             </div>
         </div>
 
-        <div class="grid">
-            <div class="field">
-                <div class="label">Phone</div>
-                <div class="value" th:text="${user.phone}">—</div>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>Are your spices organic?</span>
+                <i class="fas fa-chevron-down icon"></i>
             </div>
-            <div class="field">
-                <div class="label">Username</div>
-                <div class="value" th:text="${user.username}">—</div>
-            </div>
-            <div class="field" style="grid-column:1 / -1">
-                <div class="label">Address</div>
-                <div class="value" th:text="${user.address}">—</div>
+            <div class="faq-answer">
+                <p>Many of our spices are certified organic. You can check each product's description for specific details on its sourcing and certification.</p>
             </div>
         </div>
 
-        <div class="actions">
-            <a class="btn btn-primary" th:href="@{/profile}">
-                <i class="fa-solid fa-pen"></i> Edit Profile
-            </a>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>What is your shipping policy?</span>
+                <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <p>We offer standard shipping (3-5 business days) and expedited shipping (1-2 business days). Shipping costs are calculated at checkout based on your order total and location.</p>
+            </div>
         </div>
-    </section>
-</div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>Do you accept returns?</span>
+                <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <p>Yes, we accept returns on unopened and unused products within 30 days of purchase. Please contact our support team to initiate a return request.</p>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>How can I contact customer support?</span>
+                <i class="fas fa-chevron-down icon"></i>
+            </div>
+            <div class="faq-answer">
+                <p>You can reach us through the "Contact Us" form on our website, or by emailing us at support@thespicejar.com. We typically respond within 24-48 hours.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
 <footer class="site-footer">
     <div class="footer-container">
@@ -266,7 +317,7 @@
                 <li><a th:href="@{/menu}">Menu</a></li>
                 <li><a th:href="@{/about}">About Us</a></li>
                 <li><a th:href="@{/contact}">Contact</a></li>
-                <li><a href="#">FAQ</a></li>
+                <li><a th:href="@{/faq}">FAQ</a></li>
             </ul>
         </div>
         <div class="footer-column">
@@ -283,5 +334,15 @@
         <p>&copy; 2025 The Spice Jar. All rights reserved.</p>
     </div>
 </footer>
+
+<script>
+    document.querySelectorAll('.faq-question').forEach(item => {
+        item.addEventListener('click', event => {
+            const faqItem = item.closest('.faq-item');
+            faqItem.classList.toggle('active');
+        });
+    });
+</script>
+
 </body>
 </html>

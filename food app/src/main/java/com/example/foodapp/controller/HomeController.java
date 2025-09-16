@@ -4,6 +4,9 @@ import com.example.foodapp.model.ChatProductDTO;
 import com.example.foodapp.model.Product;
 import com.example.foodapp.service.CategoryService;
 import com.example.foodapp.service.ProductService;
+import com.example.foodapp.util.Cart;
+import com.example.foodapp.util.CartUtils;
+import com.example.foodapp.util.GlobalData;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
@@ -30,7 +34,7 @@ public class HomeController {
 
 
 
-   private ChatProductDTO chatProduct;
+    private ChatProductDTO chatProduct;
 
     private final CategoryService categoryService;
 
@@ -52,11 +56,16 @@ public class HomeController {
 
 
     @GetMapping("/")
-    public String index(Model m) {
+    public String index(Model m, HttpSession session) {
         m.addAttribute("products", productService.findAll());
+        var cart = session.getAttribute("CART");
+        if (cart != null) {
+            m.addAttribute("cartCount", CartUtils.getCartTotalQuantity((com.example.foodapp.util.Cart) cart));
+        } else {
+            m.addAttribute("cartCount", 0);
+        }
         return "index";
     }
-
 
 
 
@@ -82,7 +91,7 @@ public class HomeController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    public <chatProduct> Map<String, Object> chat(@RequestBody Map<String, String> body, HttpSession session) {
+    public Map<String, Object> chat(@RequestBody Map<String, String> body, HttpSession session) {
         String msg = (body.getOrDefault("message", "") + "").trim();
         Map<String, Object> out = new HashMap<>();
 
@@ -182,6 +191,8 @@ public class HomeController {
     ) {
 //        var user = session.getAttribute("USER");
 //        if (user == null) return "redirect:/login";
+        Cart cart = (Cart) session.getAttribute("CART");
+        int cartCount = (cart != null) ? cart.getTotalQuantity() : 0;
         m.addAttribute("products", productService.filter(q, min, max, categoryId, sort));
         m.addAttribute("categories", categoryService.findAll());
 
@@ -191,15 +202,10 @@ public class HomeController {
         m.addAttribute("max", max);
         m.addAttribute("categoryId", categoryId);
         m.addAttribute("sort", sort);
+        m.addAttribute("cartCount", cartCount);
 
         return "menu"; // your menu.html
     }
 
 
 }
-
-
-
-
-
-

@@ -2,283 +2,138 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>Pay • The Spice Jar</title>
-    <script src="https://js.stripe.com/v3/"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <title>Choose Payment • The Spice Jar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <!-- CSRF (used by fetch POSTs) -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
-        :root{--green:#218838;--accent:#b7410e;--bg:#f6fbf6;--card:#fff;--shadow:0 10px 30px rgba(0,0,0,.06)}
-        *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:var(--bg); display: flex; flex-direction: column; align-items: center; min-height: 100vh;}
-        .navbar{background:#fff;padding:10px 6%;box-shadow:0 2px 6px rgba(0,0,0,.05);display:flex;justify-content:space-between;align-items:center;width: 100%;}
-        .brand{display:flex;gap:10px;align-items:center;color:var(--green);text-decoration:none;font-weight:800}
-        .brand video{width:36px;border-radius:6px}
-        .wrap{max-width:1100px;margin:24px auto;padding:0 6%; width: 100%;}
-        .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:22px} @media(max-width:980px){.grid{grid-template-columns:1fr}}
-        .card{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:18px;width: 100%;}
-        h1{margin:0 0 14px;color:var(--green)}
-        .method{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid #e5e7eb;border-radius:12px;cursor:pointer;background:#fff;transition: all 0.2s ease;}
-        .method input{accent-color:var(--green)}
-        .method.selected {
-            border-color: var(--green);
-            box-shadow: 0 0 0 2px rgba(33, 136, 56, 0.2);
-        }
-        .hint{font-size:12px;color:#64748b;margin-top:6px}
-        .section{display:none;margin-top:14px}
-        .section.active{display:block}
+        body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;background:#f6fbf6;margin:0;color:#111}
+        .bar{position:sticky;top:0;background:#fff;border-bottom:1px solid #e6ece7;padding:10px 6%;display:flex;gap:16px;align-items:center;justify-content:space-between}
+        .brand{display:flex;align-items:center;gap:8px;color:#218838;text-decoration:none;font-weight:900}
+        main{max-width:1100px;margin:22px auto;padding:0 6%}
+        h1{margin:0 0 8px;color:#218838}
+        .grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+        @media(max-width:980px){.grid{grid-template-columns:1fr}}
+        .card{background:#fff;border:1px solid #e6ece7;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.06);padding:16px}
+        .option{display:flex;align-items:center;justify-content:space-between;border:1px solid #e6ece7;border-radius:12px;padding:14px;margin-top:10px}
+        .left{display:flex;gap:12px;align-items:center}
+        .icon{width:44px;height:44px;display:grid;place-items:center;border-radius:10px;background:#eef8f0;color:#218838;font-size:20px}
+        .btn{border:none;cursor:pointer;border-radius:10px;padding:10px 14px;font-weight:800}
+        .btn.primary{background:#218838;color:#fff}
+        .btn.ghost{background:#fff;border:1px solid #dcdcdc}
         .row{display:flex;justify-content:space-between;margin:6px 0}
-        .total{font-weight:900;font-size:18px}
-        .btn{display:inline-flex;gap:10px;align-items:center;border:none;border-radius:12px;padding:12px 16px;font-weight:800;background:var(--green);color:#fff;cursor:pointer;transition: background-color 0.3s ease;}
-        .btn:hover{background:var(--accent)}
-        #payBtn{width:100%;justify-content:center;margin-top:14px}
-        #card-error{color:#b7410e;margin-top:8px;font-size:13px}
-        /* Style for Stripe Elements and payment request button */
-        #card-element, #payment-request-button {
-            padding:12px;
-            border:1px solid #e5e7eb;
-            border-radius:10px;
-            background-color: white;
-            transition: box-shadow 150ms ease;
-        }
-        #payment-request-button {
-            width: 100%;
-            height: 40px;
-            display: none; /* Hidden by default until checked by Stripe */
-        }
-        .message-box {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            background-color: var(--accent);
-            color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            font-weight: bold;
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: all 0.5s ease-in-out;
-            z-index: 2000;
-        }
-        .message-box.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .total{font-weight:900}
+        .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#111;color:#fff;padding:10px 14px;border-radius:10px;z-index:9999}
     </style>
 </head>
 <body>
-<nav class="navbar">
+
+<nav class="bar">
     <a th:href="@{/}" class="brand">
-        <video th:src="@{/images/Spice-Jar.mp4}" autoplay muted loop playsinline></video>
+        <video th:src="@{/images/Spice-Jar.mp4}" autoplay muted loop playsinline style="height:32px;border-radius:6px"></video>
         <span>SpiceJar</span>
     </a>
+    <div style="display:flex;gap:14px;align-items:center">
+        <a th:href="@{/}">Home</a>
+        <a th:href="@{/products}">Products</a>
+        <a th:href="@{/cart/view}">Cart</a>
+        <a th:href="@{/orders}">My Orders</a>
+    </div>
 </nav>
 
-<main class="wrap">
-    <h1>Complete your payment</h1>
-    <div class="grid">
-        <!-- Left: methods -->
-        <section class="card">
-            <input type="hidden" id="orderId" th:value="${order.id}"/>
-            <!-- The final success URL on your server -->
-            <input type="hidden" id="successUrl" th:value="@{/payment/success(orderId=${order.id})}"/>
-            <!-- Placeholder for your Stripe publishable key from the server -->
-            <input type="hidden" id="stripePublishableKey" th:value="${stripePublishableKey}"/>
+<main>
+    <h1>Choose your payment method</h1>
+    <p style="color:#64748b;margin:6px 0 14px">Select a secure option to complete your order.</p>
 
-            <label class="method selected" data-method="STRIPE_CARD">
-                <input type="radio" name="method" value="STRIPE_CARD" checked/>
-                <i class="fa-brands fa-cc-stripe"></i>&nbsp; Credit / Debit Card
-            </label>
-            <div class="hint">Visa, Mastercard, Amex, etc.</div>
-
-            <label class="method" data-method="PAYPAL">
-                <input type="radio" name="method" value="PAYPAL"/>
-                <i class="fa-brands fa-paypal"></i>&nbsp; PayPal
-            </label>
-
-            <!-- A place for the Payment Request Button (Apple Pay / Google Pay) -->
-            <label class="method" id="digitalWalletMethod" style="display: none;" data-method="DIGITAL_WALLET">
-                <input type="radio" name="method" value="DIGITAL_WALLET"/>
-                <i class="fa-solid fa-wallet"></i>&nbsp; Digital Wallet
-            </label>
-
-            <!-- Card Section -->
-            <div id="stripeCardSec" class="section active">
-                <div id="card-element"></div>
-                <div id="card-error"></div>
+    <section class="grid">
+        <!-- left -->
+        <div class="card">
+            <!-- Stripe Checkout -->
+            <div class="option">
+                <div class="left">
+                    <div class="icon"><i class="fa-solid fa-credit-card"></i></div>
+                    <div>
+                        <div style="font-weight:800">Credit / Debit Card</div>
+                        <div style="color:#6b7280;font-size:14px">Secure payment via Stripe Checkout.</div>
+                    </div>
+                </div>
+                <button id="btn-card" class="btn primary">Pay with card</button>
             </div>
 
-            <!-- Digital Wallet Section -->
-            <div id="digitalWalletSec" class="section">
-                <div id="payment-request-button"></div>
+            <!-- PayPal (server redirect) -->
+            <div class="option">
+                <div class="left">
+                    <div class="icon"><i class="fa-brands fa-paypal"></i></div>
+                    <div>
+                        <div style="font-weight:800">PayPal</div>
+                        <div style="color:#6b7280;font-size:14px">You’ll be redirected to PayPal to approve.</div>
+                    </div>
+                </div>
+                <button id="btn-paypal" class="btn ghost">Continue with PayPal</button>
             </div>
+        </div>
 
-            <!-- PayPal Section -->
-            <div id="paypalSec" class="section">
-                <p>We'll redirect you to PayPal to approve the payment.</p>
-            </div>
-
-            <button id="payBtn" class="btn"><i class="fa-solid fa-shield"></i> Pay Now</button>
-        </section>
-
-        <!-- Right: summary -->
+        <!-- right -->
         <aside class="card">
-            <h3 style="margin:0 0 10px">Order Summary</h3>
-            <div class="row"><span>Items</span><span th:text="${#lists.size(order.items)}">0</span></div>
+            <h3 style="margin:0 0 8px">Shipping address</h3>
+            <div class="row"><span style="color:#6b7280">Name</span><span th:text="${order.customerName}">—</span></div>
+            <div class="row"><span style="color:#6b7280">Street</span><span th:text="${order.street}">—</span></div>
+            <div class="row"><span style="color:#6b7280">City</span><span th:text="${order.city}">—</span></div>
+            <div class="row"><span style="color:#6b7280">State</span><span th:text="${order.state}">—</span></div>
+            <div class="row"><span style="color:#6b7280">ZIP</span><span th:text="${order.zip}">—</span></div>
+            <div class="row"><span style="color:#6b7280">Country</span><span th:text="${order.country}">—</span></div>
+            <div class="row"><span style="color:#6b7280">Phone</span><span th:text="${order.phone}">—</span></div>
+            <div class="row"><span style="color:#6b7280">Email</span><span th:text="${order.email}">—</span></div>
+            <hr style="border:none;border-top:1px solid #eee;margin:10px 0">
             <div class="row"><span>Subtotal</span><span th:text="${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">$0.00</span></div>
             <div class="row"><span>Tax (8%)</span><span th:text="${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">$0.00</span></div>
             <div class="row total"><span>Total</span><span th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">$0.00</span></div>
         </aside>
-    </div>
+    </section>
 </main>
-<div id="message-box" class="message-box"></div>
 
 <script th:inline="javascript">
-    const orderId = /*[[${order.id}]]*/ 0;
-    const orderTotal = /*[[${order.grandTotal}]]*/ 0;
-    const successUrl = document.getElementById('successUrl').value;
-    const stripePublishableKey = document.getElementById('stripePublishableKey').value;
+    const ORDER_ID = /*[[${order.id}]]*/ 0;
 
-    // UI toggling logic
-    const sections = {
-        STRIPE_CARD: document.getElementById('stripeCardSec'),
-        PAYPAL: document.getElementById('paypalSec'),
-        DIGITAL_WALLET: document.getElementById('digitalWalletSec')
-    };
-    const paymentMethods = document.querySelectorAll('input[name="method"]');
-    paymentMethods.forEach(r => {
-        r.addEventListener('change', () => {
-            document.querySelectorAll('.method').forEach(label => label.classList.remove('selected'));
-            r.parentElement.classList.add('selected');
-            Object.values(sections).forEach(s => s.classList.remove('active'));
-            const selectedSection = sections[r.value];
-            if (selectedSection) {
-                selectedSection.classList.add('active');
-            }
-        });
+    const CSRF       = document.querySelector('meta[name="_csrf"]')?.content || '';
+    const CSRF_HEADER= document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+    const withCsrf   = (h={}) => ({...h, [CSRF_HEADER]: CSRF, 'Content-Type':'application/json'});
+
+    function toast(msg, ok=true){
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.style.background = ok ? '#218838' : '#b00020';
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(()=>t.remove(), 1600);
+    }
+
+    // PayPal -> server creates order and returns approvalUrl
+    document.getElementById('btn-paypal').addEventListener('click', async () => {
+        try{
+            const r = await fetch('/payment/paypal/start', {method:'POST', headers:withCsrf(), body: JSON.stringify({orderId: ORDER_ID})});
+            if(!r.ok) throw new Error();
+            const data = await r.json();
+            if(!data || !data.approvalUrl){ throw new Error(); }
+            location.href = data.approvalUrl; // go to PayPal
+        }catch(e){ toast('PayPal unavailable', false); }
     });
 
-    // Message box helper
-    const messageBox = document.getElementById('message-box');
-    function showMessage(message, duration = 4000) {
-        messageBox.textContent = message;
-        messageBox.classList.add('show');
-        setTimeout(() => {
-            messageBox.classList.remove('show');
-        }, duration);
-    }
-
-    // Stripe Integration
-    let stripe, elements;
-    let stripeClientSecret;
-    let cardElement;
-
-    // Initialize Stripe and set up the card element and digital wallet button
-    async function initStripe() {
-        if (!stripePublishableKey) {
-            showMessage("Stripe is not configured. Please provide a publishable key on the server.");
-            return;
-        }
-
-        stripe = Stripe(stripePublishableKey);
-        elements = stripe.elements();
-
-        // 1. Set up the Card Element
-        cardElement = elements.create('card', {
-            style: { base: { fontSize: '16px' } }
-        });
-        cardElement.mount('#card-element');
-
-        // 2. Set up the Payment Request Button (for Apple Pay/Google Pay)
-        const prButton = elements.create('paymentRequestButton', {
-            paymentRequest: stripe.paymentRequest({
-                country: 'US',
-                currency: 'usd',
-                total: {
-                    label: 'Order Total',
-                    amount: Math.round(orderTotal * 100),
-                },
-                requestPayerName: true,
-                requestPayerEmail: true,
-            })
-        });
-
-        // Check if the digital wallet is available on this device
-        const prbElement = document.getElementById('payment-request-button');
-        const digitalWalletMethod = document.getElementById('digitalWalletMethod');
-        const canMakePayment = await prButton.canMakePayment();
-        if (canMakePayment) {
-            prButton.mount(prbElement);
-            prbElement.style.display = 'block';
-            digitalWalletMethod.style.display = 'flex';
-        }
-
-        prButton.on('paymentmethod', async (ev) => {
-            try {
-                // Confirm the PaymentIntent on the server
-                const response = await postJSON('/payment/stripe/confirm', {
-                    paymentMethodId: ev.paymentMethod.id,
-                    orderId: orderId,
-                });
-
-                if (response.error) {
-                    ev.complete('fail');
-                    showMessage(response.error.message || "Payment failed.");
-                } else {
-                    ev.complete('success');
-                    window.location.href = successUrl;
-                }
-            } catch (e) {
-                ev.complete('fail');
-                showMessage("An error occurred. Please try again.");
-            }
-        });
-    }
-
-    // Lazy initialization of Stripe
-    document.getElementById('payBtn').addEventListener('click', async () => {
-        const method = document.querySelector('input[name="method"]:checked').value;
-        const payBtn = document.getElementById('payBtn');
-        try {
-            payBtn.disabled = true;
-
-            if (method === 'STRIPE_CARD') {
-                const response = await postJSON('/payment/stripe/card', { orderId });
-                stripeClientSecret = response.clientSecret;
-
-                const { error, paymentIntent } = await stripe.confirmCardPayment(stripeClientSecret, {
-                    payment_method: { card: cardElement },
-                });
-
-                if (error) {
-                    document.getElementById('card-error').innerText = error.message;
-                    payBtn.disabled = false;
-                } else if (paymentIntent.status === 'succeeded') {
-                    window.location.href = successUrl;
-                }
-            } else if (method === 'PAYPAL') {
-                // This would be handled by your server, which redirects to PayPal
-                const init = await postJSON('/payment/init/paypal', { orderId });
-                window.location.href = init.approvalUrl;
-            }
-        } catch(e) {
-            showMessage(e.message || 'Something went wrong. Please check your connection.');
-            payBtn.disabled = false;
-        }
+    // Stripe Checkout -> server creates session and returns url
+    document.getElementById('btn-card').addEventListener('click', async () => {
+        try{
+            const r = await fetch('/payment/stripe/start', {method:'POST', headers:withCsrf(), body: JSON.stringify({orderId: ORDER_ID})});
+            if(!r.ok) throw new Error();
+            const data = await r.json();
+            if(!data || !data.checkoutUrl){ throw new Error(); }
+            location.href = data.checkoutUrl; // hosted checkout
+        }catch(e){ toast('Card payment unavailable', false); }
     });
-
-    // Helper for POST requests
-    async function postJSON(url, body){
-        const res = await fetch(url, {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify(body)
-        });
-        if(!res.ok) throw new Error(`Server Error: ${res.statusText}`);
-        return res.json();
-    }
-
-    // Call initStripe on page load to ensure all elements are ready.
-    initStripe();
 </script>
 </body>
 </html>
