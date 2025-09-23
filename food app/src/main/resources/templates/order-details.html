@@ -3,333 +3,45 @@
 <head>
     <meta charset="utf-8"/>
     <title>Order Details • The Spice Jar</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
-        :root {
-            --green: #218838;
-            --accent: #b7410e;
-            --dark: #111;
-            --bg: #f6fbf6;
-            --card: #fff;
-            --shadow: 0 8px 20px rgba(0, 0, 0, .06);
-        }
+        :root{ --green:#22c55e; --accent:#b7410e; --bg:#f6fbf6; }
+        *{ box-sizing:border-box }
+        body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial; background:var(--bg); color:#111 }
+        .wrap{max-width:900px;margin:26px auto;padding:0 6%}
+        .card{background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08);padding:22px}
 
-        * {
-            box-sizing: border-box
-        }
+        h1{margin:0 0 12px;font-size:28px;color:#333}
 
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg);
-            color: #222
-        }
-        /* Footer */
-        .site-footer{
-            background:#222;
-            color:#ccc;
-            padding:40px 6%;
-            margin-top:40px;
-        }
-        .footer-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        .footer-column {
-            flex: 1;
-            min-width: 220px;
-        }
-        .footer-column h3 {
-            color: #fff;
-            margin-bottom: 15px;
-            font-weight: 600;
-            border-bottom: 2px solid var(--green);
-            padding-bottom: 8px;
-            display: inline-block;
-        }
-        .footer-column p {
-            line-height: 1.6;
-            font-size: 14px;
-        }
-        .footer-column ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .footer-column ul li a {
-            text-decoration: none;
-            color: #ccc;
-            display: block;
-            padding: 5px 0;
-            font-size: 14px;
-            transition: color 0.3s;
-        }
-        .footer-column ul li a:hover {
-            color: #fff;
-        }
-        .social-links a {
-            color: #ccc;
-            text-decoration: none;
-            font-size: 20px;
-            margin-right: 15px;
-            transition: color 0.3s;
-        }
-        .social-links a:hover {
-            color: var(--green);
-        }
-        .footer-bottom {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #444;
-            font-size: 14px;
-        }
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
+        @media(max-width:800px){.grid{grid-template-columns:1fr}}
 
-        /* Responsive footer */
-        @media (max-width: 768px) {
-            .footer-container {
-                flex-direction: column;
-                text-align: center;
-            }
-            .footer-column h3 {
-                border-bottom: none;
-                padding-bottom: 0;
-                margin-bottom: 10px;
-            }
-            .footer-column {
-                margin-bottom: 20px;
-            }
-        }
+        .info{background:#fafafa;border:1px solid #eee;border-radius:12px;padding:14px}
+        .label{font-size:12px;letter-spacing:.04em;color:#64748b;font-weight:800}
+        .val{font-weight:800;margin-top:6px}
 
-        .wrap {
-            max-width: 800px;
-            margin: 24px auto;
-            padding: 0 6%
-        }
+        table{width:100%;border-collapse:collapse;margin-top:16px}
+        th,td{padding:12px;border-bottom:1px solid #eee;text-align:left}
+        thead th{background:#f9faf9;font-weight:800}
 
-        h1 {
-            margin: 0 0 16px;
-            color: var(--green);
-            font-size: 26px
-        }
+        .totals{margin-top:14px;background:#fff;border-radius:12px;border:1px solid #eee}
+        .row{display:flex;justify-content:space-between;padding:10px 14px}
+        .row.total{font-weight:900}
 
-        .card {
-            background: var(--card);
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            padding: 24px
-        }
+        .actions{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap}
+        .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:none;border-radius:8px;
+            cursor:pointer;font-weight:600;font-size:14px;text-decoration:none}
+        .btn.track{background:#2563eb;color:#fff}
+        .btn.cancel{background:#dc2626;color:#fff}
+        .btn.return{background:#f59e0b;color:#fff}
+        .btn.pay{background:#16a34a;color:#fff} /* NEW: Pay now */
+        .btn:hover{opacity:.9}
 
-        .order-details {
-            display: grid;
-            gap: 16px;
-        }
-
-        .order-details p {
-            margin: 0;
-            font-size: 16px;
-        }
-        .navbar{
-            background:#fff; padding:6px 6%;
-            box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex; justify-content:space-between; align-items:center;
-            position:sticky; top:0; z-index:1000; height:60px;
-        }
-        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
-        .brand-logo video{width:36px; height:auto; border-radius:4px}
-        .nav-links{display:flex; align-items:center; gap:18px}
-        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
-        .nav-links a:hover{color:var(--green)}
-
-        /* Dropdowns */
-        .dropdown{position:relative}
-        .dropdown-toggle{
-            background:none; border:none; cursor:pointer; font-size:15px; color:#333;
-            display:flex; align-items:center; gap:6px
-        }
-        .dropdown-menu{
-            display:none; position:absolute; right:0; top:100%;
-            background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
-            border-radius:6px; overflow:hidden; min-width:180px
-        }
-        .dropdown:hover .dropdown-menu{display:block}
-        .dropdown-menu a, .dropdown-menu span{
-            display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap
-        }
-        .dropdown-menu a:hover{background:#f4f4f4}
-        /* Cart count badge style */
-        .cart-icon-container {
-            position: relative;
-            display: inline-block;
-        }
-        .cart-count-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background-color: var(--accent);
-            color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 20px;
-            height: 20px;
-            text-align: center;
-        }
-
-        .order-details strong {
-            color: #333;
-        }
-
-        .status {
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
-            display: inline-block;
-            margin-left: 10px;
-        }
-        .status.paid {
-            background-color: var(--green);
-            color: #fff;
-        }
-        .status.pending {
-            background-color: #ffc107;
-            color: #000;
-        }
-
-        .item-list {
-            margin-top: 20px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-
-        .item-list h2 {
-            font-size: 20px;
-            color: var(--green);
-            margin: 0 0 10px;
-        }
-
-        .item-list ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .item-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .item-list li:last-child {
-            border-bottom: none;
-        }
-
-        .item-name {
-            font-weight: 600;
-        }
-
-        .item-quantity {
-            color: #777;
-        }
-        .order-summary strong, .shipping-info strong, .payment-info strong {
-            color: #333;
-        }
-
-        .status {
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
-            display: inline-block;
-            margin-left: 10px;
-        }
-        .status.paid {
-            background-color: var(--green);
-            color: #fff;
-        }
-        .status.pending {
-            background-color: #ffc107;
-            color: #000;
-        }
-
-        .item-list {
-            margin-top: 20px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-
-        .item-list h2, .details-heading {
-            font-size: 20px;
-            color: var(--green);
-            margin: 0 0 10px;
-        }
-
-        .item-list ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .item-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .item-list li:last-child {
-            border-bottom: none;
-        }
-
-        .item-name {
-            font-weight: 600;
-        }
-
-        .item-quantity {
-            color: #777;
-        }
-
-        .shipping-info p, .payment-info p {
-            margin: 0;
-            line-height: 1.6;
-        }
-        .order-cost-breakdown {
-            margin-top: 20px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-        .order-cost-breakdown table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .order-cost-breakdown table td {
-            padding: 8px 0;
-            font-size: 15px;
-        }
-        .order-cost-breakdown table .total-row {
-            font-weight: bold;
-            font-size: 16px;
-            border-top: 2px dashed #ddd;
-        }
-        .text-right { text-align: right; }
-        .text-left { text-align: left; }
-        .flex-container {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-        }
-        .flex-item {
-            flex: 1 1 300px;
-        }
-
+        .status{padding:4px 10px;border-radius:8px;font-weight:700;font-size:14px;display:inline-block}
+        .status.paid{background-color:var(--green);color:#fff}
+        .status.pending{background-color:#ffc107;color:#000}
     </style>
 </head>
 <body>
@@ -344,8 +56,8 @@
     <div class="nav-links">
         <a th:href="@{/menu}">Menu</a>
         <a th:href="@{/about}">About Us</a>
-        <a class="nav-link" href="#"  th:href="@{/cart/view}" >
-            <div class="cart-icon-container">
+        <a class="nav-link" th:href="@{/cart/view}">
+            <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
                 <i class="fas fa-shopping-cart" style="font-size:24px"></i>
                 <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
             </div>
@@ -367,17 +79,15 @@
         <!-- Account -->
         <div class="dropdown">
             <button class="dropdown-toggle">
-                <i class="fas fa-user"></i> Account
+                <i class="fas fa-user"></i>  Account
             </button>
             <div class="dropdown-menu">
                 <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
-
                 <span th:if="${session.USER != null}">
-          Welcome, <span th:text="${session.USER.firstName}">user</span>
-        </span>
-                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
-                <a th:if="${session.USER != null}" th:href="@{/profile/view}">My Profile</a>
+                 Welcome, <span th:text="${session.USER.firstName}">user</span>
+                </span>
+                <a  th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
                 <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
             </div>
         </div>
@@ -386,76 +96,129 @@
 
 
 <main class="wrap">
-    <h1><i class="fa-solid fa-receipt"></i> Order <span th:text="${order.id}">#12345</span></h1>
+    <h1><i class="fa-solid fa-receipt"></i> Order Details</h1>
 
     <section class="card">
-        <div class="order-details">
-            <p><strong>Order #</strong> <span th:text="${order.id}">12345</span></p>
-            <!-- Add a status field with dynamic styling -->
-            <p><strong>Status:</strong>
-                <span th:class="|status ${order.status.toLowerCase()}|"
-                      th:text="${order.status}">Pending Payment</span>
-            </p>
-            <p><strong>Placed On:</strong> <span th:text="${#temporals.format(order.createdAt, 'MMM d, yyyy • h:mm a')}">Aug 29, 2025 • 9:45 AM</span></p>
-            <p><strong>Total:</strong> <span  th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">10.00</span></p>
-        </div>
-
-        <div class="flex-container">
-            <section class="card flex-item">
-                <h2 class="details-heading"><i class="fa-solid fa-truck"></i> Shipping Information</h2>
-                <div class="shipping-info">
-                    <p><strong>Customer Name:</strong> <span th:text="${order.customerName}">Jane Doe</span></p>
-                    <p><strong>Email:</strong> <span th:text="${order.email}">jane.doe@example.com</span></p>
-                    <p><strong>Phone:</strong> <span th:text="${order.phone}">555-123-4567</span></p>
-                    <p><strong>Address:</strong></p>
-                    <p><span th:text="${order.street}">123 Main St</span></p>
-                    <p><span th:text="${order.city}">Anytown</span>, <span th:text="${order.state}">CA</span> <span th:text="${order.zip}">12345</span></p>
-                    <p><span th:text="${order.country}">USA</span></p>
+        <div class="grid">
+            <div class="info">
+                <div class="label">ORDER ID</div>
+                <div class="val">#<span th:text="${order.id}">123</span></div>
+            </div>
+            <div class="info">
+                <div class="label">CONFIRMATION #</div>
+                <div class="val" th:text="${order.confirmationNumber}">TSJ-20250917-ABC123</div>
+            </div>
+            <div class="info">
+                <div class="label">STATUS</div>
+                <div class="val">
+                  <span th:class="|status ${order.status.toLowerCase()}|"
+                        th:text="${order.status}">Pending</span>
                 </div>
-            </section>
+            </div>
+            <div class="info">
+                <div class="label">PLACED ON</div>
+                <div class="val" th:text="${#temporals.format(order.createdAt,'MMM d, yyyy • h:mm a')}">
+                    Aug 29, 2025
+                </div>
+            </div>
         </div>
 
-        <div class="item-list">
-            <h2>Items</h2>
-            <ul th:if="${!#lists.isEmpty(order.items)}">
-                <li th:each="item : ${order.items}">
-                    <span class="item-name" th:text="${item.productName}">Biryani Bowl</span>
-                    <span class="item-quantity">× <span th:text="${item.quantity}">1</span></span>
-                </li>
-            </ul>
-            <p th:if="${#lists.isEmpty(order.items)}" style="color:#777">No items in this order.</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Line Total</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="it : ${order.items}">
+                <td>
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <img th:src="${#strings.isEmpty(it.imageUrl) ? '/images/chilli%20powder.jpeg' : it.imageUrl}"
+                             alt="Product" style="width:60px;height:60px;object-fit:cover;border-radius:6px"/>
+                        <span th:text="${it.productName}">Spice</span>
+                    </div>
+                </td>
+                <td th:text="${it.quantity}">1</td>
+                <td th:text="${#numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">$0.00</td>
+                <td th:text="${#numbers.formatDecimal(it.price.multiply(new java.math.BigDecimal(it.quantity)),1,'COMMA',2,'POINT')}">$0.00</td>
+                <td>
+                    <!-- Per-item return button -->
+                    <form
+                            th:if="${#lists.contains({'DELIVERED','SHIPPED','PAID'}, order.status)}"
+                            th:action="@{/orders/{orderId}/returnItem/{itemId}(orderId=${order.id}, itemId=${it.id})}"
+                            method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button class="btn return" type="submit">
+                            <i class="fa-solid fa-rotate-left"></i> Return Item
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <div class="row">
+                <div>Subtotal</div>
+                <div th:text="${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">$0.00</div>
+            </div>
+            <div class="row">
+                <div>Tax (8%)</div>
+                <div th:text="${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">$0.00</div>
+            </div>
+            <div class="row total">
+                <div>Total Paid</div>
+                <div th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">$0.00</div>
+            </div>
+        </div>
+
+        <!-- Global order-level actions -->
+        <div class="actions">
+            <a class="btn track" th:href="@{/orders/{id}/track(id=${order.id})}">
+                <i class="fa-solid fa-truck"></i> Track Package
+            </a>
+
+            <a class="btn invoice" th:href="@{/orders/{id}/invoice(id=${order.id})}" target="_blank">
+                <i class="fa-solid fa-file-invoice"></i> Download Invoice
+            </a>
+
+            <!-- NEW: Pay now button for pending payment -->
+            <a class="btn pay"
+               th:if="${order.status == 'PENDING_PAYMENT'}"
+               th:href="@{/payment/checkout(orderId=${order.id})}">
+                <i class="fa-solid fa-credit-card"></i> Pay now
+            </a>
+
+            <form th:if="${order.status == 'PENDING_PAYMENT' or order.status == 'PENDING_COD' or order.status == 'PAID'}"
+                  th:action="@{/orders/{id}/cancel(id=${order.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button class="btn cancel" type="submit"><i class="fa-solid fa-ban"></i> Cancel Order</button>
+            </form>
+
+            <form
+                    th:if="${#lists.contains({'DELIVERED','SHIPPED','PAID'}, order.status)
+                        and order.createdAt != null
+                        and #temporals.createNow().minusDays(30).isBefore(order.createdAt)}"
+                    th:action="@{/orders/{id}/return(id=${order.id})}"
+                    method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button class="btn return" type="submit">
+                    <i class="fa-solid fa-rotate-left"></i> Return Order
+                </button>
+            </form>
         </div>
     </section>
 </main>
 
 <footer class="site-footer">
-    <div class="footer-container">
-        <div class="footer-column">
-            <h3>About Spice Jar</h3>
-            <p>Bringing the world's finest spices to your kitchen. Quality, aroma, and flavor guaranteed in every jar.</p>
-        </div>
-        <div class="footer-column">
-            <h3>Quick Links</h3>
-            <ul>
-                <li><a th:href="@{/menu}">Menu</a></li>
-                <li><a th:href="@{/about}">About Us</a></li>
-                <li><a th:href="@{/contact}">Contact</a></li>
-                <li><a href="#">FAQ</a></li>
-            </ul>
-        </div>
-        <div class="footer-column">
-            <h3>Connect With Us</h3>
-            <div class="social-links">
-                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest"></i></a>
-            </div>
-        </div>
-    </div>
     <div class="footer-bottom">
-        <p>&copy; 2025 The Spice Jar. All rights reserved.</p>
+        <p>&copy; <span th:text="${T(java.time.Year).now()}">2025</span> The Spice Jar. All rights reserved.</p>
     </div>
 </footer>
+
 </body>
 </html>

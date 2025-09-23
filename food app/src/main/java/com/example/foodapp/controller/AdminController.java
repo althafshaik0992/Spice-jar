@@ -55,6 +55,7 @@ public class AdminController {
         m.addAttribute("ordersCount", orderService.findAll().size());
         m.addAttribute("productsCount", productService.findAll().size());
         m.addAttribute("categoriesCount", categoryService.findAll().size());
+        m.addAttribute("totalRevenue" ,orderService.calculateTotalRevenue());
         return "admin/dashboard";
     }
 

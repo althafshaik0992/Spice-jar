@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Track Order • The Spice Jar</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root{ --green:#22c55e; --accent:#b7410e; --bg:#f6fbf6; --ink:#111; }
+        *{ box-sizing:border-box }
+        body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial; background:var(--bg); color:var(--ink) }
+
+        /* Navbar (same look as other pages) */
+        .navbar{
+            background:#fff; padding:6px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex; justify-content:space-between; align-items:center;
+            position:sticky; top:0; z-index:1000; height:60px;
+        }
+        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
+        .brand-logo video{width:36px; height:auto; border-radius:4px}
+        .nav-links{display:flex; align-items:center; gap:18px}
+        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
+        .nav-links a:hover{color:var(--green)}
+        .dropdown{position:relative}
+        .dropdown-toggle{background:none;border:none;cursor:pointer;font-size:15px;color:#333;display:flex;align-items:center;gap:6px}
+        .dropdown-menu{display:none;position:absolute;right:0;top:100%;background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.1);border-radius:6px;overflow:hidden;min-width:180px}
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a,.dropdown-menu span{display:block;padding:10px 16px;text-decoration:none;color:#333;white-space:nowrap}
+        .dropdown-menu a:hover{background:#f4f4f4}
+
+        /* Page layout */
+        .wrap{max-width:920px; margin:26px auto; padding:0 6%}
+        h1{display:flex; align-items:center; gap:10px; font-size:26px; margin:0 0 14px}
+
+        .card{background:#fff; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.08); padding:22px}
+        .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+        @media (max-width:800px){ .grid{grid-template-columns:1fr} }
+
+        .info{background:#fafafa; border:1px solid #eee; border-radius:12px; padding:14px}
+        .label{font-size:12px; letter-spacing:.04em; color:#64748b; font-weight:800}
+        .val{font-weight:800; margin-top:6px}
+
+        /* Timeline */
+        .timeline{position:relative; margin-top:18px; padding-left:24px}
+        .timeline::before{
+            content:""; position:absolute; left:8px; top:0; bottom:0; width:2px; background:#e5e7eb;
+        }
+        .event{position:relative; margin-bottom:18px; padding-left:14px}
+        .event:last-child{margin-bottom:6px}
+        .dot{
+            position:absolute; left:-1px; top:3px; width:18px; height:18px; border-radius:50%;
+            background:#fff; border:2px solid #e5e7eb; box-shadow:0 0 0 2px #fff inset;
+        }
+        .event.done .dot{ background:var(--green); border-color:var(--green) }
+        .event.now .dot{ background:#f59e0b; border-color:#f59e0b }
+        .event h3{ margin:0 0 4px; font-size:16px }
+        .meta{ color:#64748b; font-size:13px }
+        .note{ margin-top:4px; font-size:14px }
+
+        .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px}
+        .btn{
+            display:inline-flex; align-items:center; gap:8px; border:none; border-radius:10px;
+            padding:10px 14px; font-weight:800; cursor:pointer; text-decoration:none
+        }
+        .btn.primary{ background:var(--green); color:#fff }
+        .btn.warn{ background:#ef4444; color:#fff }
+        .btn.neutral{ background:#111; color:#fff }
+        .btn:hover{ opacity:.95 }
+
+        /* Footer (simple) */
+        .site-footer{ background:#222; color:#ccc; padding:24px 6%; margin-top:40px; text-align:center }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/" class="brand-logo">
+        <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
+        <span>SpiceJar</span>
+    </a>
+
+    <div class="nav-links">
+        <a th:href="@{/menu}">Menu</a>
+        <a th:href="@{/about}">About Us</a>
+        <a class="nav-link" th:href="@{/cart/view}">
+            <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
+                <i class="fas fa-shopping-cart" style="font-size:24px"></i>
+                <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
+            </div>
+        </a>
+        <a th:href="@{/contact}">Contact Us</a>
+
+        <!-- Categories -->
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fa-solid fa-list"></i> Categories
+            </button>
+            <div class="dropdown-menu">
+                <a th:each="c : ${categories}"
+                   th:href="@{/category/{id}(id=${c.id})}"
+                   th:text="${c.name}">Category</a>
+            </div>
+        </div>
+
+        <!-- Account -->
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fas fa-user"></i>  Account
+            </button>
+            <div class="dropdown-menu">
+                <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
+                <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+                <span th:if="${session.USER != null}">
+                 Welcome, <span th:text="${session.USER.firstName}">user</span>
+                </span>
+                <a  th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
+                <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+<main class="wrap">
+    <h1><i class="fa-solid fa-truck"></i> Track Order</h1>
+
+    <section class="card">
+        <div class="grid">
+            <div class="info">
+                <div class="label">ORDER ID</div>
+                <div class="val">#<span th:text="${order.id}">123</span></div>
+            </div>
+            <div class="info">
+                <div class="label">CONFIRMATION #</div>
+                <div class="val" th:text="${order.confirmationNumber}">TSJ-XXXX</div>
+            </div>
+            <div class="info">
+                <div class="label">STATUS</div>
+                <div class="val" th:text="${order.status}">SHIPPED</div>
+            </div>
+            <div class="info">
+                <div class="label">PLACED ON</div>
+                <div class="val" th:text="${#temporals.format(order.createdAt, 'MMM d, yyyy • h:mm a')}">Sep 1, 2025</div>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline">
+            <div class="event"
+                 th:each="ev, iStat : ${events}"
+                 th:classappend="${iStat.index} < ${events.size()} - 1 ? 'done' : 'now'">
+                <span class="dot"></span>
+                <h3 th:text="${ev.title}">Shipped</h3>
+                <div class="meta" th:text="${#temporals.format(ev.time, 'MMM d, yyyy • h:mm a')}">Sep 2, 2025 • 10:05 AM</div>
+                <div class="note" th:text="${ev.note}">Carrier picked up the package.</div>
+            </div>
+
+            <!-- Empty state if no events -->
+            <div th:if="${#lists.isEmpty(events)}" style="color:#64748b; margin-top:8px">
+                Tracking will appear once the package is scanned by the carrier.
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <!-- Track with carrier (replace href if you have real tracking URL) -->
+            <a class="btn primary" th:href="@{'/orders/' + ${order.id} + '/track'}">
+                <i class="fa-solid fa-location-crosshairs"></i> Refresh Tracking
+            </a>
+
+            <!-- Cancel (allowed before shipped/delivered) -->
+            <form th:if="${!#lists.contains({'SHIPPED','DELIVERED'}, order.status)}"
+                  th:action="@{/orders/{id}/cancel(id=${order.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button class="btn warn" type="submit">
+                    <i class="fa-solid fa-ban"></i> Cancel Order
+                </button>
+            </form>
+
+            <!-- Return (allowed when shipped/paid/delivered; 30-day window optional) -->
+            <form
+                    th:if="${#lists.contains({'DELIVERED','SHIPPED','PAID'}, order.status)
+                and order.createdAt != null
+                and #temporals.createNow().minusDays(30).isBefore(order.createdAt)}"
+                    th:action="@{/orders/{id}/return(id=${order.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button class="btn neutral" type="submit">
+                    <i class="fa-solid fa-rotate-left"></i> Return Order
+                </button>
+            </form>
+        </div>
+
+        <!-- Friendly hint when return not allowed yet -->
+        <p th:if="${!#lists.contains({'DELIVERED','SHIPPED','PAID'}, order.status)}"
+           style="margin-top:10px;color:#6b7280">
+            Returns will be available after your order ships.
+        </p>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div>&copy; <span th:text="${#temporals.format(#temporals.createNow(),'yyyy')}">2025</span> The Spice Jar</div>
+</footer>
+</body>
+</html>

@@ -1,4 +1,3 @@
-// com.example.foodapp.service.UserOrderService
 package com.example.foodapp.service;
 
 import com.example.foodapp.model.Order;
@@ -8,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -38,6 +38,8 @@ public class UserOrderServiceImpl implements UserOrderService {
                 boolean match =
                         (o.getCustomerName() != null && o.getCustomerName().toLowerCase().contains(needle)) ||
                                 (o.getAddress() != null && o.getAddress().toLowerCase().contains(needle)) ||
+                                // Filter by confirmation number as well
+                                (o.getConfirmationNumber() != null && o.getConfirmationNumber().toLowerCase().contains(needle)) ||
                                 (o.getItems() != null && o.getItems().stream().anyMatch(
                                         it -> it.getProductName() != null && it.getProductName().toLowerCase().contains(needle)
                                 ));
@@ -50,6 +52,6 @@ public class UserOrderServiceImpl implements UserOrderService {
                 ok &= (o.getCreatedAt() != null && !o.getCreatedAt().toLocalDate().isAfter(to));
             }
             return ok;
-        }).toList();
+        }).collect(Collectors.toList());
     }
 }

@@ -65,6 +65,69 @@
         .nav-links{display:flex; align-items:center; gap:18px}
         .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
         .nav-links a:hover{color:var(--green)}
+        /* Footer */
+        .site-footer{
+            background:#222;
+            color:#ccc;
+            padding:40px 6%;
+            margin-top:40px;
+        }
+        .footer-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .footer-column {
+            flex: 1;
+            min-width: 220px;
+        }
+        .footer-column h3 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--green);
+            padding-bottom: 8px;
+            display: inline-block;
+        }
+        .footer-column p {
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        .footer-column ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-column ul li a {
+            text-decoration: none;
+            color: #ccc;
+            display: block;
+            padding: 5px 0;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        .footer-column ul li a:hover {
+            color: #fff;
+        }
+        .social-links a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 20px;
+            margin-right: 15px;
+            transition: color 0.3s;
+        }
+        .social-links a:hover {
+            color: var(--green);
+        }
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            font-size: 14px;
+        }
 
         /* Dropdowns */
         .dropdown{position:relative}
@@ -181,8 +244,8 @@
     <div class="nav-links">
         <a th:href="@{/menu}">Menu</a>
         <a th:href="@{/about}">About Us</a>
-        <a class="nav-link" href="#"  th:href="@{/cart/view}" >
-            <div class="cart-icon-container">
+        <a class="nav-link" th:href="@{/cart/view}">
+            <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
                 <i class="fas fa-shopping-cart" style="font-size:24px"></i>
                 <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
             </div>
@@ -204,17 +267,15 @@
         <!-- Account -->
         <div class="dropdown">
             <button class="dropdown-toggle">
-                <i class="fas fa-user"></i> Account
+                <i class="fas fa-user"></i>  Account
             </button>
             <div class="dropdown-menu">
                 <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
-
                 <span th:if="${session.USER != null}">
-          Welcome, <span th:text="${session.USER.firstName}">user</span>
-        </span>
-                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
-                <a th:if="${session.USER != null}" th:href="@{/profile/view}">My Profile</a>
+                 Welcome, <span th:text="${session.USER.firstName}">user</span>
+                </span>
+                <a  th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
                 <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
             </div>
         </div>

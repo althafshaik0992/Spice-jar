@@ -48,10 +48,14 @@
     </header>
 
     <!-- Stat Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         <div class="bg-gray-800 p-6 rounded-2xl shadow-lg transition-transform transform hover:scale-105">
             <h2 class="text-lg font-semibold text-green-400">Total Orders</h2>
             <p class="text-4xl md:text-5xl font-bold mt-2" th:text="${ordersCount}">0</p>
+        </div>
+        <div class="bg-gray-800 p-6 rounded-2xl shadow-lg transition-transform transform hover:scale-105">
+            <h2 class="text-lg font-semibold text-green-400">Total Revenue</h2>
+            <p class="text-4xl md:text-5xl font-bold mt-2" th:text="'$' + ${totalRevenue}">$0.00</p>
         </div>
         <div class="bg-gray-800 p-6 rounded-2xl shadow-lg transition-transform transform hover:scale-105">
             <h2 class="text-lg font-semibold text-green-400">Total menu</h2>
@@ -97,11 +101,11 @@
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,        // fill the wrapper height
+            maintainAspectRatio: false,
             layout: { padding: 0 },
             plugins: {
                 legend: {
-                    position: 'bottom',            // avoid widening the card
+                    position: 'bottom',
                     labels: {
                         color: '#fff',
                         boxWidth: 14,
