@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
@@ -91,21 +93,25 @@ public class HomeController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    public Map<String, Object> chat(@RequestBody Map<String, String> body, HttpSession session) {
-        String msg = (body.getOrDefault("message", "") + "").trim();
+    public Map<String, Object> chat(@RequestBody(required = false) Map<String, String> body,
+                                    HttpSession session) {
+        String msg = (body == null ? "" : String.valueOf(body.getOrDefault("message", ""))).trim();
         Map<String, Object> out = new HashMap<>();
 
-        // 1) “add … to cart” intent using previous suggestions
+        if (msg.isEmpty()) {
+            out.put("reply", "Please type a message, e.g. “Show best sellers”.");
+            return out;
+        }
+
+        // 1) “add … to cart”
         String lower = msg.toLowerCase(Locale.ROOT);
         if (lower.startsWith("add") || lower.startsWith("i want")) {
             @SuppressWarnings("unchecked")
             List<ChatProductDTO> last = (List<ChatProductDTO>) session.getAttribute("CHAT_SUGG");
             if (last != null && !last.isEmpty()) {
-                // very simple: add the first suggested product
                 ChatProductDTO pick = last.get(0);
                 out.put("reply", "Added “" + pick.getName() + "” to your cart. 🛒");
-                // Option A: Let the front-end call your existing /add-to-cart (POST) itself.
-                // Return back the product id so the widget can POST with CSRF.
+                // Let the front-end POST to /cart/add with CSRF:
                 out.put("addToCartProductId", pick.getId());
                 return out;
             } else {
@@ -119,11 +125,11 @@ public class HomeController {
         if (!suggestions.isEmpty()) {
             session.setAttribute("CHAT_SUGG", suggestions);
             out.put("reply", "Here are a few matches. Want me to add one?");
-            out.put("cards", suggestions); // front-end will render cards with Add buttons
+            out.put("cards", suggestions);
             return out;
         }
 
-        // 3) fallback to your existing rules
+        // 3) fallback
         out.put("reply", answer(msg));
         return out;
     }
@@ -132,11 +138,9 @@ public class HomeController {
         String s = q.trim();
         if (s.isEmpty()) return List.of();
 
-        // Heuristic: look by name first; if empty, try category words
         List<Product> byName = productService.searchByName(s);
         if (!byName.isEmpty()) return mapProducts(byName);
 
-        // Split to tokens and try each token as category word
         for (String token : s.split("\\s+")) {
             if (token.length() < 3) continue;
             List<Product> byCat = productService.searchByCategoryName(token);
@@ -146,37 +150,25 @@ public class HomeController {
     }
 
     private List<ChatProductDTO> mapProducts(List<Product> products) {
-        List<ChatProductDTO> list = new ArrayList<>();
-        for (Product p : products) {
-            String price = (p.getPrice() == null) ? "0.00" : p.getPrice().toPlainString();
-            String img = (p.getImageUrl() == null || p.getImageUrl().isBlank()) ? "/images/chilli%20powder.jpeg" : p.getImageUrl();
-            list.add(new ChatProductDTO(p.getId(), p.getName(), price, img));
-        }
-        return list;
+        return products.stream().map(p -> {
+            String price = (p.getPrice() == null) ? "0.00" : p.getPrice().setScale(2, RoundingMode.HALF_UP).toPlainString();
+            String img = (p.getImageUrl() == null || p.getImageUrl().isBlank())
+                    ? "/images/chilli%20powder.jpeg"
+                    : p.getImageUrl();
+            return new ChatProductDTO(p.getId(), p.getName(), price, img);
+        }).collect(Collectors.toList());
     }
 
-    // (Optional) simple GET probe for quick testing in the browser
-    @GetMapping(value = "/api/chat", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public ResponseEntity<Map<String,String>> probe() {
-        return ResponseEntity.ok(Map.of("reply", "POST {\"message\":\"...\"} here."));
-    }
-
-
-
+    // Simple canned answers to keep things deterministic
     private String answer(String msg) {
         String m = msg.toLowerCase(Locale.ROOT);
-
-        if (m.contains("best seller") || m.contains("popular")) {
+        if (m.contains("best seller") || m.contains("popular"))
             return "Our best sellers this week are Turmeric Powder, Garam Masala, and Organic Cumin Seeds.";
-        }
-        if (m.contains("delivery") || m.contains("shipping")) {
+        if (m.contains("delivery") || m.contains("shipping"))
             return "Standard delivery: 2–4 days. Express: 1–2 days. Orders over $49 ship free.";
-        }
-        if (m.contains("return") || m.contains("refund")) {
+        if (m.contains("return") || m.contains("refund"))
             return "Returns accepted within 30 days for unopened items.";
-        }
-        return "I can help with products, delivery, and orders. Try asking: 'Do you have organic turmeric?'";
+        return "I can help with products, delivery, and orders. Try asking: “Do you have organic turmeric?”";
     }
 
 

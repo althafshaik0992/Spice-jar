@@ -44,6 +44,7 @@ public class PaymentCheckoutController {
         Order order = orderService.findById(orderId);
         if (order == null) return "redirect:/orders";
         // optional: ensure belongs to current user
+
         m.addAttribute("order", order);
         return "payment"; // the HTML above
     }

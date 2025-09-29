@@ -1,0 +1,187 @@
+<!-- src/main/resources/templates/address_form.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Address • The Spice Jar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root{--green:#218838;--bg:#f6fbf6}
+        body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:var(--bg)}
+        .wrap{max-width:720px;margin:24px auto;padding:0 6%}
+        .card{background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.06);padding:18px}
+        form .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        @media (max-width:720px){form .grid{grid-template-columns:1fr}}
+        label{font-weight:700;margin:8px 0 6px;display:block}
+        input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px}
+        .btn{margin-top:14px;border:none;border-radius:10px;padding:12px 16px;font-weight:800;cursor:pointer}
+        .btn-primary{background:var(--green);color:#fff}
+        /* Navbar */
+        .navbar{
+            background:#fff; padding:6px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex; justify-content:space-between; align-items:center;
+            position:sticky; top:0; z-index:1000; height:60px;
+        }
+        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
+        .brand-logo video{width:36px; height:auto; border-radius:4px}
+        .nav-links{display:flex; align-items:center; gap:18px}
+        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
+        .nav-links a:hover{color:var(--green)}
+
+        /* Dropdowns */
+        .dropdown{position:relative}
+        .dropdown-toggle{
+            background:none; border:none; cursor:pointer; font-size:15px; color:#333;
+            display:flex; align-items:center; gap:6px
+        }
+        .dropdown-menu{
+            display:none; position:absolute; right:0; top:100%;
+            background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
+            border-radius:6px; overflow:hidden; min-width:180px
+        }
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a, .dropdown-menu span{
+            display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap
+        }
+        .dropdown-menu a:hover{background:#f4f4f4}
+        /* Cart count badge style */
+        .cart-icon-container {
+            position: relative;
+            display: inline-block;
+        }
+        .cart-count-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            text-align: center;
+        }
+
+        .dropdown{position:relative}
+        .dropdown-toggle{
+            display:flex; align-items:center; gap:8px; background:transparent; border:0; cursor:pointer;
+            font-weight:700; color:#2b2b2b; padding:8px 10px; border-radius:10px;
+        }
+        .dropdown-toggle:hover{background:#f5f7f5}
+        .dropdown-menu{
+            position:absolute; right:0; top:calc(100% + 8px); min-width:200px;
+            background:#fff; border:1px solid #eef2ef; border-radius:12px; box-shadow:0 10px 28px var(--ring);
+            display:none; overflow:hidden;
+        }
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a, .dropdown-menu span{
+            display:block; padding:10px 14px; text-decoration:none; color:#2b2b2b; font-weight:600;
+            white-space:nowrap
+        }
+        .dropdown-menu a:hover{background:#f7faf7}
+        .divider{height:1px; background:#eef2ef; margin:6px 0}
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/" class="brand-logo">
+        <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
+        <span>SpiceJar</span>
+    </a>
+
+    <div class="nav-links">
+        <a th:href="@{/menu}">Menu</a>
+        <a th:href="@{/about}">About Us</a>
+        <a class="nav-link" th:href="@{/cart/view}">
+            <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
+                <i class="fas fa-shopping-cart" style="font-size:24px"></i>
+                <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
+            </div>
+        </a>
+        <a th:href="@{/contact}">Contact Us</a>
+
+        <!-- Categories -->
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fa-solid fa-list"></i> Categories
+            </button>
+            <div class="dropdown-menu">
+                <a th:each="c : ${categories}"
+                   th:href="@{/category/{id}(id=${c.id})}"
+                   th:text="${c.name}">Category</a>
+            </div>
+        </div>
+
+        <!-- Account -->
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fas fa-user"></i>  Account
+            </button>
+            <div class="dropdown-menu">
+                <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
+                <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+                <span th:if="${session.USER != null}">
+                 Welcome, <span th:text="${session.USER.firstName}">user</span>
+                </span>
+                <a  th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
+                <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="wrap">
+    <h2><i class="fa-solid fa-location-dot"></i> Address</h2>
+    <section class="card">
+        <form th:action="@{/addresses}" th:object="${address}" method="post">
+            <input type="hidden" th:field="*{id}"/>
+            <div class="grid">
+                <div>
+                    <label>Full name</label>
+                    <input th:field="*{fullName}" required/>
+                </div>
+                <div>
+                    <label>Phone</label>
+                    <input th:field="*{phone}" required/>
+                </div>
+                <div style="grid-column:1/-1">
+                    <label>Address line 1</label>
+                    <input th:field="*{line1}" required/>
+                </div>
+                <div style="grid-column:1/-1">
+                    <label>Address line 2</label>
+                    <input th:field="*{line2}"/>
+                </div>
+                <div>
+                    <label>City</label>
+                    <input th:field="*{city}" required/>
+                </div>
+                <div>
+                    <label>State</label>
+                    <input th:field="*{state}" required/>
+                </div>
+                <div>
+                    <label>Country</label>
+                    <input th:field="*{country}" required/>
+                </div>
+                <div>
+                    <label>Zip</label>
+                    <input th:field="*{zip}" required/>
+                </div>
+            </div>
+            <button class="btn btn-primary" type="submit">
+                <i class="fa-solid fa-save"></i> Save
+            </button>
+            <a class="btn" href="/addresses">Cancel</a>
+        </form>
+    </section>
+</div>
+</body>
+</html>

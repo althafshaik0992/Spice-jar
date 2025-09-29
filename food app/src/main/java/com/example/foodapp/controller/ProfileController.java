@@ -41,6 +41,11 @@ public class ProfileController {
 
     /* ---------- PAGES ---------- */
 
+
+    @GetMapping("/account")
+    public String accountHub() {
+        return "account"; }
+
     @GetMapping("/profile")
     public String editProfile(HttpSession session, Model m,
                               @RequestParam(required = false) String msg,
@@ -76,6 +81,10 @@ public class ProfileController {
         u.setEmail(form.getEmail());
         u.setPhone(form.getPhone());
         u.setAddress(form.getAddress());
+        u.setCity(form.getCity());
+        u.setState(form.getState());
+        u.setZip(form.getZip());
+        u.setCountry(form.getCountry());
         userService.save(u);
 
         session.setAttribute("USER", u);

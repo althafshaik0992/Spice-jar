@@ -30,6 +30,9 @@ public class Order {
 
     private LocalDateTime createdAt;
 
+    // The new confirmation number field
+    private String confirmationNumber;
+
     // we’ll treat this as "snapshot subtotal" (persisted at save time)
     private BigDecimal total;
 

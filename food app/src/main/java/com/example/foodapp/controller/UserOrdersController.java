@@ -1,6 +1,7 @@
 package com.example.foodapp.controller;
 
 import com.example.foodapp.model.Order;
+import com.example.foodapp.service.OrderService;
 import com.example.foodapp.service.UserOrderService;
 import com.example.foodapp.service.UserOrderServiceImpl;
 
@@ -18,8 +19,11 @@ public class UserOrdersController {
 
     private final UserOrderService orderService;
 
-    public UserOrdersController(UserOrderService orderService) {
+    private final OrderService orderService1;
+
+    public UserOrdersController(UserOrderService orderService, OrderService orderService1) {
         this.orderService = orderService;
+        this.orderService1 = orderService1;
     }
 
     @GetMapping("/orders")
@@ -39,7 +43,9 @@ public class UserOrdersController {
         List<Order> filtered = orderService.filterUserOrders(all, q, from, to);
 
 
+
         m.addAttribute("orders", filtered);
+
 
         return "order"; // <-- match your HTML file name
     }
@@ -57,6 +63,7 @@ public class UserOrdersController {
             return "redirect:/orders";
         }
         m.addAttribute("order", o);
+
         return "order-details"; // create a simple detail page if you want
     }
 

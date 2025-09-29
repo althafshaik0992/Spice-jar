@@ -1,9 +1,13 @@
 package com.example.foodapp.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "app_user")
+@Getter
+@Setter
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,8 +17,15 @@ public class User {
     private String lastName;
     private String address;
 
+    private String state;
+    private String City;
+    private String Country;
+    private String zip;
+
     @Column(unique = true)
     private String email;
+
+
     private String phone;
     // com.example.foodapp.model.User
     @Column(name = "avatar_url")

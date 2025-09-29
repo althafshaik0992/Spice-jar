@@ -21,6 +21,8 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     Optional<Order> findById(Long id);
     void deleteAllByUserId(Long userId);
+    boolean existsByConfirmationNumber(String confirmationNumber);
+
 
 
 }

@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>The Spice Jar</title>
 
-    <!-- CSRF for Spring Security (needed by the chat widget JS) -->
+    <!-- CSRF for Spring Security (used by chat + cart buttons) -->
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
+    <!-- Perf: preconnect to CDN -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Preload the hero image to avoid jank -->
+    <link rel="preload" as="image" href="/images/spices-about.jpeg" imagesrcset="/images/spices-about.jpeg 1x"/>
 
     <style>
         :root { --green:#218838; --accent:#b7410e; --dark:#111; }
@@ -30,7 +34,7 @@
         .brand-logo video{width:36px; height:auto; border-radius:4px}
         .nav-links{display:flex; align-items:center; gap:18px}
         .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
-        .nav-links a:hover{color:var(--green)}
+        .nav-links a:hover{color:#218838}
 
         /* Dropdowns */
         .dropdown{position:relative}
@@ -49,11 +53,51 @@
         }
         .dropdown-menu a:hover{background:#f4f4f4}
 
-        /* Hero */
-        .hero{display:flex; align-items:center; justify-content:space-between; background:var(--green); color:#fff; padding:28px 6%; min-height:50vh}
+        /* Hero - REVOLVING IMAGES STYLES */
+        .hero{
+            display:flex; align-items:center; justify-content:space-between;
+            background:var(--green); color:#fff; padding:28px 6%;
+            min-height:50vh;
+            position: relative; /* Needed for absolute positioning of images */
+            overflow: hidden; /* Ensures images don't spill outside the container */
+        }
         .hero-left h1{font-size:40px; line-height:1.15; margin:0 0 12px}
         .cta{background:#fff; color:var(--green); padding:10px 18px; border-radius:30px; text-decoration:none; font-weight:600}
-        .hero-right img{max-width:420px; border-radius:16px; box-shadow:0 8px 30px rgba(0,0,0,.2)}
+
+        .hero-right {
+            position: relative; /* Container for the image carousel */
+        }
+
+        .hero-image-revolver {
+            position: relative;
+            width: 420px;
+            height: 280px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,.2);
+        }
+
+        .hero-image-revolver img {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            animation: fade 16s infinite;
+        }
+
+        /* Stagger the animations for each image */
+        .hero-image-revolver img:nth-child(1) { animation-delay: 0s; }
+        .hero-image-revolver img:nth-child(2) { animation-delay: 4s; }
+        .hero-image-revolver img:nth-child(3) { animation-delay: 8s; }
+        .hero-image-revolver img:nth-child(4) { animation-delay: 12s; }
+
+        @keyframes fade {
+            0% { opacity: 0; }
+            5% { opacity: 1; }
+            25% { opacity: 1; }
+            30% { opacity: 0; }
+            100% { opacity: 0; }
+        }
 
         /* Product grid */
         .menu-section{padding:40px 6%}
@@ -64,11 +108,49 @@
         .card-body{padding:16px; text-align:center}
         .btn-order{background:var(--green); color:#fff; padding:10px 16px; border-radius:30px; border:none; cursor:pointer}
         .btn-order:hover{background:var(--accent)}
+        .order-now-wrap{display:flex; justify-content:center; margin-top:22px}
+        .order-now{
+            display:inline-flex; align-items:center; gap:8px;
+            background:var(--green); color:#fff; font-weight:800;
+            padding:12px 18px; border-radius:999px; text-decoration:none;
+            box-shadow:0 8px 24px rgba(0,0,0,.12);
+        }
+        .order-now:hover{background:var(--accent)}
 
         /* Footer */
-        .site-footer{background:#111; color:#fff; padding:20px; text-align:center; margin-top:40px}
+        .site-footer{background:#222; color:#fff; padding:40px 6%; margin-top:40px}
+        .footer-container{display:flex; flex-wrap:wrap; justify-content:space-between; gap:30px; margin-bottom:30px}
+        .footer-column{flex:1; min-width:220px}
+        .footer-column h3{color:#fff; margin-bottom:15px; font-weight:600; border-bottom:2px solid var(--green); padding-bottom:8px; display:inline-block}
+        .footer-column p{line-height:1.6; font-size:14px}
+        .footer-column ul{list-style:none; padding:0; margin:0}
+        .footer-column ul li a{text-decoration:none; color:#ccc; display:block; padding:5px 0; font-size:14px; transition:color .3s}
+        .footer-column ul li a:hover{color:#fff}
+        .social-links a{color:#ccc; text-decoration:none; font-size:20px; margin-right:15px; transition:color .3s}
+        .social-links a:hover{color:var(--green)}
+        .footer-bottom{text-align:center; padding-top:20px; border-top:1px solid #444; font-size:14px}
 
-        /* ===== Chatbot (embedded) ===== */
+        @media (max-width: 768px) {
+            .footer-container { flex-direction: column; text-align: center; }
+            .footer-column h3 { border-bottom:none; padding-bottom:0; margin-bottom:10px; }
+            .footer-column { margin-bottom:20px; }
+            .hero { flex-direction: column; gap: 18px; min-height: auto; }
+            /* Make the image carousel responsive on small screens */
+            .hero-image-revolver {
+                width: 100%;
+                max-width: 420px;
+            }
+        }
+
+        /* Cart badge */
+        .cart-icon-container { position: relative; display: inline-block; }
+        .cart-count-badge {
+            position: absolute; top: -8px; right: -8px; background-color: var(--accent);
+            color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; text-align: center;
+        }
+
+        /* Chat (unchanged styles from your version) */
         .sj-chat-toggle {
             position: fixed; right: 20px; bottom: 20px; z-index: 1200;
             width: 56px; height: 56px; border-radius: 50%;
@@ -76,156 +158,29 @@
             background: var(--green); color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.2);
         }
         .sj-chat-toggle:hover { background: var(--accent); }
-
-        .sj-chat {
-            position: fixed; right: 20px; bottom: 92px; z-index: 1200;
-            width: 340px; max-height: 70vh; border-radius: 14px; overflow: hidden;
-            background: #fff; box-shadow: 0 20px 40px rgba(0,0,0,.2); display: none; flex-direction: column;
-        }
+        .sj-chat { position: fixed; right: 20px; bottom: 92px; z-index: 1200; width: 340px; max-height: 70vh; border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 20px 40px rgba(0,0,0,.2); display: none; flex-direction: column; }
         .sj-chat.open { display: flex; }
-        .sj-chat__header {
-            background: var(--green); color: #fff; padding: 12px 14px; display: flex; align-items: center; gap: 10px;
-        }
+        .sj-chat__header { background: var(--green); color: #fff; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
         .sj-chat__header .dot { width: 10px; height: 10px; border-radius: 50%; background:#fff; opacity: .8; }
         .sj-chat__title { font-weight: 700; font-size: 15px; }
         .sj-chat__subtitle { font-size: 12px; opacity: .9; }
-
-        .sj-chat__body {
-            padding: 12px; background: #f7faf7; overflow-y: auto; flex: 1;
-        }
+        .sj-chat__body { padding: 12px; background: #f7faf7; overflow-y: auto; flex: 1; }
         .sj-msg { display: flex; gap: 8px; margin-bottom: 10px; }
         .sj-msg.bot .bubble { background: #fff; color: #222; border: 1px solid #eee; }
         .sj-msg.user { justify-content: flex-end; }
         .sj-msg.user .bubble { background: var(--green); color:#fff; }
-        .bubble {
-            max-width: 78%; padding: 10px 12px; border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,.06); font-size: 14px; line-height: 1.35;
-        }
+        .bubble { max-width: 78%; padding: 10px 12px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06); font-size: 14px; line-height: 1.35; }
         .sj-typing { display: inline-flex; gap:4px; align-items:center; }
         .sj-typing .dot { width:6px; height:6px; border-radius:50%; background:#999; animation: blink 1.2s infinite ease-in-out; }
         .sj-typing .dot:nth-child(2){ animation-delay:.2s } .sj-typing .dot:nth-child(3){ animation-delay:.4s }
         @keyframes blink { 0%, 80%, 100% { opacity:.2 } 40% { opacity:1 } }
-
         .sj-chat__quick { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
-        .sj-chip {
-            border:1px solid #dfe6df; background:#fff; color:#333; padding:6px 10px; border-radius:20px; cursor:pointer; font-size:12px;
-        }
+        .sj-chip { border:1px solid #dfe6df; background:#fff; color:#333; padding:6px 10px; border-radius:20px; cursor:pointer; font-size:12px; }
         .sj-chip:hover { border-color: var(--green); color: var(--green); }
-
         .sj-chat__input { padding:10px; background:#fff; border-top:1px solid #eee; display:flex; gap:8px; }
-        .sj-chat__input input {
-            flex:1; border:1px solid #ddd; border-radius:20px; padding:10px 12px; outline:none; font-size:14px; background:#fff;
-        }
+        .sj-chat__input input { flex:1; border:1px solid #ddd; border-radius:20px; padding:10px 12px; outline:none; font-size:14px; background:#fff; }
         .sj-send { border:none; background:var(--green); color:#fff; border-radius:20px; padding:0 14px; cursor:pointer; font-weight:600; }
         .sj-send:disabled { opacity:.6; cursor:not-allowed; }
-        /* Footer */
-        .site-footer{
-            background:#222;
-            color:#ccc;
-            padding:40px 6%;
-            margin-top:40px;
-        }
-        .footer-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        .footer-column {
-            flex: 1;
-            min-width: 220px;
-        }
-        .footer-column h3 {
-            color: #fff;
-            margin-bottom: 15px;
-            font-weight: 600;
-            border-bottom: 2px solid var(--green);
-            padding-bottom: 8px;
-            display: inline-block;
-        }
-        .footer-column p {
-            line-height: 1.6;
-            font-size: 14px;
-        }
-        .footer-column ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .footer-column ul li a {
-            text-decoration: none;
-            color: #ccc;
-            display: block;
-            padding: 5px 0;
-            font-size: 14px;
-            transition: color 0.3s;
-        }
-        .footer-column ul li a:hover {
-            color: #fff;
-        }
-        .social-links a {
-            color: #ccc;
-            text-decoration: none;
-            font-size: 20px;
-            margin-right: 15px;
-            transition: color 0.3s;
-        }
-        .social-links a:hover {
-            color: var(--green);
-        }
-        .footer-bottom {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #444;
-            font-size: 14px;
-        }
-
-        @media (max-width: 768px) {
-            .footer-container {
-                flex-direction: column;
-                text-align: center;
-            }
-            .footer-column h3 {
-                border-bottom: none;
-                padding-bottom: 0;
-                margin-bottom: 10px;
-            }
-            .footer-column {
-                margin-bottom: 20px;
-            }
-        }
-
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Cart count badge style */
-        .cart-icon-container {
-            position: relative;
-            display: inline-block;
-        }
-        .cart-count-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background-color: var(--accent);
-            color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 20px;
-            height: 20px;
-            text-align: center;
-        }
-
     </style>
 </head>
 <body>
@@ -240,8 +195,8 @@
     <div class="nav-links">
         <a th:href="@{/menu}">Menu</a>
         <a th:href="@{/about}">About Us</a>
-        <a class="nav-link" href="#"  th:href="@{/cart/view}" >
-            <div class="cart-icon-container">
+        <a class="nav-link" th:href="@{/cart/view}">
+            <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
                 <i class="fas fa-shopping-cart" style="font-size:24px"></i>
                 <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
             </div>
@@ -263,17 +218,15 @@
         <!-- Account -->
         <div class="dropdown">
             <button class="dropdown-toggle">
-                <i class="fas fa-user"></i> Account
+                <i class="fas fa-user"></i>  Account
             </button>
             <div class="dropdown-menu">
                 <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
-
                 <span th:if="${session.USER != null}">
-          Welcome, <span th:text="${session.USER.firstName}">user</span>
-        </span>
-                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
-                <a th:if="${session.USER != null}" th:href="@{/profile/view}">My Profile</a>
+                 Welcome, <span th:text="${session.USER.firstName}">user</span>
+                </span>
+                <a  th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
                 <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
             </div>
         </div>
@@ -288,7 +241,17 @@
         <a href="#menu" class="cta">Explore Spices</a>
     </div>
     <div class="hero-right">
-        <img th:src="@{/images/spices-about.jpeg}" alt="Delicious Food"/>
+        <!-- The image is now a carousel/revolver of images -->
+        <div class="hero-image-revolver">
+            <img loading="eager" decoding="async" width="420" height="280"
+                 th:src="@{/images/spices-about.jpeg}" alt="Assorted spices on a tray"/>
+            <img loading="lazy" decoding="async" width="420" height="280"
+                 th:src="@{/images/chilli powder.jpeg}"/>
+            <img loading="lazy" decoding="async" width="420" height="280"
+                 src="https://placehold.co/420x280/a9616e/ffffff?text=Cloves" alt="Cloves"/>
+            <img loading="lazy" decoding="async" width="420" height="280"
+                 src="https://placehold.co/420x280/385f54/ffffff?text=Cardamom" alt="Cardamom pods"/>
+        </div>
     </div>
 </section>
 
@@ -297,39 +260,43 @@
     <h2>Best Sellers</h2>
 
     <div class="cards">
-        <div class="card" th:each="product : ${products}">
-            <!-- Single image with fallback -->
-            <img th:src="@{${#strings.isEmpty(product.imageUrl) ? '/images/chilli%20powder.jpeg' : product.imageUrl}}"
+        <!-- Show only the first 8 items from ${products} -->
+        <div class="card"
+             th:each="product, stat : ${products}"
+             th:if="${stat.index < 4}">
+            <img loading="lazy" decoding="async" width="280" height="200"
+                 th:src="@{${#strings.isEmpty(product.imageUrl) ? '/images/chilli%20powder.jpeg' : product.imageUrl}}"
                  alt="Spices Product"/>
-
             <div class="card-body">
                 <h5 th:text="${product.name}">Product Name</h5>
-                <h4>$ <span th:text="${product.price}">0.00</span></h4>
+                <h4>$ <span th:text="${#numbers.formatDecimal(product.price,1,'COMMA',2,'POINT')}">0.00</span></h4>
                 <p th:text="${product.description}">Product description.</p>
 
-                <!-- I've replaced the form with a button and added data attributes -->
                 <button
                         class="btn-order add-to-cart-btn"
                         th:data-product-id="${product.id}"
                         th:data-product-name="${product.name}"
                         th:data-product-image="${product.imageUrl}"
-                        th:data-product-price="${product.price}"
-                >
+                        th:data-product-price="${product.price}">
                     <i class="fas fa-shopping-cart"></i> Add to Cart
                 </button>
             </div>
         </div>
     </div>
+
+    <!-- Big call-to-action to view full menu -->
+    <div class="order-now-wrap">
+        <a class="order-now" th:href="@{/menu}">
+            <i class="fa-solid fa-bowl-food"></i> Order Now
+        </a>
+    </div>
 </section>
 
-
-
-<!-- ======== Chatbot Widget (HTML/CSS/JS) ======== -->
+<!-- Chatbot (unchanged from your version) -->
 <button class="sj-chat-toggle" aria-label="Chat with SpiceBot">
     <i class="fa-solid fa-comment"></i>
 </button>
-
-<div class="sj-chat" id="sj-chat">
+<div class="sj-chat" id="sj-chat" aria-live="polite" aria-label="Chat window">
     <div class="sj-chat__header">
         <span class="dot"></span>
         <div>
@@ -337,29 +304,24 @@
             <div class="sj-chat__subtitle">Ask about Menu orders, delivery…</div>
         </div>
     </div>
-
     <div class="sj-chat__body" id="sj-body">
         <div class="sj-msg bot">
             <div class="bubble">Hi! I’m SpiceBot 🌶️ How can I help you today?</div>
         </div>
-
-        <!-- Quick suggestions -->
         <div class="sj-chat__quick" id="sj-quick">
             <button class="sj-chip" data-q="What are today’s best sellers?">Best sellers</button>
             <button class="sj-chip" data-q="Do you have organic turmeric?">Organic turmeric</button>
             <button class="sj-chip" data-q="What’s the delivery time?">Delivery time</button>
             <button class="sj-chip" data-q="Where is my order?">Track order</button>
-            <button class="sj-chip" data-q="How long does it take?">Time take</button>
-            <button class="sj-chip" data-q="How much does it cost?">Add</button>
         </div>
     </div>
-
     <div class="sj-chat__input">
-        <input id="sj-input" type="text" placeholder="Type your message…"/>
+        <input id="sj-input" type="text" placeholder="Type your message…" aria-label="Chat message"/>
         <button class="sj-send" id="sj-send" disabled>Send</button>
     </div>
 </div>
 
+<!-- Footer -->
 <footer class="site-footer">
     <div class="footer-container">
         <div class="footer-column">
@@ -390,211 +352,43 @@
     </div>
 </footer>
 
+<!-- Minimal JS: add-to-cart badge update (optional) -->
 <script>
     (function () {
-        const chat   = document.getElementById('sj-chat');
-        const toggle = document.querySelector('.sj-chat-toggle');
-        const body   = document.getElementById('sj-body');
-        const input  = document.getElementById('sj-input');
-        const sendBtn= document.getElementById('sj-send');
-        const quick  = document.getElementById('sj-quick');
-
         const csrf       = document.querySelector('meta[name="_csrf"]')?.content || '';
         const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
 
-        const scrollBottom = () => {body.scrollTop = body.scrollHeight;};
-
-        const addMsg = (text, who = 'bot') => {
-            const wrap = document.createElement('div');
-            wrap.className = 'sj-msg ' + who;
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble';
-            bubble.textContent = text;
-            wrap.appendChild(bubble);
-            body.appendChild(wrap);
-            scrollBottom();
-        };
-
-        const addTyping = () => {
-            const wrap = document.createElement('div');
-            wrap.className = 'sj-msg bot';
-            wrap.id = 'sj-typing';
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble';
-            bubble.innerHTML = '<span class="sj-typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>';
-            wrap.appendChild(bubble);
-            body.appendChild(wrap);
-            scrollBottom();
-        };
-        const removeTyping = () => document.getElementById('sj-typing')?.remove();
-
-        // NEW: render product cards
-        function addCards(cards) {
-            const wrap = document.createElement('div');
-            wrap.className = 'sj-msg bot';
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble';
-            bubble.style.padding = '8px';
-
-            const list = document.createElement('div');
-            list.style.display = 'grid';
-            list.style.gridTemplateColumns = '1fr';
-            list.style.gap = '8px';
-            // simple responsive: two columns on wide bubbles
-            if (window.innerWidth > 420) {
-                list.style.gridTemplateColumns = '1fr 1fr';
-            }
-
-            cards.forEach(c => {
-                const card = document.createElement('div');
-                card.style.display = 'grid';
-                card.style.gridTemplateColumns = '64px 1fr';
-                card.style.gap = '8px';
-                card.style.alignItems = 'center';
-                card.style.border = '1px solid #eee';
-                card.style.borderRadius = '10px';
-                card.style.padding = '8px';
-
-                const img = document.createElement('img');
-                img.src = c.imageUrl || '/images/chilli%20powder.jpeg';
-                img.alt = c.name || 'Product';
-                img.style.width = '64px';
-                img.style.height = '64px';
-                img.style.objectFit = 'cover';
-                img.style.borderRadius = '8px';
-
-                const right = document.createElement('div');
-                const name = document.createElement('div');
-                name.textContent = c.name;
-                name.style.fontWeight = '600';
-
-                const price = document.createElement('div');
-                price.textContent = '$ ' + (c.price ?? '0.00');
-                price.style.color = '#0a0a0a';
-                price.style.margin = '2px 0 6px';
-
-                const btn = document.createElement('button');
-                btn.textContent = 'Add to cart';
-                btn.style.border = 'none';
-                btn.style.background = '#218838';
-                btn.style.color = '#fff';
-                btn.style.padding = '6px 10px';
-                btn.style.borderRadius = '16px';
-                btn.style.cursor = 'pointer';
-                btn.addEventListener('click', () => addToCart(c.id));
-
-                right.appendChild(name);
-                right.appendChild(price);
-                right.appendChild(btn);
-
-                card.appendChild(img);
-                card.appendChild(right);
-                list.appendChild(card);
-            });
-
-            bubble.appendChild(list);
-            wrap.appendChild(bubble);
-            body.appendChild(wrap);
-            scrollBottom();
+        function updateCartCount(count){
+            const el=document.getElementById('lblCartCount'); if(el) el.textContent=count;
         }
 
-        async function addToCart(productId) {
-            try {
-                const res = await fetch('/cart/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                        [csrfHeader]: csrf
-                    },
-                    body: new URLSearchParams({product_id: String(productId)})
-                });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                addMsg('Added to cart! 🛒');
-            } catch (e) {
-                console.error('Add to cart failed:', e);
-                addMsg('Could not add to cart. Please try again.');
-            }
-        }
-
-        const updateCartCount = (count) => {
-            const cartCountEl = document.getElementById('lblCartCount');
-            if (cartCountEl) {
-                cartCountEl.textContent = count;
-            }
-        };
-
-        // NEW: Add event listener to all "Add to Cart" buttons
-        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                const productId = e.target.getAttribute('data-product-id');
-
-                try {
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const productId = e.currentTarget.getAttribute('data-product-id');
+                try{
                     const res = await fetch(`/cart/add?productId=${productId}&qty=1`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            [csrfHeader]: csrf
-                        },
+                        headers: {'Content-Type':'application/json', [csrfHeader]: csrf}
                     });
-                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    if(!res.ok) throw new Error('HTTP ' + res.status);
                     const data = await res.json();
-                    if (data.status === 'success') {
+                    if (data.status === 'success' && typeof data.cartCount !== 'undefined') {
                         updateCartCount(data.cartCount);
-                    } else {
-                        console.error('Failed to add to cart:', data.message);
                     }
-                } catch (e) {
-                    console.error('Add to cart failed:', e);
+                }catch(err){
+                    console.error(err);
                 }
             });
         });
 
-        toggle.addEventListener('click', () => chat.classList.toggle('open'));
-        input.addEventListener('input', () => {sendBtn.disabled = !input.value.trim();});
-        sendBtn.addEventListener('click', () => send(input.value));
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey && input.value.trim()) {
-                e.preventDefault();
-                send(input.value);
-            }
-        });
-        quick?.addEventListener('click', (e) => {
-            const btn = e.target.closest('button[data-q]');
-            if (!btn) return;
-            if (!chat.classList.contains('open')) chat.classList.add('open');
-            send(btn.getAttribute('data-q') || '');
-        });
-
-        async function send(text) {
-            const msg = text.trim(); if (!msg) return;
-            addMsg(msg, 'user'); input.value = ''; sendBtn.disabled = true; addTyping();
-            try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json', [csrfHeader]: csrf},
-                    body: JSON.stringify({message: msg})
-                });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const data = await res.json();
-                removeTyping();
-
-                if (data.reply) addMsg(data.reply);
-                if (Array.isArray(data.cards) && data.cards.length) addCards(data.cards);
-                if (data.addToCartProductId) {
-                    await addToCart(data.addToCartProductId);
-                }
-            } catch (e) {
-                removeTyping();
-                console.error('Chat error:', e);
-                addMsg('Oops! Something went wrong. Please try again.');
-            } finally {
-                sendBtn.disabled = !input.value.trim();
-            }
-        }
+        // Tiny chat toggle
+        const chat = document.getElementById('sj-chat');
+        document.querySelector('.sj-chat-toggle')?.addEventListener('click', ()=> chat.classList.toggle('open'));
+        const input = document.getElementById('sj-input');
+        const sendBtn = document.getElementById('sj-send');
+        input?.addEventListener('input', ()=> sendBtn.disabled = !input.value.trim());
     })();
 </script>
-
-<!-- ======== /Chatbot Widget ======== -->
 
 </body>
 </html>

@@ -1,9 +1,13 @@
 // src/main/java/com/example/foodapp/controller/OrderController.java
 package com.example.foodapp.controller;
 
+import com.example.foodapp.model.Address;
 import com.example.foodapp.model.Order;
 import com.example.foodapp.model.OrderItem;
+import com.example.foodapp.model.User;
+import com.example.foodapp.service.AddressService;
 import com.example.foodapp.service.OrderService;
+import com.example.foodapp.service.UserService;
 import com.example.foodapp.util.Cart;
 import com.example.foodapp.util.CartItem;
 import jakarta.servlet.http.HttpSession;
@@ -25,28 +29,49 @@ import java.util.stream.Collectors;
 public class OrderController {
 
     private final OrderService orderService;
-    public OrderController(OrderService orderService) { this.orderService = orderService; }
 
-    /** 1) Show the shipping/checkout form (cart summary is on the right). */
+    private final UserService userService;
+    private final AddressService addressService;
+
+    public OrderController(OrderService orderService, UserService userService, AddressService addressService) {
+        this.orderService = orderService;
+        this.userService = userService;
+        this.addressService = addressService;
+    }
+
+    /**
+     * 1) Show the shipping/checkout form (cart summary is on the right).
+     */
     @GetMapping("/checkout")
     public String checkout(Model m, HttpSession session) {
-        Object user = session.getAttribute("USER");
-        if (user == null) return "redirect:/login";
+        Object sessionUser = session.getAttribute("USER");
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
 
         Cart cart = (Cart) session.getAttribute("CART");
-        if (cart == null || cart.isEmpty()) return "redirect:/cart/view";
+        if (cart == null || cart.isEmpty()) {
+            return "redirect:/cart/view";
+        }
+
+        // Load saved addresses for the chooser
+        Long userId = extractUserId(sessionUser);
+        userService.findById(userId).ifPresent(u ->
+                m.addAttribute("addresses", addressService.listForUser(u)));
 
         m.addAttribute("cart", cart);
         return "checkout";
     }
 
-    /** 2) Create the order, then redirect to the unified payment page. */
+
     @PostMapping("/place")
     public String submit(
-            // The @RequestParam names have been updated to match the 'name' attributes in the checkout.html form.
+            @RequestParam(required = false) Long addressId, // may be present when a saved address was selected
+
+            // typed fields (used when addressId is not provided or to fill gaps)
             @RequestParam String customerName,
             @RequestParam String email,
-            @RequestParam String street,
+            @RequestParam String line1,
             @RequestParam String phone,
             @RequestParam String city,
             @RequestParam String state,
@@ -55,6 +80,8 @@ public class OrderController {
             HttpSession session) {
 
         Object sessionUser = session.getAttribute("USER");
+        if (sessionUser == null) return "redirect:/login";
+
         Long userId = extractUserId(sessionUser);
 
         Cart cart = (Cart) session.getAttribute("CART");
@@ -62,19 +89,39 @@ public class OrderController {
             return "redirect:/cart/view";
         }
 
+        // 1) If a saved address was chosen, override typed fields (defensively ensure it belongs to this user)
+        if (addressId != null) {
+            Address a = addressService.findById(addressId).orElse(null);
+            if (a != null) {
+                Long ownerId = (a.getUser() != null ? a.getUser().getId() : null);
+                if (ownerId != null && ownerId.equals(userId)) {
+                    customerName = nvl(a.getFullName(), customerName);
+                    phone        = nvl(a.getPhone(),    phone);
+                    line1       = nvl(a.getLine1(),  line1);
+                    city         = nvl(a.getCity(),     city);
+                    state        = nvl(a.getState(),    state);
+                    zip          = nvl(a.getZip(),      zip);
+                    country      = nvl(a.getCountry(),  country);
+                    // Note: email typically remains what the user typed / account email.
+                }
+            }
+        }
+
+        // 2) Build order (once)
         Order o = new Order();
         o.setCreatedAt(LocalDateTime.now());
         o.setUserId(userId);
 
-        // Set the fields on the order object using the corrected request parameters.
         o.setCustomerName(customerName);
         o.setEmail(email);
         o.setPhone(phone);
-        o.setStreet(street);
+        o.setStreet(line1);
         o.setCity(city);
         o.setState(state);
         o.setZip(zip);
         o.setCountry(country);
+
+        o.setConfirmationNumber(orderService.generateUniqueConfirmationNumber());
 
         o.setItems(cart.getItems().stream().map(ci -> {
             OrderItem it = new OrderItem();
@@ -82,33 +129,33 @@ public class OrderController {
             it.setProductName(ci.getName());
             it.setQuantity(ci.getQty());
             it.setPrice(ci.getPrice());
+            it.setImageUrl(ci.getImageUrl());
             return it;
         }).collect(Collectors.toList()));
 
-        // Totals (prefer cart if present)
+        // 3) Totals
         BigDecimal subtotal = nz(cart.getSubtotal());
         if (subtotal.signum() == 0) {
-            // fallback: sum items
             subtotal = cart.getItems().stream()
                     .map(CartItem::getSubtotal)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
         }
-        BigDecimal tax = subtotal.multiply(new BigDecimal("0.08"))
-                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal tax   = subtotal.multiply(new BigDecimal("0.08")).setScale(2, RoundingMode.HALF_UP);
         BigDecimal grand = subtotal.add(tax).setScale(2, RoundingMode.HALF_UP);
+
+        // If your Order entity has these fields, set them (otherwise your service may compute them):
 
 
         o.setStatus("PENDING_PAYMENT");
 
-        // Save
+        // 4) Save & clear cart
         orderService.save(o);
-
-        // Clear cart
         cart.clear();
 
-        // ➜ Go to payment chooser page
+        // 5) Redirect to payment page
         return "redirect:/payment/checkout?orderId=" + o.getId();
     }
+
 
 
 
@@ -157,14 +204,22 @@ public class OrderController {
 //    }
 
 
-
     private Long extractUserId(Object sessionUser) {
         try {
             var m = sessionUser.getClass().getMethod("getId");
             Object id = m.invoke(sessionUser);
             return (id instanceof Number) ? ((Number) id).longValue() : null;
-        } catch (Exception e) { return null; }
+        } catch (Exception e) {
+            return null;
+        }
     }
 
-    private static BigDecimal nz(BigDecimal v){ return v == null ? BigDecimal.ZERO : v; }
+    private static BigDecimal nz(BigDecimal v) {
+        return v == null ? BigDecimal.ZERO : v;
+    }
+
+
+    private static String nvl(String val, String fallback) {
+        return (val == null || val.isBlank()) ? fallback : val;
+    }
 }

@@ -525,6 +525,7 @@
 <!-- Navbar -->
 
 <!-- Navbar -->
+<!-- Navbar -->
 <nav class="navbar">
     <a href="/" class="brand-logo">
         <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
@@ -534,8 +535,8 @@
     <div class="nav-links">
         <a th:href="@{/menu}">Menu</a>
         <a th:href="@{/about}">About Us</a>
-        <a class="nav-link" href="#"  th:href="@{/cart/view}" >
-            <div class="cart-icon-container">
+        <a class="nav-link" th:href="@{/cart/view}">
+            <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
                 <i class="fas fa-shopping-cart" style="font-size:24px"></i>
                 <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
             </div>
@@ -557,22 +558,21 @@
         <!-- Account -->
         <div class="dropdown">
             <button class="dropdown-toggle">
-                <i class="fas fa-user"></i> Account
+                <i class="fas fa-user"></i>  Account
             </button>
             <div class="dropdown-menu">
                 <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
-
                 <span th:if="${session.USER != null}">
-          Welcome, <span th:text="${session.USER.firstName}">user</span>
-        </span>
-                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
-                <a th:if="${session.USER != null}" th:href="@{/profile/view}">My Profile</a>
+                 Welcome, <span th:text="${session.USER.firstName}">user</span>
+                </span>
+                <a  th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
                 <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
             </div>
         </div>
     </div>
 </nav>
+
 
 <div class="container">
 
@@ -641,7 +641,7 @@
                                 </form>
 
                                 <span class="separator">|</span>
-                                <a href="#">Compare with similar items</a>
+                                <a href="#" th:href="@{/menu}"class="item-stock">Compare with similar items</a>
                             </div>
                         </div>
 
