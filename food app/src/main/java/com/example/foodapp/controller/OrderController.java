@@ -7,7 +7,6 @@ import com.example.foodapp.model.OrderItem;
 import com.example.foodapp.model.User;
 import com.example.foodapp.service.AddressService;
 import com.example.foodapp.service.OrderService;
-import com.example.foodapp.service.UserService;
 import com.example.foodapp.util.Cart;
 import com.example.foodapp.util.CartItem;
 import jakarta.servlet.http.HttpSession;
@@ -17,112 +16,78 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/order")
-public class OrderController {
+public class OrderController extends BaseController {
 
     private final OrderService orderService;
-
-    private final UserService userService;
     private final AddressService addressService;
 
-    public OrderController(OrderService orderService, UserService userService, AddressService addressService) {
+    public OrderController(OrderService orderService, AddressService addressService) {
         this.orderService = orderService;
-        this.userService = userService;
         this.addressService = addressService;
     }
 
-    /**
-     * 1) Show the shipping/checkout form (cart summary is on the right).
-     */
     @GetMapping("/checkout")
     public String checkout(Model m, HttpSession session) {
-        Object sessionUser = session.getAttribute("USER");
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
 
         Cart cart = (Cart) session.getAttribute("CART");
-        if (cart == null || cart.isEmpty()) {
-            return "redirect:/cart/view";
-        }
+        if (cart == null || cart.isEmpty()) return "redirect:/cart/view";
 
-        // Load saved addresses for the chooser
-        Long userId = extractUserId(sessionUser);
-        userService.findById(userId).ifPresent(u ->
-                m.addAttribute("addresses", addressService.listForUser(u)));
-
+        m.addAttribute("currentUser", user);
+        m.addAttribute("addresses", addressService.listForUser(user));
         m.addAttribute("cart", cart);
         return "checkout";
     }
 
-
     @PostMapping("/place")
-    public String submit(
-            @RequestParam(required = false) Long addressId, // may be present when a saved address was selected
-
-            // typed fields (used when addressId is not provided or to fill gaps)
-            @RequestParam String customerName,
-            @RequestParam String email,
-            @RequestParam String line1,
-            @RequestParam String phone,
-            @RequestParam String city,
-            @RequestParam String state,
-            @RequestParam String zip,
-            @RequestParam String country,
-            HttpSession session) {
-
-        Object sessionUser = session.getAttribute("USER");
-        if (sessionUser == null) return "redirect:/login";
-
-        Long userId = extractUserId(sessionUser);
+    public String place(@RequestParam(required = false) Long addressId,
+                        @RequestParam String customerName,
+                        @RequestParam String email,
+                        @RequestParam String phone,
+                       // @RequestParam String street,
+                        @RequestParam String city,
+                        @RequestParam String state,
+                        @RequestParam String zip,
+                        @RequestParam String country,
+                        HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
 
         Cart cart = (Cart) session.getAttribute("CART");
-        if (cart == null || cart.isEmpty()) {
-            return "redirect:/cart/view";
-        }
+        if (cart == null || cart.isEmpty()) return "redirect:/cart/view";
 
-        // 1) If a saved address was chosen, override typed fields (defensively ensure it belongs to this user)
+        // override with saved address (defensive check)
         if (addressId != null) {
             Address a = addressService.findById(addressId).orElse(null);
-            if (a != null) {
-                Long ownerId = (a.getUser() != null ? a.getUser().getId() : null);
-                if (ownerId != null && ownerId.equals(userId)) {
-                    customerName = nvl(a.getFullName(), customerName);
-                    phone        = nvl(a.getPhone(),    phone);
-                    line1       = nvl(a.getLine1(),  line1);
-                    city         = nvl(a.getCity(),     city);
-                    state        = nvl(a.getState(),    state);
-                    zip          = nvl(a.getZip(),      zip);
-                    country      = nvl(a.getCountry(),  country);
-                    // Note: email typically remains what the user typed / account email.
-                }
+            if (a != null && a.getUser() != null && a.getUser().getId().equals(user.getId())) {
+                customerName = nvl(a.getFullName(), customerName);
+                phone       = nvl(a.getPhone(), phone);
+              //  street      = nvl(a.getLine1(), street);
+                city        = nvl(a.getCity(), city);
+                state       = nvl(a.getState(), state);
+                zip         = nvl(a.getZip(), zip);
+                country     = nvl(a.getCountry(), country);
             }
         }
 
-        // 2) Build order (once)
         Order o = new Order();
         o.setCreatedAt(LocalDateTime.now());
-        o.setUserId(userId);
-
+        o.setUserId(user.getId());
         o.setCustomerName(customerName);
         o.setEmail(email);
         o.setPhone(phone);
-        o.setStreet(line1);
+       // o.setStreet(street);
         o.setCity(city);
         o.setState(state);
         o.setZip(zip);
         o.setCountry(country);
-
         o.setConfirmationNumber(orderService.generateUniqueConfirmationNumber());
-
         o.setItems(cart.getItems().stream().map(ci -> {
             OrderItem it = new OrderItem();
             it.setProductId(ci.getProductId());
@@ -133,93 +98,22 @@ public class OrderController {
             return it;
         }).collect(Collectors.toList()));
 
-        // 3) Totals
         BigDecimal subtotal = nz(cart.getSubtotal());
         if (subtotal.signum() == 0) {
-            subtotal = cart.getItems().stream()
-                    .map(CartItem::getSubtotal)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            subtotal = cart.getItems().stream().map(CartItem::getSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
         }
-        BigDecimal tax   = subtotal.multiply(new BigDecimal("0.08")).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal tax = subtotal.multiply(new BigDecimal("0.08")).setScale(2, RoundingMode.HALF_UP);
         BigDecimal grand = subtotal.add(tax).setScale(2, RoundingMode.HALF_UP);
-
-        // If your Order entity has these fields, set them (otherwise your service may compute them):
 
 
         o.setStatus("PENDING_PAYMENT");
 
-        // 4) Save & clear cart
         orderService.save(o);
         cart.clear();
 
-        // 5) Redirect to payment page
         return "redirect:/payment/checkout?orderId=" + o.getId();
     }
 
-
-
-
-//    @GetMapping("/confirm")
-//    public String showOrderConfirmation(@RequestParam Long orderId, Model model) {
-//        // Retrieve the order details using the service
-//        Order order = orderService.getOrderById(orderId);
-//
-//        // Concatenate address fields to match the single string required by the HTML template
-//        String shippingAddress = String.format("%s, %s, %s %s",
-//                order.getStreet(),
-//                order.getCity(),
-//                order.getState(),
-//                order.getZip());
-//
-//        // Add the order and related data to the model for the template
-//        model.addAttribute("order", order);
-//        model.addAttribute("subject", "Your Order is Confirmed!");
-//        model.addAttribute("preheader", "Thanks for your order — it’s on the way!");
-//        model.addAttribute("firstName", order.getCustomerName());
-//        model.addAttribute("orderNumber", order.getId());
-//        model.addAttribute("status", order.getStatus());
-//        model.addAttribute("orderDate", order.getCreatedAt().format(DateTimeFormatter.ofPattern("MMM dd, yyyy")));
-//        model.addAttribute("shippingAddress", shippingAddress);
-//        model.addAttribute("items", order.getItems());
-//
-//        // Use the derived calculations from the Order model
-//        model.addAttribute("subtotal", String.format("$%.2f", order.getSubtotal()));
-//        model.addAttribute("tax", String.format("$%.2f", order.getTax()));
-//        model.addAttribute("total", String.format("$%.2f", order.getGrandTotal()));
-//
-//        // Mocks for template variables
-//        model.addAttribute("links", Map.of(
-//                "home", "/",
-//                "orders", "/orders",
-//                "help", "/help",
-//                "unsub", "/unsubscribe"
-//        ));
-//        model.addAttribute("assets", Map.of(
-//                "logo", "/images/spice-jar-logo.png"
-//        ));
-//        model.addAttribute("year", java.time.LocalDate.now().getYear());
-//
-//        // Return the name of the Thymeleaf template
-//        return "order_confirmation";
-//    }
-
-
-    private Long extractUserId(Object sessionUser) {
-        try {
-            var m = sessionUser.getClass().getMethod("getId");
-            Object id = m.invoke(sessionUser);
-            return (id instanceof Number) ? ((Number) id).longValue() : null;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private static BigDecimal nz(BigDecimal v) {
-        return v == null ? BigDecimal.ZERO : v;
-    }
-
-
-    private static String nvl(String val, String fallback) {
-        return (val == null || val.isBlank()) ? fallback : val;
-    }
+    private static BigDecimal nz(BigDecimal v) { return v == null ? BigDecimal.ZERO : v; }
+    private static String nvl(String v, String fb) { return (v == null || v.isBlank()) ? fb : v; }
 }

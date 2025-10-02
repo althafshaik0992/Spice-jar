@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Your Account • The Spice Jar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <style>
+        :root { --green:#218838; --accent:#b7410e; --ink:#0f172a; --muted:#6b7280; --bg:#f6fbf6; --card:#fff; }
+        *{box-sizing:border-box}
+        body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:var(--bg);color:var(--ink)}
+
+        /* Navbar (reusing your site look) */
+        .navbar{background:#fff;padding:10px 6%;box-shadow:0 2px 6px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000}
+        .brand-logo{display:flex;align-items:center;gap:8px;color:var(--green);text-decoration:none;font-weight:800}
+        .brand-logo video{width:36px;border-radius:6px}
+        .nav-links{display:flex;align-items:center;gap:18px}
+        .nav-links a{color:#333;text-decoration:none;font-weight:600}
+        .nav-links a:hover{color:var(--green)}
+
+        /* Dropdowns (same behavior) */
+        .dropdown{position:relative}
+        .dropdown-toggle{background:none;border:none;cursor:pointer;font-size:15px;color:#333;display:flex;align-items:center;gap:6px}
+        .dropdown-menu{display:none;position:absolute;right:0;top:100%;background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.1);border-radius:6px;overflow:hidden;min-width:180px}
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a,.dropdown-menu span{display:block;padding:10px 16px;text-decoration:none;color:#333;white-space:nowrap}
+        .dropdown-menu a:hover{background:#f4f4f4}
+
+        /* Cart badge */
+        .cart-icon-container{position:relative;display:inline-block}
+        .cart-count-badge{position:absolute;top:-8px;right:-8px;background:var(--accent);color:#fff;border-radius:999px;padding:2px 6px;font-size:12px;font-weight:700;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center}
+
+        /* Page */
+        .wrap{max-width:1100px;margin:24px auto;padding:0 6%}
+        .page-title{display:flex;align-items:center;gap:10px;font-size:28px;margin:6px 0 14px}
+        .page-title i{color:var(--green)}
+        .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+        @media (max-width:1000px){ .grid{grid-template-columns:repeat(2,1fr)} }
+        @media (max-width:640px){ .grid{grid-template-columns:1fr} }
+
+        .tile{background:var(--card);border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.06);padding:16px;display:flex;gap:14px;align-items:flex-start;transition:transform .06s ease, box-shadow .2s}
+        .tile:hover{transform:translateY(-2px);box-shadow:0 16px 28px rgba(0,0,0,.09)}
+        .tile .ic{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:#eef4ee;color:var(--green);font-size:22px;flex-shrink:0}
+        .tile h3{margin:0 0 6px;font-size:18px}
+        .tile p{margin:0;color:var(--muted);font-size:14px;line-height:1.45}
+        .tile a{display:inline-flex;align-items:center;gap:6px;margin-top:10px;text-decoration:none;color:var(--green);font-weight:700}
+        .tile a:hover{color:var(--accent)}
+
+        /* Footer (matches the rest of your site) */
+        .site-footer{background:#222;color:#ccc;padding:40px 6%;margin-top:40px}
+        .footer-container{display:flex;flex-wrap:wrap;justify-content:space-between;gap:30px;margin-bottom:30px}
+        .footer-column{flex:1;min-width:220px}
+        .footer-column h3{color:#fff;margin-bottom:15px;font-weight:600;border-bottom:2px solid var(--green);padding-bottom:8px;display:inline-block}
+        .footer-column p{line-height:1.6;font-size:14px}
+        .footer-column ul{list-style:none;padding:0;margin:0}
+        .footer-column ul li a{text-decoration:none;color:#ccc;display:block;padding:5px 0;font-size:14px}
+        .footer-column ul li a:hover{color:#fff}
+        .social-links a{color:#ccc;text-decoration:none;font-size:20px;margin-right:15px}
+        .social-links a:hover{color:var(--green)}
+        .footer-bottom{text-align:center;padding-top:20px;border-top:1px solid #444;font-size:14px}
+        @media (max-width:768px){ .footer-container{flex-direction:column;text-align:center} .footer-column h3{border-bottom:none;margin-bottom:10px} }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/" class="brand-logo">
+        <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
+        <span>SpiceJar</span>
+    </a>
+
+    <div class="nav-links">
+        <a th:href="@{/menu}">Menu</a>
+        <a th:href="@{/about}">About Us</a>
+        <a class="nav-link" th:href="@{/cart/view}">
+            <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
+                <i class="fas fa-shopping-cart" style="font-size:24px"></i>
+                <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
+            </div>
+        </a>
+        <a th:href="@{/contact}">Contact Us</a>
+
+        <!-- Categories -->
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fa-solid fa-list"></i> Categories
+            </button>
+            <div class="dropdown-menu">
+                <a th:each="c : ${categories}"
+                   th:href="@{/category/{id}(id=${c.id})}"
+                   th:text="${c.name}">Category</a>
+            </div>
+        </div>
+
+        <!-- Account -->
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fas fa-user"></i>  Account
+            </button>
+            <div class="dropdown-menu">
+                <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
+                <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+                <span th:if="${session.USER != null}">
+                 Welcome, <span th:text="${session.USER.firstName}">user</span>
+                </span>
+                <a  th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
+                <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Content -->
+<div class="wrap">
+    <div class="page-title"><i class="fa-solid fa-user-gear"></i> Your Account</div>
+
+    <div class="grid">
+
+        <!-- Your Orders -->
+        <section class="tile">
+            <div class="ic"><i class="fa-solid fa-box-archive"></i></div>
+            <div>
+                <h3>Your Orders</h3>
+                <p>Track, return, cancel an order, download invoice, or buy again.</p>
+                <a th:href="@{/orders}">Go to Orders <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+        </section>
+
+        <!-- Login & security -->
+        <section class="tile">
+            <div class="ic"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+                <h3>Login &amp; Security</h3>
+                <p>Edit name, email, phone and password.</p>
+                <a th:href="@{/profile}">Manage login &amp; security <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+        </section>
+
+        <!-- Addresses -->
+        <section class="tile">
+            <div class="ic"><i class="fa-solid fa-location-dot"></i></div>
+            <div>
+                <h3>Your Addresses</h3>
+                <p>Add, edit or set a default delivery address.</p>
+                <!-- Point this to your address page/route if you have one -->
+                <a th:href="@{/profile}#address">Manage addresses <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+        </section>
+
+        <!-- Payments -->
+        <section class="tile">
+            <div class="ic"><i class="fa-solid fa-credit-card"></i></div>
+            <div>
+                <h3>Your Payments</h3>
+                <p>View transactions, manage saved cards and payment settings.</p>
+                <!-- Replace with real route when available -->
+                <a href="#">Payment settings <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+        </section>
+
+        <!-- Gift cards -->
+        <section class="tile">
+            <div class="ic"><i class="fa-solid fa-gift"></i></div>
+            <div>
+                <h3>Gift Cards</h3>
+                <p>Redeem or check balance of a gift card.</p>
+                <a href="#">Gift card options <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+        </section>
+
+        <!-- Your Profile -->
+        <section class="tile">
+            <div class="ic"><i class="fa-regular fa-id-badge"></i></div>
+            <div>
+                <h3>Your Profile</h3>
+                <p>View your profile and update personal information and avatar.</p>
+                <a th:href="@{/profile/view}">View profile <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+        </section>
+
+        <!-- Family / Sharing (optional) -->
+        <section class="tile">
+            <div class="ic"><i class="fa-solid fa-people-group"></i></div>
+            <div>
+                <h3>Your Family</h3>
+                <p>Manage sharing preferences (coming soon).</p>
+                <a href="#">Learn more <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+        </section>
+
+        <!-- Digital services & support (optional) -->
+        <section class="tile">
+            <div class="ic"><i class="fa-solid fa-headset"></i></div>
+            <div>
+                <h3>Digital Services &amp; Support</h3>
+                <p>Troubleshoot device issues or contact support.</p>
+                <a th:href="@{/contact}">Get support <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+        </section>
+
+        <!-- Business account / perks (optional) -->
+        <section class="tile">
+            <div class="ic"><i class="fa-solid fa-briefcase"></i></div>
+            <div>
+                <h3>Business Account</h3>
+                <p>Create a free business account and save on bulk orders.</p>
+                <a href="#">Create business account <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-column">
+            <h3>About Spice Jar</h3>
+            <p>Bringing the world's finest spices to your kitchen. Quality, aroma, and flavor guaranteed in every jar.</p>
+        </div>
+        <div class="footer-column">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a th:href="@{/menu}">Menu</a></li>
+                <li><a th:href="@{/about}">About Us</a></li>
+                <li><a th:href="@{/contact}">Contact</a></li>
+                <li><a href="#">FAQ</a></li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h3>Connect With Us</h3>
+            <div class="social-links">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 The Spice Jar. All rights reserved.</p>
+    </div>
+</footer>
+
+</body>
+</html>

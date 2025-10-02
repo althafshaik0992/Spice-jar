@@ -254,4 +254,10 @@ public class OrderService {
 
         return invoiceText.toString().getBytes(StandardCharsets.UTF_8);
     }
+
+    public Order getOrderById(Long id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + id));
+    }
+
 }

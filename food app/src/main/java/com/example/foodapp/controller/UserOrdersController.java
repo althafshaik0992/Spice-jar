@@ -1,6 +1,7 @@
 package com.example.foodapp.controller;
 
 import com.example.foodapp.model.Order;
+import com.example.foodapp.model.User;
 import com.example.foodapp.service.OrderService;
 import com.example.foodapp.service.UserOrderService;
 import com.example.foodapp.service.UserOrderServiceImpl;
@@ -15,7 +16,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Controller
-public class UserOrdersController {
+public class UserOrdersController extends BaseController {
 
     private final UserOrderService orderService;
 
@@ -33,10 +34,10 @@ public class UserOrdersController {
                            HttpSession session,
                            Model m) {
 
-        Object sessionUser = session.getAttribute("USER");
-        if (sessionUser == null) return "redirect:/login";
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
 
-        Long userId = extractUserId(sessionUser);
+        Long userId = extractUserId(user);
         if (userId == null) return "redirect:/login";
 
         List<Order> all = orderService.findByUser(userId);
@@ -52,10 +53,10 @@ public class UserOrdersController {
 
     @GetMapping("/orders/{id}")
     public String myOrderDetail(@PathVariable Long id, HttpSession session, Model m) {
-        Object sessionUser = session.getAttribute("USER");
-        if (sessionUser == null) return "redirect:/login";
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
 
-        Long userId = extractUserId(sessionUser);
+        Long userId = extractUserId(user);
         if (userId == null) return "redirect:/login";
 
         Order o = orderService.findById(id);
@@ -66,6 +67,8 @@ public class UserOrdersController {
 
         return "order-details"; // create a simple detail page if you want
     }
+
+
 
     private Long extractUserId(Object sessionUser) {
         try {

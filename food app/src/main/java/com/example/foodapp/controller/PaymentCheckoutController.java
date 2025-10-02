@@ -1,6 +1,7 @@
 package com.example.foodapp.controller;
 
 import com.example.foodapp.model.Order;
+import com.example.foodapp.model.User;
 import com.example.foodapp.service.OrderService;
 import com.example.foodapp.service.PaymentService;
 import com.example.foodapp.service.PaypalService;
@@ -17,7 +18,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/payment")
-public class PaymentCheckoutController {
+public class PaymentCheckoutController extends BaseController {
 
     private final OrderService orderService;
     private final PaymentService paymentService;
@@ -40,7 +41,9 @@ public class PaymentCheckoutController {
     /** Show the payment choice page for an order */
     @GetMapping("/checkout")
     public String page(@RequestParam Long orderId, HttpSession session, Model m){
-        if (session.getAttribute("USER") == null) return "redirect:/login";
+
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
         Order order = orderService.findById(orderId);
         if (order == null) return "redirect:/orders";
         // optional: ensure belongs to current user

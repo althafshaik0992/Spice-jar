@@ -9,13 +9,11 @@
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
-    <!-- Perf: preconnect to CDN -->
+    <!-- Perf + icons -->
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-
-    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
-    <!-- Preload the hero image to avoid jank -->
+    <!-- Preload hero -->
     <link rel="preload" as="image" href="/images/spices-about.jpeg" imagesrcset="/images/spices-about.jpeg 1x"/>
 
     <style>
@@ -23,7 +21,6 @@
         * { box-sizing: border-box; }
         body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; background:#f0f8f0; color:#222; }
 
-        /* Navbar */
         .navbar{
             background:#fff; padding:6px 6%;
             box-shadow:0 2px 6px rgba(0,0,0,.05);
@@ -36,7 +33,6 @@
         .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
         .nav-links a:hover{color:#218838}
 
-        /* Dropdowns */
         .dropdown{position:relative}
         .dropdown-toggle{
             background:none; border:none; cursor:pointer; font-size:15px; color:#333;
@@ -53,53 +49,23 @@
         }
         .dropdown-menu a:hover{background:#f4f4f4}
 
-        /* Hero - REVOLVING IMAGES STYLES */
         .hero{
             display:flex; align-items:center; justify-content:space-between;
             background:var(--green); color:#fff; padding:28px 6%;
-            min-height:50vh;
-            position: relative; /* Needed for absolute positioning of images */
-            overflow: hidden; /* Ensures images don't spill outside the container */
+            min-height:50vh; position:relative; overflow:hidden;
         }
         .hero-left h1{font-size:40px; line-height:1.15; margin:0 0 12px}
         .cta{background:#fff; color:var(--green); padding:10px 18px; border-radius:30px; text-decoration:none; font-weight:600}
 
-        .hero-right {
-            position: relative; /* Container for the image carousel */
-        }
+        .hero-right { position: relative; }
+        .hero-image-revolver { position: relative; width: 420px; height: 280px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,.2); }
+        .hero-image-revolver img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; opacity:0; animation: fade 16s infinite; }
+        .hero-image-revolver img:nth-child(1){animation-delay:0s}
+        .hero-image-revolver img:nth-child(2){animation-delay:4s}
+        .hero-image-revolver img:nth-child(3){animation-delay:8s}
+        .hero-image-revolver img:nth-child(4){animation-delay:12s}
+        @keyframes fade{0%{opacity:0}5%{opacity:1}25%{opacity:1}30%{opacity:0}100%{opacity:0}}
 
-        .hero-image-revolver {
-            position: relative;
-            width: 420px;
-            height: 280px;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0,0,0,.2);
-        }
-
-        .hero-image-revolver img {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            object-fit: cover;
-            opacity: 0;
-            animation: fade 16s infinite;
-        }
-
-        /* Stagger the animations for each image */
-        .hero-image-revolver img:nth-child(1) { animation-delay: 0s; }
-        .hero-image-revolver img:nth-child(2) { animation-delay: 4s; }
-        .hero-image-revolver img:nth-child(3) { animation-delay: 8s; }
-        .hero-image-revolver img:nth-child(4) { animation-delay: 12s; }
-
-        @keyframes fade {
-            0% { opacity: 0; }
-            5% { opacity: 1; }
-            25% { opacity: 1; }
-            30% { opacity: 0; }
-            100% { opacity: 0; }
-        }
-
-        /* Product grid */
         .menu-section{padding:40px 6%}
         .menu-section h2{text-align:center; margin:0 0 24px; color:var(--green)}
         .cards{display:flex; flex-wrap:wrap; gap:24px; justify-content:center}
@@ -109,15 +75,9 @@
         .btn-order{background:var(--green); color:#fff; padding:10px 16px; border-radius:30px; border:none; cursor:pointer}
         .btn-order:hover{background:var(--accent)}
         .order-now-wrap{display:flex; justify-content:center; margin-top:22px}
-        .order-now{
-            display:inline-flex; align-items:center; gap:8px;
-            background:var(--green); color:#fff; font-weight:800;
-            padding:12px 18px; border-radius:999px; text-decoration:none;
-            box-shadow:0 8px 24px rgba(0,0,0,.12);
-        }
+        .order-now{display:inline-flex; align-items:center; gap:8px; background:var(--green); color:#fff; font-weight:800; padding:12px 18px; border-radius:999px; text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,.12);}
         .order-now:hover{background:var(--accent)}
 
-        /* Footer */
         .site-footer{background:#222; color:#fff; padding:40px 6%; margin-top:40px}
         .footer-container{display:flex; flex-wrap:wrap; justify-content:space-between; gap:30px; margin-bottom:30px}
         .footer-column{flex:1; min-width:220px}
@@ -130,62 +90,47 @@
         .social-links a:hover{color:var(--green)}
         .footer-bottom{text-align:center; padding-top:20px; border-top:1px solid #444; font-size:14px}
 
-        @media (max-width: 768px) {
-            .footer-container { flex-direction: column; text-align: center; }
-            .footer-column h3 { border-bottom:none; padding-bottom:0; margin-bottom:10px; }
-            .footer-column { margin-bottom:20px; }
-            .hero { flex-direction: column; gap: 18px; min-height: auto; }
-            /* Make the image carousel responsive on small screens */
-            .hero-image-revolver {
-                width: 100%;
-                max-width: 420px;
-            }
+        @media (max-width:768px){
+            .footer-container{flex-direction:column; text-align:center}
+            .footer-column h3{border-bottom:none; padding-bottom:0; margin-bottom:10px}
+            .footer-column{margin-bottom:20px}
+            .hero{flex-direction:column; gap:18px; min-height:auto}
+            .hero-image-revolver{width:100%; max-width:420px}
         }
 
-        /* Cart badge */
         .cart-icon-container { position: relative; display: inline-block; }
-        .cart-count-badge {
-            position: absolute; top: -8px; right: -8px; background-color: var(--accent);
-            color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; text-align: center;
-        }
+        .cart-count-badge { position:absolute; top:-8px; right:-8px; background:var(--accent); color:white; border-radius:50%; padding:2px 6px; font-size:12px; font-weight:bold; min-width:20px; height:20px; display:flex; align-items:center; justify-content:center; }
 
-        /* Chat (unchanged styles from your version) */
-        .sj-chat-toggle {
-            position: fixed; right: 20px; bottom: 20px; z-index: 1200;
-            width: 56px; height: 56px; border-radius: 50%;
-            display: grid; place-items: center; border: none; cursor: pointer;
-            background: var(--green); color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.2);
-        }
-        .sj-chat-toggle:hover { background: var(--accent); }
-        .sj-chat { position: fixed; right: 20px; bottom: 92px; z-index: 1200; width: 340px; max-height: 70vh; border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 20px 40px rgba(0,0,0,.2); display: none; flex-direction: column; }
-        .sj-chat.open { display: flex; }
-        .sj-chat__header { background: var(--green); color: #fff; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
-        .sj-chat__header .dot { width: 10px; height: 10px; border-radius: 50%; background:#fff; opacity: .8; }
-        .sj-chat__title { font-weight: 700; font-size: 15px; }
-        .sj-chat__subtitle { font-size: 12px; opacity: .9; }
-        .sj-chat__body { padding: 12px; background: #f7faf7; overflow-y: auto; flex: 1; }
-        .sj-msg { display: flex; gap: 8px; margin-bottom: 10px; }
-        .sj-msg.bot .bubble { background: #fff; color: #222; border: 1px solid #eee; }
-        .sj-msg.user { justify-content: flex-end; }
-        .sj-msg.user .bubble { background: var(--green); color:#fff; }
-        .bubble { max-width: 78%; padding: 10px 12px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06); font-size: 14px; line-height: 1.35; }
-        .sj-typing { display: inline-flex; gap:4px; align-items:center; }
-        .sj-typing .dot { width:6px; height:6px; border-radius:50%; background:#999; animation: blink 1.2s infinite ease-in-out; }
-        .sj-typing .dot:nth-child(2){ animation-delay:.2s } .sj-typing .dot:nth-child(3){ animation-delay:.4s }
-        @keyframes blink { 0%, 80%, 100% { opacity:.2 } 40% { opacity:1 } }
-        .sj-chat__quick { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
-        .sj-chip { border:1px solid #dfe6df; background:#fff; color:#333; padding:6px 10px; border-radius:20px; cursor:pointer; font-size:12px; }
-        .sj-chip:hover { border-color: var(--green); color: var(--green); }
-        .sj-chat__input { padding:10px; background:#fff; border-top:1px solid #eee; display:flex; gap:8px; }
-        .sj-chat__input input { flex:1; border:1px solid #ddd; border-radius:20px; padding:10px 12px; outline:none; font-size:14px; background:#fff; }
-        .sj-send { border:none; background:var(--green); color:#fff; border-radius:20px; padding:0 14px; cursor:pointer; font-weight:600; }
-        .sj-send:disabled { opacity:.6; cursor:not-allowed; }
+        /* Chat widget */
+        .sj-chat-toggle{position:fixed; right:20px; bottom:20px; z-index:1200; width:56px; height:56px; border-radius:50%; display:grid; place-items:center; border:none; cursor:pointer; background:var(--green); color:#fff; box-shadow:0 6px 18px rgba(0,0,0,.2)}
+        .sj-chat-toggle:hover{background:var(--accent)}
+        .sj-chat{position:fixed; right:20px; bottom:92px; z-index:1200; width:340px; max-height:70vh; border-radius:14px; overflow:hidden; background:#fff; box-shadow:0 20px 40px rgba(0,0,0,.2); display:none; flex-direction:column}
+        .sj-chat.open{display:flex}
+        .sj-chat__header{background:var(--green); color:#fff; padding:12px 14px; display:flex; align-items:center; gap:10px}
+        .sj-chat__header .dot{width:10px; height:10px; border-radius:50%; background:#fff; opacity:.8}
+        .sj-chat__title{font-weight:700; font-size:15px}
+        .sj-chat__subtitle{font-size:12px; opacity:.9}
+        .sj-chat__body{padding:12px; background:#f7faf7; overflow-y:auto; flex:1}
+        .sj-msg{display:flex; gap:8px; margin-bottom:10px}
+        .sj-msg.bot .bubble{background:#fff; color:#222; border:1px solid #eee}
+        .sj-msg.user{justify-content:flex-end}
+        .sj-msg.user .bubble{background:var(--green); color:#fff}
+        .bubble{max-width:78%; padding:10px 12px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.06); font-size:14px; line-height:1.35}
+        .sj-typing{display:inline-flex; gap:4px; align-items:center}
+        .sj-typing .dot{width:6px; height:6px; border-radius:50%; background:#999; animation:blink 1.2s infinite ease-in-out}
+        .sj-typing .dot:nth-child(2){animation-delay:.2s}.sj-typing .dot:nth-child(3){animation-delay:.4s}
+        @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+        .sj-chat__quick{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px}
+        .sj-chip{border:1px solid #dfe6df; background:#fff; color:#333; padding:6px 10px; border-radius:20px; cursor:pointer; font-size:12px}
+        .sj-chip:hover{border-color:var(--green); color:var(--green)}
+        .sj-chat__input{padding:10px; background:#fff; border-top:1px solid #eee; display:flex; gap:8px}
+        .sj-chat__input input{flex:1; border:1px solid #ddd; border-radius:20px; padding:10px 12px; outline:none; font-size:14px; background:#fff}
+        .sj-send{border:none; background:var(--green); color:#fff; border-radius:20px; padding:0 14px; cursor:pointer; font-weight:600}
+        .sj-send:disabled{opacity:.6; cursor:not-allowed}
     </style>
 </head>
 <body>
 
-<!-- Navbar -->
 <nav class="navbar">
     <a href="/" class="brand-logo">
         <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
@@ -203,37 +148,26 @@
         </a>
         <a th:href="@{/contact}">Contact Us</a>
 
-        <!-- Categories -->
         <div class="dropdown">
             <button class="dropdown-toggle">
-                <i class="fa-solid fa-list"></i> Categories
-            </button>
-            <div class="dropdown-menu">
-                <a th:each="c : ${categories}"
-                   th:href="@{/category/{id}(id=${c.id})}"
-                   th:text="${c.name}">Category</a>
-            </div>
-        </div>
-
-        <!-- Account -->
-        <div class="dropdown">
-            <button class="dropdown-toggle">
-                <i class="fas fa-user"></i>  Account
+                <i class="fas fa-user"></i>
+                <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">Account</span>
             </button>
             <div class="dropdown-menu">
                 <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+
                 <span th:if="${session.USER != null}">
-                 Welcome, <span th:text="${session.USER.firstName}">user</span>
-                </span>
-                <a  th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
+          Welcome, <strong th:text="${session.USER.firstName}">User</strong>
+        </span>
+                <a th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
+                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
                 <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
             </div>
         </div>
     </div>
 </nav>
 
-<!-- Hero -->
 <section class="hero">
     <div class="hero-left">
         <h1>Flavors that Inspire, Spices that Transform.</h1>
@@ -241,12 +175,11 @@
         <a href="#menu" class="cta">Explore Spices</a>
     </div>
     <div class="hero-right">
-        <!-- The image is now a carousel/revolver of images -->
         <div class="hero-image-revolver">
             <img loading="eager" decoding="async" width="420" height="280"
                  th:src="@{/images/spices-about.jpeg}" alt="Assorted spices on a tray"/>
             <img loading="lazy" decoding="async" width="420" height="280"
-                 th:src="@{/images/chilli powder.jpeg}"/>
+                 th:src="@{/images/chilli%20powder.jpeg}" alt="Chilli powder"/>
             <img loading="lazy" decoding="async" width="420" height="280"
                  src="https://placehold.co/420x280/a9616e/ffffff?text=Cloves" alt="Cloves"/>
             <img loading="lazy" decoding="async" width="420" height="280"
@@ -255,15 +188,10 @@
     </div>
 </section>
 
-<!-- Product grid -->
 <section id="menu" class="menu-section">
     <h2>Best Sellers</h2>
-
     <div class="cards">
-        <!-- Show only the first 8 items from ${products} -->
-        <div class="card"
-             th:each="product, stat : ${products}"
-             th:if="${stat.index < 4}">
+        <div class="card" th:each="product, stat : ${products}" th:if="${stat.index < 4}">
             <img loading="lazy" decoding="async" width="280" height="200"
                  th:src="@{${#strings.isEmpty(product.imageUrl) ? '/images/chilli%20powder.jpeg' : product.imageUrl}}"
                  alt="Spices Product"/>
@@ -272,8 +200,7 @@
                 <h4>$ <span th:text="${#numbers.formatDecimal(product.price,1,'COMMA',2,'POINT')}">0.00</span></h4>
                 <p th:text="${product.description}">Product description.</p>
 
-                <button
-                        class="btn-order add-to-cart-btn"
+                <button class="btn-order add-to-cart-btn"
                         th:data-product-id="${product.id}"
                         th:data-product-name="${product.name}"
                         th:data-product-image="${product.imageUrl}"
@@ -284,7 +211,6 @@
         </div>
     </div>
 
-    <!-- Big call-to-action to view full menu -->
     <div class="order-now-wrap">
         <a class="order-now" th:href="@{/menu}">
             <i class="fa-solid fa-bowl-food"></i> Order Now
@@ -292,22 +218,23 @@
     </div>
 </section>
 
-<!-- Chatbot (unchanged from your version) -->
+<!-- Chat trigger -->
 <button class="sj-chat-toggle" aria-label="Chat with SpiceBot">
     <i class="fa-solid fa-comment"></i>
 </button>
+
+<!-- Chat window -->
 <div class="sj-chat" id="sj-chat" aria-live="polite" aria-label="Chat window">
     <div class="sj-chat__header">
         <span class="dot"></span>
         <div>
             <div class="sj-chat__title">SpiceBot</div>
-            <div class="sj-chat__subtitle">Ask about Menu orders, delivery…</div>
+            <div class="sj-chat__subtitle">Ask about menu, orders, delivery…</div>
         </div>
     </div>
+
     <div class="sj-chat__body" id="sj-body">
-        <div class="sj-msg bot">
-            <div class="bubble">Hi! I’m SpiceBot 🌶️ How can I help you today?</div>
-        </div>
+        <div class="sj-msg bot"><div class="bubble">Hi! I’m SpiceBot 🌶️ How can I help you today?</div></div>
         <div class="sj-chat__quick" id="sj-quick">
             <button class="sj-chip" data-q="What are today’s best sellers?">Best sellers</button>
             <button class="sj-chip" data-q="Do you have organic turmeric?">Organic turmeric</button>
@@ -315,13 +242,13 @@
             <button class="sj-chip" data-q="Where is my order?">Track order</button>
         </div>
     </div>
+
     <div class="sj-chat__input">
         <input id="sj-input" type="text" placeholder="Type your message…" aria-label="Chat message"/>
         <button class="sj-send" id="sj-send" disabled>Send</button>
     </div>
 </div>
 
-<!-- Footer -->
 <footer class="site-footer">
     <div class="footer-container">
         <div class="footer-column">
@@ -352,43 +279,101 @@
     </div>
 </footer>
 
-<!-- Minimal JS: add-to-cart badge update (optional) -->
 <script>
-    (function () {
+    (function(){
         const csrf       = document.querySelector('meta[name="_csrf"]')?.content || '';
         const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
 
-        function updateCartCount(count){
-            const el=document.getElementById('lblCartCount'); if(el) el.textContent=count;
-        }
-
-        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+        // -------- Cart badge (uses your /cart/add if available) ----------
+        function updateCartCount(count){ const el=document.getElementById('lblCartCount'); if(el) el.textContent=count; }
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn=>{
+            btn.addEventListener('click', async (e)=>{
                 const productId = e.currentTarget.getAttribute('data-product-id');
                 try{
-                    const res = await fetch(`/cart/add?productId=${productId}&qty=1`, {
-                        method: 'POST',
-                        headers: {'Content-Type':'application/json', [csrfHeader]: csrf}
+                    const res = await fetch(`/cart/add?productId=${encodeURIComponent(productId)}&qty=1`, {
+                        method:'POST',
+                        headers:{'Content-Type':'application/json',[csrfHeader]: csrf}
                     });
-                    if(!res.ok) throw new Error('HTTP ' + res.status);
+                    if(!res.ok) throw new Error('HTTP '+res.status);
                     const data = await res.json();
-                    if (data.status === 'success' && typeof data.cartCount !== 'undefined') {
-                        updateCartCount(data.cartCount);
-                    }
+                    if(data && data.status==='success' && typeof data.cartCount!=='undefined'){ updateCartCount(data.cartCount); }
                 }catch(err){
-                    console.error(err);
+                    // Fallback demo increment if backend not present
+                    const badge = document.getElementById('lblCartCount');
+                    const n = Number(badge?.textContent||'0') + 1;
+                    updateCartCount(String(n));
                 }
             });
         });
 
-        // Tiny chat toggle
-        const chat = document.getElementById('sj-chat');
-        document.querySelector('.sj-chat-toggle')?.addEventListener('click', ()=> chat.classList.toggle('open'));
-        const input = document.getElementById('sj-input');
-        const sendBtn = document.getElementById('sj-send');
+        // -------- Chat wiring ----------
+        const chatRoot = document.getElementById('sj-chat');
+        const toggle   = document.querySelector('.sj-chat-toggle');
+        const bodyEl   = document.getElementById('sj-body');
+        const input    = document.getElementById('sj-input');
+        const sendBtn  = document.getElementById('sj-send');
+        const quick    = document.getElementById('sj-quick');
+
+        toggle?.addEventListener('click', ()=> chatRoot.classList.toggle('open'));
         input?.addEventListener('input', ()=> sendBtn.disabled = !input.value.trim());
+        input?.addEventListener('keydown', (e)=>{
+            if(e.key==='Enter' && !e.shiftKey && input.value.trim()){
+                e.preventDefault();
+                send();
+            }
+        });
+        sendBtn?.addEventListener('click', send);
+        quick?.addEventListener('click', (e)=>{
+            const btn = e.target.closest('.sj-chip'); if(!btn) return;
+            input.value = btn.dataset.q || btn.textContent;
+            sendBtn.disabled=false;
+            send();
+        });
+
+        function bubble(text, who='bot'){
+            const wrap = document.createElement('div');
+            wrap.className = `sj-msg ${who}`;
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            b.textContent = text;
+            wrap.appendChild(b);
+            bodyEl.appendChild(wrap);
+            bodyEl.scrollTop = bodyEl.scrollHeight;
+            return wrap;
+        }
+
+        let typingEl = null;
+        function showTyping(){
+            typingEl = document.createElement('div');
+            typingEl.className = 'sj-msg bot';
+            typingEl.innerHTML = `<div class="bubble"><span class="sj-typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span></div>`;
+            bodyEl.appendChild(typingEl);
+            bodyEl.scrollTop = bodyEl.scrollHeight;
+        }
+        function hideTyping(){ if(typingEl){ bodyEl.removeChild(typingEl); typingEl=null; } }
+
+        async function send(){
+            const q = input.value.trim(); if(!q) return;
+            bubble(q, 'user');
+            input.value=''; sendBtn.disabled=true;
+            showTyping();
+            try{
+                const res = await fetch('/api/chat', {
+                    method:'POST',
+                    headers:{ 'Content-Type':'application/json', [csrfHeader]: csrf },
+                    body: JSON.stringify({ message: q })
+                });
+                if(!res.ok) throw new Error('HTTP '+res.status);
+                const data = await res.json().catch(()=> ({}));
+                hideTyping();
+                bubble((data && data.reply) ? data.reply : 'Sorry, I had trouble answering that.');
+            }catch(err){
+                console.error(err);
+                hideTyping();
+                bubble('Oops—something went wrong. Please try again.', 'bot');
+            }
+        }
     })();
 </script>
-
 </body>
 </html>

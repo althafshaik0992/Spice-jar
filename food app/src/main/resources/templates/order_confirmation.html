@@ -1,236 +1,262 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
-    <title th:text="${subject}">Your Order is Confirmed</title>
+    <title th:text="${subject}">Your order is confirmed</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        @media only screen and (max-width:600px){ .container{width:100%!important} .px{padding-left:18px!important;padding-right:18px!important}}
-        .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#e6f7e9;color:#137a2a;font-size:12px;font-family:Segoe UI,Arial,sans-serif}
-        .btn{display:inline-block;background:#218838;color:#fff;text-decoration:none;padding:10px 16px;border-radius:26px;font-family:Segoe UI,Arial,sans-serif;font-size:14px}
-        /* Footer */
-        .site-footer{
-            background:#222;
-            color:#ccc;
-            padding:40px 6%;
-            margin-top:40px;
-        }
-        .footer-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        .footer-column {
-            flex: 1;
-            min-width: 220px;
-        }
-        .footer-column h3 {
-            color: #fff;
-            margin-bottom: 15px;
-            font-weight: 600;
-            border-bottom: 2px solid var(--green);
-            padding-bottom: 8px;
-            display: inline-block;
-        }
-        .footer-column p {
-            line-height: 1.6;
-            font-size: 14px;
-        }
-        .footer-column ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .footer-column ul li a {
-            text-decoration: none;
-            color: #ccc;
-            display: block;
-            padding: 5px 0;
-            font-size: 14px;
-            transition: color 0.3s;
-        }
-        .footer-column ul li a:hover {
-            color: #fff;
-        }
-        .social-links a {
-            color: #ccc;
-            text-decoration: none;
-            font-size: 20px;
-            margin-right: 15px;
-            transition: color 0.3s;
-        }
-        .social-links a:hover {
-            color: var(--green);
-        }
-        .footer-bottom {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #444;
-            font-size: 14px;
-        }
+        /* keep email styles simple + inline-safe */
+        .box{background:#ffffff;border-radius:12px;overflow:hidden}
+        .h{background:#22c55e;color:#fff;padding:18px 20px;font-weight:bold}
+        .p{padding:20px}
+        .btn{background:#22c55e;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;display:inline-block}
+        .muted{color:#64748b}
+        table{border-collapse:collapse;width:100%}
+        th,td{padding:6px 0}
+        th{color:#334155;text-align:left}
+        td.right{text-align:right}
+        hr{border:none;border-top:1px solid #eee;margin:16px 0}
+        /* Shipping + Code section */
+        .ship-qr-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:18px}
+        @media(max-width:900px){.ship-qr-bar{grid-template-columns:1fr}}
+        .card-lite{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+        .title-small{font-weight:800;margin:0 0 10px;color:#333;display:flex;align-items:center;gap:8px}
 
-        /* Responsive footer */
-        @media (max-width: 768px) {
-            .footer-container {
-                flex-direction: column;
-                text-align: center;
-            }
-            .footer-column h3 {
-                border-bottom: none;
-                padding-bottom: 0;
-                margin-bottom: 10px;
-            }
-            .footer-column {
-                margin-bottom: 20px;
-            }
+        .code-box{
+            border:1px dashed #e6e6e6;
+            background:#fff;
+            border-radius:12px;
+            height:260px;              /* equal height for both */
+            display:flex;
+            align-items:center;        /* vertical center */
+            justify-content:center;    /* horizontal center */
+            padding:10px;
         }
+        .code-box canvas, .code-box svg, .code-box img{
+            max-width:100%;
+            max-height:100%;
+            display:block;
+        }
+        .downloads{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap}
+        .dl{border:1px solid #cce6cc;background:#eaf9ea;color:#14532d;padding:8px 12px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+        .dl:hover{filter:brightness(0.98)}
+
+        /* Product image cell */
+        .it-img{width:60px;height:60px;border-radius:6px;object-fit:cover}
     </style>
 </head>
-<body style="margin:0;background:#f4fbf4">
+<body style="margin:0;background:#f7faf7;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7faf7;">
+    <tr>
+        <td align="center" style="padding:24px;">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" class="box">
+                <tr><td class="h">The Spice Jar — Order Confirmation</td></tr>
+                <tr>
+                    <td class="p">
+                        <h1 style="margin:0 0 6px;font-size:20px;color:#111">Thanks for your order!</h1>
+                        <p style="margin:0 0 12px;color:#444">
+                            Order No # <span th:text="${order.confirmationNumber}">123</span>
+                        </p>
 
-<div style="display:none;max-height:0;overflow:hidden;opacity:0" th:text="${preheader}">
-    Thanks for your order — it’s on the way!
-</div>
+                        <p style="margin:0 0 14px;">
+                            <!-- Use absolute URLs coming from the service -->
+                            <a th:href="${orderUrl}" class="btn">View your order</a>
+                            &nbsp;
+                            <a th:href="${invoiceUrl}" class="btn" style="background:#111">Download invoice</a>
+                        </p>
 
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4fbf4"><tr><td align="center">
-    <table role="presentation" width="640" class="container" cellspacing="0" cellpadding="0" style="width:640px;max-width:640px;background:#fff">
-        <!-- header -->
-        <tr>
-            <td class="px" style="padding:14px 24px;border-bottom:1px solid #e7efe7">
-                <table role="presentation" width="100%"><tr>
-                    <td align="left">
-                        <a th:href="${links.home}" style="text-decoration:none">
-                            <img th:src="${assets.logo}" alt="The Spice Jar" width="150" style="display:block;border:0;height:auto">
-                        </a>
+                        <hr>
+
+                        <table role="presentation">
+                            <tr>
+                                <th>Item</th>
+                                <th class="right">Qty</th>
+                                <th class="right">Price</th>
+                            </tr>
+                            <tr th:each="it : ${order.items}">
+                                <td th:text="${it.productName}">Product</td>
+                                <td class="right" th:text="${it.quantity}">1</td>
+                                <td class="right"
+                                    th:text="${#numbers.formatDecimal(it.price.multiply(new java.math.BigDecimal(it.quantity)),1,'COMMA',2,'POINT')}">
+                                    $0.00
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table role="presentation" style="margin-top:10px;">
+                            <tr>
+                                <td class="muted">Subtotal</td>
+                                <td class="right" th:text="${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">$0.00</td>
+                            </tr>
+                            <tr>
+                                <td class="muted">Tax</td>
+                                <td class="right" th:text="${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">$0.00</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:bold;">Total</td>
+                                <td class="right" style="font-weight:bold;"
+                                    th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">
+                                    $0.00
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div class="ship-qr-bar">
+                            <!-- Shipping address -->
+                            <div class="card-lite">
+                                <h3 class="title-small"><i class="fa-solid fa-location-dot"></i> Shipping address</h3>
+                                <div style="white-space:pre-line;line-height:1.5">
+                                    <div th:text="${order.customerName}">Customer Name</div>
+                                    <div th:text="${order.phone}">5551234567</div>
+                                    <div th:text="${order.street}">123 Main St, Apt 206</div>
+                                    <div>
+                                        <span th:text="${order.city}">Glen Allen</span>,
+                                        <span th:text="${order.state}">VA</span>
+                                        <span th:text="${order.zip}">23059</span>
+                                    </div>
+                                    <div th:text="${order.country}">United States</div>
+                                </div>
+                            </div>
+
+                            <!-- QR -->
+                            <div class="card-lite">
+                                <h3 class="title-small"><i class="fa-solid fa-qrcode"></i> QR Code</h3>
+                                <div class="code-box">
+                                    <!-- canvas will be injected -->
+                                    <canvas id="qrCanvas" width="512" height="512" style="width:100%;height:100%"></canvas>
+                                </div>
+                                <div class="downloads">
+                                    <a class="dl" id="dlQr"><i class="fa-regular fa-circle-down"></i>Download QR (PNG)</a>
+                                </div>
+                            </div>
+
+                            <!-- Barcode -->
+                            <div class="card-lite">
+                                <h3 class="title-small"><i class="fa-solid fa-barcode"></i> Barcode (Code-128)</h3>
+                                <div class="code-box">
+                                    <!-- SVG target for JsBarcode -->
+                                    <svg id="barSvg" viewBox="0 0 600 160" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%"></svg>
+                                </div>
+                                <div class="downloads">
+                                    <a class="dl" id="dlBar"><i class="fa-regular fa-circle-down"></i>Download Barcode (SVG)</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="margin:16px 0 0" class="muted">
+                            © <span th:text="${year}">2025</span> The Spice Jar
+                        </p>
                     </td>
-                    <td align="right" style="font-family:Segoe UI,Arial,sans-serif;font-size:13px">
-                        <a th:href="${links.orders}" style="color:#218838;text-decoration:none">View Orders</a>
-                    </td>
-                </tr></table>
-            </td>
-        </tr>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 
-        <!-- hero -->
-        <tr>
-            <td style="background:#218838 url('https://images.unsplash.com/photo-1514517220033-e61b1c541b1a?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat">
-                <div style="padding:28px 24px;background:rgba(33,136,56,.78)">
-                    <h1 style="margin:0;color:#fff;font-family:Georgia,Times,serif;font-size:30px">ORDER CONFIRMED</h1>
-                    <p style="margin:8px 0 0;color:#eaf6ee;font-family:Segoe UI,Arial,sans-serif">
-                        Thanks, <b th:text="${firstName}">friend</b> — your order <b th:text="${orderNumber}">#123</b> is in!
-                        <span class="pill" style="margin-left:8px" th:text="${status}">PAID</span>
-                    </p>
-                </div>
-            </td>
-        </tr>
+<!-- QR + Barcode libs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
-        <!-- summary cards -->
-        <tr>
-            <td class="px" style="padding:18px 24px">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                    <tr>
-                        <td style="width:33%;border:1px solid #e9efe9;border-radius:10px;padding:12px;vertical-align:top">
-                            <div style="font-family:Segoe UI,Arial,sans-serif;font-size:12px;color:#6b7a70">ORDER ID</div>
-                            <div style="font-family:Segoe UI,Arial,sans-serif;font-size:16px;color:#111;font-weight:700" th:text="${orderNumber}">#123</div>
-                        </td>
-                        <td style="width:34%;border:1px solid #e9efe9;border-radius:10px;padding:12px;vertical-align:top">
-                            <div style="font-family:Segoe UI,Arial,sans-serif;font-size:12px;color:#6b7a70">PLACED ON</div>
-                            <div style="font-family:Segoe UI,Arial,sans-serif;font-size:16px;color:#111;font-weight:700" th:text="${orderDate}">Aug 29, 2025</div>
-                        </td>
-                        <td style="width:33%;border:1px solid #e9efe9;border-radius:10px;padding:12px;vertical-align:top">
-                            <div style="font-family:Segoe UI,Arial,sans-serif;font-size:12px;color:#6b7a70">SHIPPING TO</div>
-                            <div style="font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#111" th:text="${shippingAddress}">Address</div>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
+<script>
+    // Build a single-line shipping string for codes
+    function text(elId, fallback='') {
+        const el = document.getElementById(elId);
+        return el ? (el.textContent || '').trim() : fallback;
+    }
 
-        <!-- items -->
-        <tr>
-            <td class="px" style="padding:0 24px 12px">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #e9efe9;border-radius:10px">
-                    <tr style="background:#fafafa">
-                        <th align="left" style="padding:10px 12px;font-family:Segoe UI,Arial,sans-serif;font-size:13px">Item</th>
-                        <th align="center" style="padding:10px 12px;font-family:Segoe UI,Arial,sans-serif;font-size:13px">Qty</th>
-                        <th align="right" style="padding:10px 12px;font-family:Segoe UI,Arial,sans-serif;font-size:13px">Price</th>
-                        <th align="right" style="padding:10px 12px;font-family:Segoe UI,Arial,sans-serif;font-size:13px">Line Total</th>
-                    </tr>
+    // Pull Thymeleaf values from DOM (fallbacks keep script harmless if JS runs before hydration)
+    const shipName   = (document.querySelector('[th\\:text="${order.customerName}"]')?.innerText) || '';
+    const shipPhone  = (document.querySelector('[th\\:text="${order.phone}"]')?.innerText) || '';
+    const shipStreet = (document.querySelector('[th\\:text="${order.street}"]')?.innerText) || '';
+    const shipCity   = (document.querySelector('[th\\:text="${order.city}"]')?.innerText) || '';
+    const shipState  = (document.querySelector('[th\\:text="${order.state}"]')?.innerText) || '';
+    const shipZip    = (document.querySelector('[th\\:text="${order.zip}"]')?.innerText) || '';
+    const shipCountry= (document.querySelector('[th\\:text="${order.country}"]')?.innerText) || '';
+    const orderId    = (document.querySelector('[th\\:text="${order.id}"]')?.innerText) || '';
 
-                    <tr th:each="it : ${items}">
-                        <td style="padding:10px 12px;font-family:Segoe UI,Arial,sans-serif">
-                            <b th:text="${it.name}">Turmeric</b>
-                        </td>
-                        <td align="center" style="padding:10px 12px;font-family:Segoe UI,Arial,sans-serif" th:text="${it.qty}">1</td>
-                        <td align="right" style="padding:10px 12px;font-family:Segoe UI,Arial,sans-serif" th:text="${it.price}">$0.00</td>
-                        <td align="right" style="padding:10px 12px;font-family:Segoe UI,Arial,sans-serif" th:text="${it.lineTotal}">$0.00</td>
-                    </tr>
+    const addressLine = [
+        shipName,
+        shipPhone,
+        shipStreet,
+        `${shipCity}, ${shipState} ${shipZip}`,
+        shipCountry,
+        `ORDER:${orderId}`
+    ].filter(Boolean).join(' | ');
 
-                    <tr><td colspan="4" style="height:8px;line-height:8px;font-size:0">&nbsp;</td></tr>
-                    <tr>
-                        <td colspan="3" align="right" style="padding:4px 12px;font-family:Segoe UI,Arial,sans-serif;color:#6b7a70">Subtotal</td>
-                        <td align="right" style="padding:4px 12px;font-family:Segoe UI,Arial,sans-serif" th:text="${subtotal}">$0.00</td>
-                    </tr>
-                    <tr>
-                        <td colspan="3" align="right" style="padding:4px 12px;font-family:Segoe UI,Arial,sans-serif;color:#6b7a70">Tax</td>
-                        <td align="right" style="padding:4px 12px;font-family:Segoe UI,Arial,sans-serif" th:text="${tax}">$0.00</td>
-                    </tr>
-                    <tr>
-                        <td colspan="3" align="right" style="padding:8px 12px;font-family:Segoe UI,Arial,sans-serif;font-weight:700">Total Paid</td>
-                        <td align="right" style="padding:8px 12px;font-family:Segoe UI,Arial,sans-serif;font-weight:700" th:text="${total}">$0.00</td>
-                    </tr>
-                </table>
+    /* ---------- QR (on a canvas, scaled to card) ---------- */
+    (function makeQR(){
+        // qrcode.js renders to a generated <img> or a target element.
+        // We'll draw it onto our fixed canvas to control sizing perfectly.
+        const tmp = document.createElement('div');
+        new QRCode(tmp, { text: addressLine, width: 512, height: 512, correctLevel: QRCode.CorrectLevel.M });
+        const img = tmp.querySelector('img') || tmp.querySelector('canvas');
+        const qrCanvas = document.getElementById('qrCanvas');
+        const ctx = qrCanvas.getContext('2d');
+        // Clear and draw scaled
+        function draw() {
+            const w = qrCanvas.clientWidth;
+            const h = qrCanvas.clientHeight;
+            qrCanvas.width = w * devicePixelRatio;
+            qrCanvas.height = h * devicePixelRatio;
+            ctx.scale(devicePixelRatio, devicePixelRatio);
+            ctx.clearRect(0,0,w,h);
+            // compute size preserving square
+            const size = Math.min(w, h);
+            const offX = (w - size) / 2;
+            const offY = (h - size) / 2;
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(img, offX, offY, size, size);
+        }
+        // wait for QR image to load (when library renders as img)
+        if (img.tagName === 'IMG' && !img.complete) {
+            img.onload = draw;
+        } else {
+            // canvas or already loaded img
+            draw();
+        }
 
-                <p style="margin:16px 0 6px">
-                    <a class="btn" th:href="${links.orders}">View Order</a>
-                </p>
-            </td>
-        </tr>
+        // Download PNG
+        document.getElementById('dlQr').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = `SJ-order-${orderId}-address-qr.png`;
+            link.href = qrCanvas.toDataURL('image/png');
+            link.click();
+        });
 
-        <!-- footer -->
-        <tr>
-            <td style="background:#0f1010;color:#dfe9e3">
-                <div style="padding:16px 24px;font-family:Segoe UI,Arial,sans-serif;font-size:12px">
-                    © <span th:text="${year}">2025</span> The Spice Jar •
-                    <a th:href="${links.help}" style="color:#9fe6b3;text-decoration:none">Help Center</a> •
-                    <a th:href="${links.unsub}" style="color:#ffb3b3;text-decoration:none">Unsubscribe</a>
-                </div>
-            </td>
-        </tr>
-    </table>
+        // Redraw on resize for crispness
+        let rAF;
+        window.addEventListener('resize', () => {
+            cancelAnimationFrame(rAF);
+            rAF = requestAnimationFrame(draw);
+        });
+    })();
 
-    <table role="presentation" width="640" class="container"><tr><td style="height:22px;line-height:22px;font-size:0">&nbsp;</td></tr></table>
-</td></tr></table>
+    /* ---------- BARCODE (Code-128 into SVG) ---------- */
+    (function makeBarcode(){
+        const svg = document.getElementById('barSvg');
+        // JsBarcode draws into the given element; width/height are per-bar, so we tune to look good
+        JsBarcode(svg, addressLine, {
+            format: "CODE128",
+            displayValue: false,
+            margin: 16,
+            lineColor: "#111",
+            width: 2,     // bar width
+            height: 80    // bar height (inside our 260px box)
+        });
 
-<footer class="site-footer">
-    <div class="footer-container">
-        <div class="footer-column">
-            <h3>About Spice Jar</h3>
-            <p>Bringing the world's finest spices to your kitchen. Quality, aroma, and flavor guaranteed in every jar.</p>
-        </div>
-        <div class="footer-column">
-            <h3>Quick Links</h3>
-            <ul>
-                <li><a th:href="@{/menu}">Menu</a></li>
-                <li><a th:href="@{/about}">About Us</a></li>
-                <li><a th:href="@{/contact}">Contact</a></li>
-                <li><a href="#">FAQ</a></li>
-            </ul>
-        </div>
-        <div class="footer-column">
-            <h3>Connect With Us</h3>
-            <div class="social-links">
-                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest"></i></a>
-            </div>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        <p>&copy; 2025 The Spice Jar. All rights reserved.</p>
-    </div>
-</footer>
+        // Download SVG
+        document.getElementById('dlBar').addEventListener('click', () => {
+            const serializer = new XMLSerializer();
+            const src = serializer.serializeToString(svg);
+            const blob = new Blob([src], {type: 'image/svg+xml;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `SJ-order-${orderId}-address-barcode.svg`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    })();
+</script>
 </body>
 </html>

@@ -25,6 +25,13 @@ public class User {
     @Column(unique = true)
     private String email;
 
+    private String provider;        // "google" for OAuth
+    private Boolean enabled = true;
+
+    private String displayName;
+
+    private java.time.LocalDateTime createdAt;
+    private java.time.LocalDateTime lastLoginAt;
 
     private String phone;
     // com.example.foodapp.model.User

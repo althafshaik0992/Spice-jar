@@ -12,6 +12,35 @@
       font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; margin:0;
       background:#f0f8f0; color:#222; display:flex; flex-direction:column; align-items:center; min-height:100vh;
     }
+    /* Navbar */
+    .navbar{
+      background:#fff; padding:6px 6%;
+      box-shadow:0 2px 6px rgba(0,0,0,.05);
+      display:flex; justify-content:space-between; align-items:center;
+      position:sticky; top:0; z-index:1000; height:60px;
+    }
+    .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
+    .brand-logo video{width:36px; height:auto; border-radius:4px}
+    .nav-links{display:flex; align-items:center; gap:18px}
+    .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
+    .nav-links a:hover{color:#218838}
+
+    /* Dropdowns */
+    .dropdown{position:relative}
+    .dropdown-toggle{
+      background:none; border:none; cursor:pointer; font-size:15px; color:#333;
+      display:flex; align-items:center; gap:6px
+    }
+    .dropdown-menu{
+      display:none; position:absolute; right:0; top:100%;
+      background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
+      border-radius:6px; overflow:hidden; min-width:180px
+    }
+    .dropdown:hover .dropdown-menu{display:block}
+    .dropdown-menu a, .dropdown-menu span{
+      display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap
+    }
+    .dropdown-menu a:hover{background:#f4f4f4}
     .navbar{background:#fff;padding:6px 6%;box-shadow:0 2px 6px rgba(0,0,0,.05);
       display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000;height:60px;width:100%}
     .brand-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--green);font-weight:700;font-size:20px}
@@ -59,6 +88,7 @@
   </style>
 </head>
 <body>
+<!-- Navbar -->
 <!-- Navbar -->
 <nav class="navbar">
   <a href="/" class="brand-logo">
@@ -108,7 +138,12 @@
 </nav>
 
 
+
 <div class="auth-box">
+
+
+  <div th:if="${msg}" style="margin:10px 0;padding:10px;border-radius:8px;background:#ecfdf5;color:#065f46" th:text="${msg}"></div>
+  <div th:if="${err}" style="margin:10px 0;padding:10px;border-radius:8px;background:#fef2f2;color:#991b1b" th:text="${err}"></div>
   <h2>Register</h2>
 
   <form th:action="@{/register}" method="post">

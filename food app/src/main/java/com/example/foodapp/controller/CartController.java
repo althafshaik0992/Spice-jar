@@ -1,6 +1,8 @@
 package com.example.foodapp.controller;
 
+import com.example.foodapp.model.User;
 import com.example.foodapp.service.ProductService;
+import com.example.foodapp.service.UserService;
 import com.example.foodapp.util.Cart;
 import com.example.foodapp.util.CartItem;
 import com.example.foodapp.util.CartUtils;
@@ -22,9 +24,11 @@ import java.util.Optional;
 public class CartController {
 
     private final ProductService productService;
+    private final UserService userService;
 
-    public CartController(ProductService productService) {
+    public CartController(ProductService productService, UserService userService) {
         this.productService = productService;
+        this.userService = userService;
     }
 
     /** Ensure we always have a Cart object in the session */
@@ -186,5 +190,16 @@ public class CartController {
     public String clear(HttpSession session) {
         session.setAttribute("CART", new Cart());
         return "redirect:/cart/view";
+    }
+    private User currentUser(HttpSession session) {
+        try {
+            // if your UserService has this overload, it will work;
+            // if not, the catch will fall back to session.
+            User u = userService.getCurrentUser(session);
+            if (u != null) return u;
+        } catch (Throwable ignore) { /* fall back */ }
+
+        Object s = session != null ? session.getAttribute("USER") : null;
+        return (s instanceof User) ? (User) s : null;
     }
 }
