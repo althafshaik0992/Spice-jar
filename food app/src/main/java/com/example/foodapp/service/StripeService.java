@@ -1,17 +1,29 @@
+// src/main/java/com/example/foodapp/service/StripeService.java
 package com.example.foodapp.service;
 
 import com.example.foodapp.model.Order;
+import com.example.foodapp.repository.OrderRepository;
 import com.stripe.Stripe;
+import com.stripe.exception.SignatureVerificationException;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Event;
+import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
+import com.stripe.net.Webhook;
+import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class StripeService {
 
     private final OrderService orderService;
     private final PaymentService paymentService;
+    private final OrderRepository orderRepository;
 
     public record StartOut(boolean ok, String checkoutUrl, Long paymentId) {}
 
@@ -21,9 +33,13 @@ public class StripeService {
     @Value("${app.url:http://localhost:8080}")
     private String appUrl;
 
-    public StripeService(OrderService orderService, PaymentService paymentService) {
+    @Value("${stripe.webhook.secret:}")
+    private String webhookSecret;
+
+    public StripeService(OrderService orderService, PaymentService paymentService, OrderRepository orderRepository) {
         this.orderService = orderService;
         this.paymentService = paymentService;
+        this.orderRepository = orderRepository;
     }
 
     public StartOut createCheckoutSession(Long orderId){
@@ -58,7 +74,6 @@ public class StripeService {
                             ).build();
 
             Session session = Session.create(params);
-            // store provider id if you want: session.getId()
             paymentService.attachProviderPaymentId(payment.getId(), session.getId());
 
             return new StartOut(true, session.getUrl(), payment.getId());
@@ -74,6 +89,67 @@ public class StripeService {
             return "complete".equalsIgnoreCase(s.getStatus());
         }catch(Exception e){
             return false;
+        }
+    }
+
+    /** Create a PaymentIntent that Apple Pay / Google Pay can confirm on the client */
+    public Map<String, Object> createWalletIntent(Long orderId) {
+        Stripe.apiKey = secretKey; // IMPORTANT: set API key here as well
+
+        Order o = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+
+        long amountInCents = o.getGrandTotal().movePointRight(2).longValueExact();
+
+        PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
+                .setAmount(amountInCents)
+                .setCurrency("usd")
+                .setDescription("SpiceJar Order #" + o.getId())
+                .putMetadata("orderId", String.valueOf(o.getId()))
+                .setAutomaticPaymentMethods(
+                        PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
+                                .setEnabled(true)
+                                .build()
+                )
+                .build();
+
+        try {
+            PaymentIntent pi = PaymentIntent.create(params);
+            Map<String, Object> out = new HashMap<>();
+            out.put("clientSecret", pi.getClientSecret());
+            out.put("paymentIntentId", pi.getId());
+            return out;
+        } catch (StripeException e) {
+            throw new RuntimeException("Stripe error", e);
+        }
+    }
+
+    /** Verify webhook and mark orders paid when PI succeeds */
+    public void handleStripeWebhook(String payload, String sigHeader) {
+        try {
+            // Always verify signature → no Gson dependency needed
+            Event event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
+
+            switch (event.getType()) {
+                case "payment_intent.succeeded" -> {
+                    PaymentIntent pi = (PaymentIntent) event.getDataObjectDeserializer()
+                            .getObject().orElse(null);
+                    if (pi != null) {
+                        String orderId = pi.getMetadata().get("orderId");
+                        if (orderId != null) {
+                            orderService.markPaid(Long.valueOf(orderId));
+                        }
+                    }
+                }
+                // optionally handle other events
+                default -> {}
+            }
+
+        } catch (SignatureVerificationException e) {
+            // bad signature
+            throw new RuntimeException("Invalid webhook signature", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid webhook", e);
         }
     }
 }

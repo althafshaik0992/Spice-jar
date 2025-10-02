@@ -3,8 +3,11 @@ package com.example.foodapp.service;
 
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
@@ -16,10 +19,19 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     @Override
-    public OAuth2User loadUser(OAuth2UserRequest req) {
-        OAuth2User user = super.loadUser(req);
-        // nothing to persist here; persistence happens in success handler
-        return user;
+    public OAuth2User loadUser(OAuth2UserRequest req) throws OAuth2AuthenticationException {
+        OAuth2User delegate = super.loadUser(req);
+
+        // Make a mutable copy so we can enrich it with the provider id.
+        Map<String, Object> attrs = new HashMap<>(delegate.getAttributes());
+        attrs.put("registrationId", req.getClientRegistration().getRegistrationId()); // "google" | "facebook"
+
+        String nameAttrKey = req.getClientRegistration()
+                .getProviderDetails()
+                .getUserInfoEndpoint()
+                .getUserNameAttributeName(); // "sub" for Google, "id" for Facebook (by default)
+
+        return new DefaultOAuth2User(delegate.getAuthorities(), attrs, nameAttrKey);
     }
 
     // Small helper to read Google payloads safely if you need it elsewhere

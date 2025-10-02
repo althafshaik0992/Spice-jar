@@ -121,4 +121,21 @@ public class PaymentCheckoutController extends BaseController {
         m.addAttribute("payment", payment);
         return "order_success";
     }
+
+    @PostMapping("/wallet/start")
+    @ResponseBody
+    public Map<String, Object> startWallet(@RequestBody Map<String, Object> body, HttpSession session) {
+        if (session.getAttribute("USER") == null) return Map.of("ok", false);
+        Long orderId = ((Number) body.get("orderId")).longValue();
+        var out = stripeService.createWalletIntent(orderId);
+        return Map.of("ok", true, "clientSecret", out.get("clientSecret"), "paymentIntentId", out.get("paymentIntentId"));
+    }
+
+    /** Stripe webhook (configure the endpoint URL in your Stripe dashboard) */
+    @PostMapping("/stripe/webhook")
+    public ResponseEntity<String> stripeWebhook(@RequestHeader(value = "Stripe-Signature", required = false) String sig,
+                                                @RequestBody String payload) {
+        stripeService.handleStripeWebhook(payload, sig);
+        return ResponseEntity.ok("ok");
+    }
 }

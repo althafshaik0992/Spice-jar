@@ -118,30 +118,7 @@
                                 </div>
                             </div>
 
-                            <!-- QR -->
-                            <div class="card-lite">
-                                <h3 class="title-small"><i class="fa-solid fa-qrcode"></i> QR Code</h3>
-                                <div class="code-box">
-                                    <!-- canvas will be injected -->
-                                    <canvas id="qrCanvas" width="512" height="512" style="width:100%;height:100%"></canvas>
-                                </div>
-                                <div class="downloads">
-                                    <a class="dl" id="dlQr"><i class="fa-regular fa-circle-down"></i>Download QR (PNG)</a>
-                                </div>
-                            </div>
 
-                            <!-- Barcode -->
-                            <div class="card-lite">
-                                <h3 class="title-small"><i class="fa-solid fa-barcode"></i> Barcode (Code-128)</h3>
-                                <div class="code-box">
-                                    <!-- SVG target for JsBarcode -->
-                                    <svg id="barSvg" viewBox="0 0 600 160" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%"></svg>
-                                </div>
-                                <div class="downloads">
-                                    <a class="dl" id="dlBar"><i class="fa-regular fa-circle-down"></i>Download Barcode (SVG)</a>
-                                </div>
-                            </div>
-                        </div>
 
                         <p style="margin:16px 0 0" class="muted">
                             © <span th:text="${year}">2025</span> The Spice Jar
@@ -153,110 +130,75 @@
     </tr>
 </table>
 
-<!-- QR + Barcode libs -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
+<!-- QR & Barcode libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js" defer></script>
 
 <script>
-    // Build a single-line shipping string for codes
-    function text(elId, fallback='') {
-        const el = document.getElementById(elId);
-        return el ? (el.textContent || '').trim() : fallback;
-    }
+    document.addEventListener('DOMContentLoaded', function () {
+        // ==== 1) Build the shipping text for QR ====
+        // These come from your model; keep the fallbacks to avoid "undefined"
+        const name    = /*[[${order.customerName}]]*/ '' || '';
+        const phone   = /*[[${order.phone}]]*/ '' || '';
+        const street  = /*[[${order.street}]]*/ '' || '';
+        const city    = /*[[${order.city}]]*/ '' || '';
+        const state   = /*[[${order.state}]]*/ '' || '';
+        const zip     = /*[[${order.zip}]]*/ '' || '';
+        const country = /*[[${order.country}]]*/ '' || '';
 
-    // Pull Thymeleaf values from DOM (fallbacks keep script harmless if JS runs before hydration)
-    const shipName   = (document.querySelector('[th\\:text="${order.customerName}"]')?.innerText) || '';
-    const shipPhone  = (document.querySelector('[th\\:text="${order.phone}"]')?.innerText) || '';
-    const shipStreet = (document.querySelector('[th\\:text="${order.street}"]')?.innerText) || '';
-    const shipCity   = (document.querySelector('[th\\:text="${order.city}"]')?.innerText) || '';
-    const shipState  = (document.querySelector('[th\\:text="${order.state}"]')?.innerText) || '';
-    const shipZip    = (document.querySelector('[th\\:text="${order.zip}"]')?.innerText) || '';
-    const shipCountry= (document.querySelector('[th\\:text="${order.country}"]')?.innerText) || '';
-    const orderId    = (document.querySelector('[th\\:text="${order.id}"]')?.innerText) || '';
+        const qrText = [
+            name,
+            phone,
+            street,
+            `${city}, ${state} ${zip}`.trim(),
+            country
+        ].filter(Boolean).join('\n');
 
-    const addressLine = [
-        shipName,
-        shipPhone,
-        shipStreet,
-        `${shipCity}, ${shipState} ${shipZip}`,
-        shipCountry,
-        `ORDER:${orderId}`
-    ].filter(Boolean).join(' | ');
-
-    /* ---------- QR (on a canvas, scaled to card) ---------- */
-    (function makeQR(){
-        // qrcode.js renders to a generated <img> or a target element.
-        // We'll draw it onto our fixed canvas to control sizing perfectly.
-        const tmp = document.createElement('div');
-        new QRCode(tmp, { text: addressLine, width: 512, height: 512, correctLevel: QRCode.CorrectLevel.M });
-        const img = tmp.querySelector('img') || tmp.querySelector('canvas');
-        const qrCanvas = document.getElementById('qrCanvas');
-        const ctx = qrCanvas.getContext('2d');
-        // Clear and draw scaled
-        function draw() {
-            const w = qrCanvas.clientWidth;
-            const h = qrCanvas.clientHeight;
-            qrCanvas.width = w * devicePixelRatio;
-            qrCanvas.height = h * devicePixelRatio;
-            ctx.scale(devicePixelRatio, devicePixelRatio);
-            ctx.clearRect(0,0,w,h);
-            // compute size preserving square
-            const size = Math.min(w, h);
-            const offX = (w - size) / 2;
-            const offY = (h - size) / 2;
-            ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(img, offX, offY, size, size);
-        }
-        // wait for QR image to load (when library renders as img)
-        if (img.tagName === 'IMG' && !img.complete) {
-            img.onload = draw;
+        // ==== 2) Render QR ====
+        const qrBox = document.getElementById('qrBox');
+        if (qrBox && window.QRCode) {
+            // Clear previous if any (reloads etc)
+            qrBox.innerHTML = '';
+            const qr = new QRCode(qrBox, {
+                text: qrText || 'No address',
+                width: 260,
+                height: 260,
+                correctLevel: QRCode.CorrectLevel.M
+            });
         } else {
-            // canvas or already loaded img
-            draw();
+            console.warn('QR code container or library not ready');
         }
 
-        // Download PNG
-        document.getElementById('dlQr').addEventListener('click', () => {
-            const link = document.createElement('a');
-            link.download = `SJ-order-${orderId}-address-qr.png`;
-            link.href = qrCanvas.toDataURL('image/png');
-            link.click();
-        });
+        // ==== 3) Download QR as PNG ====
+        const dlQrBtn = document.getElementById('btnDownloadQr');
+        if (dlQrBtn) {
+            dlQrBtn.addEventListener('click', function () {
+                const canvas = qrBox?.querySelector('canvas');
+                if (!canvas) return;
+                const url = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `shipping-qr-order-${/*[[${order.id}]]*/ 'order'}.png`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            });
+        }
 
-        // Redraw on resize for crispness
-        let rAF;
-        window.addEventListener('resize', () => {
-            cancelAnimationFrame(rAF);
-            rAF = requestAnimationFrame(draw);
-        });
-    })();
-
-    /* ---------- BARCODE (Code-128 into SVG) ---------- */
-    (function makeBarcode(){
-        const svg = document.getElementById('barSvg');
-        // JsBarcode draws into the given element; width/height are per-bar, so we tune to look good
-        JsBarcode(svg, addressLine, {
-            format: "CODE128",
-            displayValue: false,
-            margin: 16,
-            lineColor: "#111",
-            width: 2,     // bar width
-            height: 80    // bar height (inside our 260px box)
-        });
-
-        // Download SVG
-        document.getElementById('dlBar').addEventListener('click', () => {
-            const serializer = new XMLSerializer();
-            const src = serializer.serializeToString(svg);
-            const blob = new Blob([src], {type: 'image/svg+xml;charset=utf-8'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `SJ-order-${orderId}-address-barcode.svg`;
-            a.click();
-            URL.revokeObjectURL(url);
-        });
-    })();
+        // ==== 4) Render barcode (Code-128) — you already see this working, kept for completeness ====
+        const barcodeEl = document.getElementById('barcodeSvg');
+        const codeText = `${/*[[${order.confirmationNumber}]]*/ ''}`.trim() || `ORD-${/*[[${order.id}]]*/ '0'}`;
+        if (barcodeEl && window.JsBarcode) {
+            JsBarcode(barcodeEl, codeText, {
+                format: 'CODE128',
+                width: 2,
+                height: 70,
+                displayValue: false,
+                margin: 10
+            });
+        }
+    });
 </script>
 </body>
 </html>
