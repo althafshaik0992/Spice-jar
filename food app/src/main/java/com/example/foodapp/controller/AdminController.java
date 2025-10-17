@@ -1,8 +1,6 @@
 package com.example.foodapp.controller;
 
-import com.example.foodapp.model.Category;
-import com.example.foodapp.model.Order;
-import com.example.foodapp.model.Product;
+import com.example.foodapp.model.*;
 import com.example.foodapp.repository.CategoryRepository;
 import com.example.foodapp.service.*;
 import jakarta.servlet.http.HttpSession;
@@ -48,10 +46,48 @@ public class AdminController {
     /* -------------------- DASHBOARD -------------------- */
 
     @GetMapping({"", "/"})
-    public String dashboard(Model m, HttpSession session) {
-        var daily = analyticsService.dailyOrdersLast7Days();
-        m.addAttribute("labels", daily.keySet());
-        m.addAttribute("values", daily.values());
+    public String dashboard(@RequestParam(name = "range", defaultValue = "7d") String range,Model m ,HttpSession session) {
+
+        int days = switch (range) {
+            case "30d" -> 30;
+            case "90d" -> 90;
+            default -> 7;
+        };
+
+        LocalDate to   = LocalDate.now();          // inclusive on chart
+        LocalDate from = to.minusDays(days - 1);   // e.g. 7d → include 7 days
+
+        // #### KPIs you already showed (make sure these are set) ####
+        m.addAttribute("ordersCount",     orderService.countAll()); // or your own method
+        m.addAttribute("totalRevenue",    orderService.totalRevenue()); // BigDecimal
+       //m.addAttribute("menuCount",       productService.count());  // long
+        //m.addAttribute("categoriesCount", categoryService.count()); // long
+        m.addAttribute("productsCount", productService.findAll().size());
+
+        // optional: fill avgOrderValue7d / aovChangePct / repeatRate30d / refundRate30d too
+
+        // #### Charts ####
+        var series = analyticsService.revenueSeries(from, to);
+        m.addAttribute("revLabels", series.labels());
+        m.addAttribute("revValues", series.values());
+
+        var top = analyticsService.topProducts(5);
+        m.addAttribute("topProductNames", top.names());
+        m.addAttribute("topProductQty",   top.qty());
+
+        // recent orders & low stock if you use them
+        m.addAttribute("recentOrders", orderService.recent(10));
+        //m.addAttribute("lowStock",     productService.lowStock(5));
+       // var daily = analyticsService.dailyOrdersLast7Days();
+        DashboardMetrics dashboardMetrics = analyticsService.getDashboardMetrics();
+        m.addAttribute("metrics", dashboardMetrics);
+
+        // Give some initial data so the page looks complete without JS
+        m.addAttribute("ordersByDay", analyticsService.ordersByDay(14));
+        m.addAttribute("topProducts", analyticsService.topProducts(5));
+        m.addAttribute("recentOrders", analyticsService.recentOrders(10));
+       // m.addAttribute("labels", daily.keySet());
+        //m.addAttribute("values", daily.values());
         m.addAttribute("ordersCount", orderService.findAll().size());
         m.addAttribute("productsCount", productService.findAll().size());
         m.addAttribute("categoriesCount", categoryService.findAll().size());
@@ -70,7 +106,7 @@ public class AdminController {
     }
 
     // Backward-compat: redirect old endpoints to catalog
-    @GetMapping("/products")
+    @GetMapping("/menu")
     public String productsRedirect() {
         return "redirect:/admin/catalog";
     }
@@ -97,7 +133,7 @@ public class AdminController {
 
     /* -------------------- PRODUCT actions -------------------- */
 
-    @PostMapping("/products")
+    @PostMapping("/menu/add")
     public String createProduct(@RequestParam String name,
                                 @RequestParam(required = false) String description,
                                 @RequestParam BigDecimal price,
@@ -188,6 +224,30 @@ public class AdminController {
     @PostMapping("/orders/reset")
     public String reset() {
         return "redirect:/admin/orders";
+    }
+
+    @GetMapping("/api/metrics")
+    @ResponseBody
+    public DashboardMetrics metrics() {
+        return analyticsService.getDashboardMetrics();
+    }
+
+    @GetMapping("/api/orders-by-day")
+    @ResponseBody
+    public List<DayBucket> ordersByDay(@RequestParam(defaultValue = "14") int days) {
+        return analyticsService.ordersByDay(Math.max(1, Math.min(days, 60)));
+    }
+
+    @GetMapping("/api/top-products")
+    @ResponseBody
+    public AnalyticsService.TopProducts topProducts(@RequestParam(defaultValue = "5") int limit) {
+        return analyticsService.topProducts(Math.max(1, Math.min(limit, 20)));
+    }
+
+    @GetMapping("/api/recent-orders")
+    @ResponseBody
+    public List<RecentOrderDTO> recentOrders(@RequestParam(defaultValue = "10") int limit) {
+        return analyticsService.recentOrders(Math.max(1, Math.min(limit, 50)));
     }
 }
 

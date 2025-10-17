@@ -136,18 +136,54 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain adminChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/admin/**")
-                .authorizeHttpRequests(auth -> auth.anyRequest().hasRole("ADMIN"))
+                // Only applies to the admin area
+                .securityMatcher("/admin/**", "/webjars/**")
+                .authorizeHttpRequests(auth -> auth
+                        // allow the admin login page + its static assets
+                        .requestMatchers(
+                                "/admin/login",            // GET login page
+                                "/admin/login/**",         // (safety)
+                                "/admin/css/**",
+                                "/admin/js/**",
+                                "/admin/images/**",
+                                "/webjars/**"
+                        ).permitAll()
+
+                        // everything else in /admin must be ADMIN
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                )
+
+                // Admin form login
                 .formLogin(form -> form
-                        .loginPage("/admin/login")
-                        .loginProcessingUrl("/admin/login")
+                        .loginPage("/admin/login")        // your Thymeleaf login page
+                        .loginProcessingUrl("/admin/login") // POST target
+                        .usernameParameter("username")
+                        .passwordParameter("password")
                         .defaultSuccessUrl("/admin", true)
+                        .failureUrl("/admin/login?error")
                         .permitAll()
                 )
+
+                // Logout
                 .logout(logout -> logout
                         .logoutUrl("/admin/logout")
                         .logoutSuccessUrl("/admin/login?logout")
-                );
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll()
+                )
+
+                // Redirect unauthenticated users trying to hit /admin/** to the login page
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((req, res, e) -> res.sendRedirect("/admin/login"))
+                        .accessDeniedHandler((req, res, e) -> res.sendRedirect("/admin/login?denied"))
+                )
+
+        // (optional) CSRF: keep it enabled; the login POST is already handled.
+        // If you have admin-only AJAX endpoints, you can ignore them here:
+        //.csrf(csrf -> csrf.ignoringRequestMatchers("/admin/api/**"))
+        ;
+
         return http.build();
     }
 

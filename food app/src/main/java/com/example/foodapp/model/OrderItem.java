@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 
 @Entity
+@Table(schema = "order_items")
 public class OrderItem {
 
     // --- getters/setters ---
@@ -32,6 +33,13 @@ public class OrderItem {
     @Getter
     @Setter
     private String imageUrl;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
+
+
 
     public OrderItem() {}
 

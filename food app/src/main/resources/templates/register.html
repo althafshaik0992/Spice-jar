@@ -107,17 +107,7 @@
     </a>
     <a th:href="@{/contact}">Contact Us</a>
 
-    <!-- Categories -->
-    <div class="dropdown">
-      <button class="dropdown-toggle">
-        <i class="fa-solid fa-list"></i> Categories
-      </button>
-      <div class="dropdown-menu">
-        <a th:each="c : ${categories}"
-           th:href="@{/category/{id}(id=${c.id})}"
-           th:text="${c.name}">Category</a>
-      </div>
-    </div>
+
 
     <!-- Account -->
     <div class="dropdown">
@@ -145,6 +135,11 @@
   <div th:if="${msg}" style="margin:10px 0;padding:10px;border-radius:8px;background:#ecfdf5;color:#065f46" th:text="${msg}"></div>
   <div th:if="${err}" style="margin:10px 0;padding:10px;border-radius:8px;background:#fef2f2;color:#991b1b" th:text="${err}"></div>
   <h2>Register</h2>
+  <p th:if="${error}" class="error" th:text="${error}"></p>
+
+  <div th:if="${param.error}" class="alert-error">
+    User already exists.
+  </div>
 
   <form th:action="@{/register}" method="post">
     <div class="form-group">
@@ -233,7 +228,7 @@
   </form>
 
   <p>Already have an account? <a th:href="@{/login}">Login</a></p>
-  <p th:if="${error}" class="error" th:text="${error}"></p>
+
 </div>
 
 <script>

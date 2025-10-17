@@ -586,17 +586,7 @@
     </a>
     <a th:href="@{/contact}">Contact Us</a>
 
-    <!-- Categories -->
-    <div class="dropdown">
-      <button class="dropdown-toggle">
-        <i class="fa-solid fa-list"></i> Categories
-      </button>
-      <div class="dropdown-menu">
-        <a th:each="c : ${categories}"
-           th:href="@{/category/{id}(id=${c.id})}"
-           th:text="${c.name}">Category</a>
-      </div>
-    </div>
+
 
     <!-- Account -->
     <div class="dropdown">
@@ -621,6 +611,7 @@
   <h2>Login</h2>
   <form th:action="@{/login}" method="post">
     <input type="hidden" name="return" th:value="${returnUrl}">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
     <div class="form-group">
       <label for="username">Username:</label>

@@ -87,52 +87,52 @@ public class HomeController {
     }
 
 
-    @PostMapping(
-            value = "/api/chat",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @ResponseBody
-    public Map<String, Object> chat(@RequestBody(required = false) Map<String, String> body,
-                                    HttpSession session) {
-        String msg = (body == null ? "" : String.valueOf(body.getOrDefault("message", ""))).trim();
-        Map<String, Object> out = new HashMap<>();
-
-        if (msg.isEmpty()) {
-            out.put("reply", "Please type a message, e.g. “Show best sellers”.");
-            return out;
-        }
-
-        // 1) “add … to cart”
-        String lower = msg.toLowerCase(Locale.ROOT);
-        if (lower.startsWith("add") || lower.startsWith("i want")) {
-            @SuppressWarnings("unchecked")
-            List<ChatProductDTO> last = (List<ChatProductDTO>) session.getAttribute("CHAT_SUGG");
-            if (last != null && !last.isEmpty()) {
-                ChatProductDTO pick = last.get(0);
-                out.put("reply", "Added “" + pick.getName() + "” to your cart. 🛒");
-                // Let the front-end POST to /cart/add with CSRF:
-                out.put("addToCartProductId", pick.getId());
-                return out;
-            } else {
-                out.put("reply", "I don’t have a product selected yet. Ask me for a spice and I’ll suggest a few!");
-                return out;
-            }
-        }
-
-        // 2) product / category search
-        List<ChatProductDTO> suggestions = tryFindProducts(msg);
-        if (!suggestions.isEmpty()) {
-            session.setAttribute("CHAT_SUGG", suggestions);
-            out.put("reply", "Here are a few matches. Want me to add one?");
-            out.put("cards", suggestions);
-            return out;
-        }
-
-        // 3) fallback
-        out.put("reply", answer(msg));
-        return out;
-    }
+//    @PostMapping(
+//            value = "/api/chat",
+//            consumes = MediaType.APPLICATION_JSON_VALUE,
+//            produces = MediaType.APPLICATION_JSON_VALUE
+//    )
+//    @ResponseBody
+//    public Map<String, Object> chat(@RequestBody(required = false) Map<String, String> body,
+//                                    HttpSession session) {
+//        String msg = (body == null ? "" : String.valueOf(body.getOrDefault("message", ""))).trim();
+//        Map<String, Object> out = new HashMap<>();
+//
+//        if (msg.isEmpty()) {
+//            out.put("reply", "Please type a message, e.g. “Show best sellers”.");
+//            return out;
+//        }
+//
+//        // 1) “add … to cart”
+//        String lower = msg.toLowerCase(Locale.ROOT);
+//        if (lower.startsWith("add") || lower.startsWith("i want")) {
+//            @SuppressWarnings("unchecked")
+//            List<ChatProductDTO> last = (List<ChatProductDTO>) session.getAttribute("CHAT_SUGG");
+//            if (last != null && !last.isEmpty()) {
+//                ChatProductDTO pick = last.get(0);
+//                out.put("reply", "Added “" + pick.getName() + "” to your cart. 🛒");
+//                // Let the front-end POST to /cart/add with CSRF:
+//                out.put("addToCartProductId", pick.getId());
+//                return out;
+//            } else {
+//                out.put("reply", "I don’t have a product selected yet. Ask me for a spice and I’ll suggest a few!");
+//                return out;
+//            }
+//        }
+//
+//        // 2) product / category search
+//        List<ChatProductDTO> suggestions = tryFindProducts(msg);
+//        if (!suggestions.isEmpty()) {
+//            session.setAttribute("CHAT_SUGG", suggestions);
+//            out.put("reply", "Here are a few matches. Want me to add one?");
+//            out.put("cards", suggestions);
+//            return out;
+//        }
+//
+//        // 3) fallback
+//        out.put("reply", answer(msg));
+//        return out;
+//    }
 
     private List<ChatProductDTO> tryFindProducts(String q) {
         String s = q.trim();

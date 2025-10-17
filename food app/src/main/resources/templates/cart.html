@@ -543,17 +543,7 @@
         </a>
         <a th:href="@{/contact}">Contact Us</a>
 
-        <!-- Categories -->
-        <div class="dropdown">
-            <button class="dropdown-toggle">
-                <i class="fa-solid fa-list"></i> Categories
-            </button>
-            <div class="dropdown-menu">
-                <a th:each="c : ${categories}"
-                   th:href="@{/category/{id}(id=${c.id})}"
-                   th:text="${c.name}">Category</a>
-            </div>
-        </div>
+
 
         <!-- Account -->
         <div class="dropdown">

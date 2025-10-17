@@ -1,6 +1,7 @@
 package com.example.foodapp.repository;
 
 import com.example.foodapp.model.Product;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -42,4 +43,19 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("max") BigDecimal max,
             @Param("categoryId") Long categoryId
     );
+
+    @Query("""
+           SELECT p FROM Product p
+           WHERE LOWER(p.name)        LIKE LOWER(CONCAT('%', :q, '%'))
+              OR LOWER(p.description) LIKE LOWER(CONCAT('%', :q, '%'))
+              OR LOWER(p.category.name) LIKE LOWER(CONCAT('%', :q, '%'))
+           ORDER BY p.name ASC
+           """)
+    List<Product> searchByKeyword(@Param("q") String q, Pageable pageable);
+
+    // For top or random fallback
+    @Query(value = "SELECT p FROM Product p ORDER BY p.id DESC LIMIT :limit",
+            nativeQuery = true)
+    List<Product> findTopNProducts(@Param("limit") int limit);
 }
+

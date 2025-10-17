@@ -18,6 +18,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping // optional, keeps routes as-is
 public class UserauthController {
 
+
+    @Value("app.base.url")
+    private String baseUrl;
+
     private final UserService userService;
 
     private final EmailServiceWelcome emailService;
@@ -77,6 +81,7 @@ public class UserauthController {
         }
         User u = userService.register(firstName, lastName, address, email, phone, username, password);
         session.setAttribute("USER", u);
+        emailService.sendWelcomeEmail(u,baseUrl);
 
         return "login";
     }

@@ -116,14 +116,7 @@
             </div>
         </a>
         <a th:href="@{/contact}">Contact Us</a>
-        <div class="dropdown">
-            <button class="dropdown-toggle"><i class="fa-solid fa-list"></i> Categories</button>
-            <div class="dropdown-menu">
-                <a th:each="c : ${categories}"
-                   th:href="@{/category/{id}(id=${c.id})}"
-                   th:text="${c.name}">Category</a>
-            </div>
-        </div>
+
         <div class="dropdown">
             <button class="dropdown-toggle">
                 <i class="fas fa-user"></i>
