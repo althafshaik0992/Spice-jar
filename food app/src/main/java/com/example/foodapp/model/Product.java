@@ -1,6 +1,8 @@
 package com.example.foodapp.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +34,14 @@ public class Product {
     @Column(nullable = false)
     private  Integer stock;
 
+    @Getter
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariant> variants = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createdAt DESC")
+    private java.util.List<Review> reviews = new java.util.ArrayList<>();
 
     public Product() {}
 
@@ -83,7 +91,6 @@ public class Product {
     }
 
 
-    public List<ProductVariant> getVariants() { return variants; }
     public void setVariants(List<ProductVariant> variants) { this.variants = variants; }
 
     // convenience for full replace (used on save/update)
