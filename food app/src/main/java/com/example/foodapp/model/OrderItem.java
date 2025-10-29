@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Entity
 @Table(schema = "order_items")
@@ -25,7 +26,9 @@ public class OrderItem {
     private String productName;
     @Getter
     @Setter
-    private int quantity;
+    private Integer quantity;
+
+
     @Getter
     @Setter
     private BigDecimal price;
@@ -35,20 +38,42 @@ public class OrderItem {
     private String imageUrl;
 
 
+    @Getter
+    @Setter
+    @Column(name = "line_total", nullable = false, precision = 12, scale = 2)
+    private BigDecimal lineTotal;
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
 
+    // IMPORTANT: map to unit_price
+    @Getter
+    @Setter
+    @Column(name = "unit_price", nullable = false, precision = 10, scale = 2)
+    private BigDecimal unitPrice;
 
+
+    @Getter
+    @Setter
+    private Long variantId;
 
     public OrderItem() {}
 
     /** Line total = price * quantity */
-    public BigDecimal getLineTotal() {
-        BigDecimal p = (price == null ? BigDecimal.ZERO : price);
-        int q = quantity;
-        return p.multiply(BigDecimal.valueOf(q));
+    @PrePersist @PreUpdate
+    private void syncAndCompute() {
+        // if someone sets price by mistake, mirror it
+        if (unitPrice == null && price != null) unitPrice = price;
+        if (price == null && unitPrice != null) price = unitPrice; // if you still read price anywhere
+
+        BigDecimal p = unitPrice != null ? unitPrice : BigDecimal.ZERO;
+        int q = quantity != null ? quantity : 0;
+        lineTotal = p.multiply(BigDecimal.valueOf(q)).setScale(2, RoundingMode.HALF_UP);
     }
+
+
 
 
 }

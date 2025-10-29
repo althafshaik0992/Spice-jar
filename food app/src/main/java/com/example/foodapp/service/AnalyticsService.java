@@ -38,4 +38,12 @@ public interface AnalyticsService {
     record TopProducts(List<String> names, List<Long> qty) {}
 
     Map<String, Object> kpis();
+
+
+    java.util.LinkedHashMap<String, java.math.BigDecimal> revenueByDay(int lastNDays);
+
+    // (Optional convenience)
+    default java.util.LinkedHashMap<String, java.math.BigDecimal> revenueLast7Days() {
+        return revenueByDay(7);
+    }
 }

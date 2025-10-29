@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
+<link rel="icon" type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 <head>
     <meta charset="utf-8">
     <title>Cart • The Spice Jar</title>
@@ -8,529 +12,121 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root {
-            --green: #218838;
-            --accent: #b7410e;
-            --dark: #111;
-            --bg: #f0f8f0;
-            --border-color: #ddd;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            background: var(--bg);
-            color: #222;
-        }
+        :root{--green:#218838;--accent:#b7410e;--dark:#111;--bg:#f0f8f0}
+        *{box-sizing:border-box}
+        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;margin:0;background:var(--bg);color:#222}
 
         /* Navbar */
-        .navbar {
-            background: #fff;
-            padding: 6px 6%;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, .05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            height: 60px;
-        }
+        .navbar{background:#fff;padding:6px 6%;box-shadow:0 2px 6px rgba(0,0,0,.05);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000;height:60px}
+        .brand-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--green);font-weight:700;font-size:20px}
+        .brand-logo video{width:36px;height:auto;border-radius:4px}
+        .nav-links{display:flex;align-items:center;gap:18px}
+        .nav-links a{text-decoration:none;color:#333;font-weight:500;font-size:15px}
+        .nav-links a:hover{color:var(--green)}
+        .dropdown{position:relative}
+        .dropdown-toggle{background:none;border:none;cursor:pointer;font-size:15px;color:#333;display:flex;align-items:center;gap:6px}
+        .dropdown-menu{display:none;position:absolute;right:0;top:100%;background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.1);border-radius:6px;overflow:hidden;min-width:180px}
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a,.dropdown-menu span{display:block;padding:10px 16px;text-decoration:none;color:#333;white-space:nowrap}
+        .dropdown-menu a:hover{background:#f4f4f4}
+        .cart-icon-container{position:relative;display:inline-block}
+        .cart-count-badge{position:absolute;top:-8px;right:-8px;background:var(--accent);color:#fff;border-radius:50%;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
 
-        .brand-logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            color: var(--green);
-            font-weight: 700;
-            font-size: 20px
+        /* NEW: compact navbar search */
+        .nav-search{flex:1; max-width:520px; display:flex; align-items:center; gap:8px}
+        .nav-search input{
+            width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:999px;
+            background:#fff; font-size:14px; outline:none;
         }
-
-        .brand-logo video {
-            width: 36px;
-            height: auto;
-            border-radius: 4px
+        .nav-search button{
+            border:none; border-radius:999px; padding:9px 12px; background:var(--green); color:#fff; cursor:pointer;
         }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 18px
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-            font-size: 15px
-        }
-
-        .nav-links a:hover {
-            color: var(--green)
-        }
-
-        .dropdown {
-            position: relative
-        }
-
-        .dropdown-toggle {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 15px;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 6px
-        }
-
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 100%;
-            background: #fff;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
-            border-radius: 6px;
-            overflow: hidden;
-            min-width: 180px
-        }
-
-        .dropdown:hover .dropdown-menu {
-            display: block
-        }
-
-        .dropdown-menu a, .dropdown-menu span {
-            display: block;
-            padding: 10px 16px;
-            text-decoration: none;
-            color: #333;
-            white-space: nowrap
-        }
-
-        .dropdown-menu a:hover {
-            background: #f4f4f4
-        }
+        .nav-search button:hover{background:var(--accent);}
 
         /* Layout */
-        .container {
-            max-width: 1200px;
-            margin: 24px auto;
-            padding: 0 2%
-        }
+        .container{max-width:1200px;margin:24px auto;padding:0 2%}
+        .cart-grid{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:flex-start}
+        @media (max-width:900px){.cart-grid{grid-template-columns:1fr}}
 
-        .cart-grid {
-            display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 24px;
-            align-items: flex-start;
-        }
+        /* Cart area */
+        .cart-items-container{background:#fff;border-radius:8px;padding:20px;box-shadow:0 4px 12px rgba(0,0,0,.06);margin-bottom:24px}
+        .cart-header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #eee;padding-bottom:10px}
+        .cart-header h1{font-size:28px;margin:0;color:var(--dark)}
+        .cart-header a{font-size:14px;color:var(--green);text-decoration:none}
 
-        @media (max-width: 900px) {
-            .cart-grid {
-                grid-template-columns:1fr
-            }
-        }
+        .cart-item-card{display:flex;gap:16px;padding:20px 0;border-bottom:1px solid #eee}
+        .cart-item-card:last-child{border-bottom:none}
+        .item-image{flex-shrink:0;display:flex;align-items:flex-start;gap:15px}
+        .item-image img{width:150px;height:150px;object-fit:contain;border-radius:8px}
 
-        /* Cart Items Area */
-        .cart-items-container {
-            background: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
-            margin-bottom: 24px;
-        }
+        .item-details{flex-grow:1}
+        .item-details h3{margin:0 0 6px 0;font-size:18px;font-weight:700}
+        .small-muted{color:#6b7280;font-size:13px}
+        .weight-pill{display:inline-block;margin-top:6px;background:#eef6f0;border:1px solid #d7eadf;color:#1e7e34;padding:2px 10px;border-radius:999px;font-weight:600;font-size:12px}
 
-        .cart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
+        .item-stock{color:var(--green);font-size:14px;font-weight:600;margin:10px 0}
+        .item-actions-toolbar{display:flex;align-items:center;gap:15px;margin-top:10px}
 
-        .cart-header h1 {
-            font-size: 28px;
-            margin: 0;
-            color: var(--dark);
-        }
+        .btn-action{background:var(--green);color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+        .btn-action:hover{background:var(--accent)}
+        .separator{color:#ccc}
 
-        .cart-header a {
-            font-size: 14px;
-            color: var(--green);
-            text-decoration: none;
-        }
+        .item-price{font-size:20px;font-weight:700;color:var(--accent);text-align:right}
 
-        .cart-item-card {
-            display: flex;
-            gap: 16px;
-            padding: 20px 0;
-            border-bottom: 1px solid #eee;
-        }
+        /* Qty selector */
+        .quantity-selector{display:flex;align-items:center;border:1px solid #ccc;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+        .quantity-selector button{background:#f0f0f0;border:none;padding:8px 12px;cursor:pointer;font-size:16px}
+        .quantity-selector button:hover{background:#e0e0e0}
+        .quantity-selector .qty-btn-minus{border-right:1px solid #ccc;border-radius:5px 0 0 5px}
+        .quantity-selector .qty-btn-plus{border-left:1px solid #ccc;border-radius:0 5px 5px 0}
+        .quantity-selector input{width:50px;text-align:center;border:none;font-size:16px;-moz-appearance:textfield}
+        input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
-        .cart-item-card:last-child {
-            border-bottom: none;
-        }
+        .cart-subtotal-footer{text-align:right;font-size:18px;margin-top:20px}
 
-        .item-image {
-            flex-shrink: 0;
-            display: flex;
-            align-items: flex-start;
-            gap: 15px;
-        }
-        .item-image img {
-            width: 150px;
-            height: 150px;
-            object-fit: contain;
-            border-radius: 8px;
-        }
+        /* Summary */
+        .summary-card{background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.06);padding:20px;position:sticky;top:84px}
+        .card h2{font-size:18px;margin:0 0 12px;color:#333}
+        .row{display:flex;justify-content:space-between;margin:8px 0}
+        .row.total{font-size:18px;font-weight:800}
+        .btn-checkout{display:block;width:100%;text-align:center;background:var(--green);color:#fff;padding:12px 16px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;border:none;margin-top:16px}
+        .btn-checkout:hover{background:var(--accent)}
 
-        .item-details {
-            flex-grow: 1;
-        }
-
-        .item-details h3 {
-            margin: 0 0 8px 0;
-            font-size: 18px;
-            font-weight: 600;
-        }
-        .card{background:var(--card); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.06); padding:18px}
-        .card h2{font-size:18px; margin:0 0 12px; color:#333}
-
-        .summary h3{margin:0 0 12px; color:#333}
-        .row{display:flex; justify-content:space-between; margin:8px 0}
-        .row.total{font-size:18px; font-weight:800}
-
-        .item-stock {
-            color: var(--green);
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .item-actions-toolbar {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .btn-action {
-            background: var(--green);
-            color: #fff;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .btn-action:hover {
-            background: var(--accent);
-        }
-
-        .separator {
-            color: #ccc;
-        }
-
-        .item-price {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--accent);
-            text-align: right;
-        }
-
-        /* Quantity Selector */
-        .quantity-selector {
-            display: flex;
-            align-items: center;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .quantity-selector button {
-            background: #f0f0f0;
-            border: none;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .quantity-selector button:hover {
-            background: #e0e0e0;
-        }
-        .quantity-selector .qty-btn-minus {
-            border-right: 1px solid #ccc;
-            border-radius: 5px 0 0 5px;
-        }
-        .quantity-selector .qty-btn-plus {
-            border-left: 1px solid #ccc;
-            border-radius: 0 5px 5px 0;
-        }
-        .quantity-selector input {
-            width: 50px;
-            text-align: center;
-            border: none;
-            font-size: 16px;
-            -moz-appearance: textfield;
-        }
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .cart-subtotal-footer {
-            text-align: right;
-            font-size: 18px;
-            margin-top: 20px;
-        }
-
-        .navbar{
-            background:#fff; padding:6px 6%;
-            box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex; justify-content:space-between; align-items:center;
-            position:sticky; top:0; z-index:1000; height:60px;
-        }
-        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
-        .brand-logo video{width:36px; height:auto; border-radius:4px}
-        .nav-links{display:flex; align-items:center; gap:18px}
-        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
-        .nav-links a:hover{color:var(--green)}
-
-        /* Dropdowns */
-        .dropdown{position:relative}
-        .dropdown-toggle{
-            background:none; border:none; cursor:pointer; font-size:15px; color:#333;
-            display:flex; align-items:center; gap:6px
-        }
-        .dropdown-menu{
-            display:none; position:absolute; right:0; top:100%;
-            background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
-            border-radius:6px; overflow:hidden; min-width:180px
-        }
-        .dropdown:hover .dropdown-menu{display:block}
-        .dropdown-menu a, .dropdown-menu span{
-            display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap
-        }
-        .dropdown-menu a:hover{background:#f4f4f4}
-        /* Cart count badge style */
-        .cart-icon-container {
-            position: relative;
-            display: inline-block;
-        }
-        .cart-count-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background-color: var(--accent);
-            color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 20px;
-            height: 20px;
-            text-align: center;
-        }
-
-
-        /* Summary card */
-        .summary-card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
-            padding: 20px;
-            position: sticky;
-            top: 84px; /* navbar height + margin */
-        }
-        .summary-subtotal {
-            font-size: 18px;
-            text-align: right;
-            margin-bottom: 15px;
-        }
-        .gift-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        .btn-checkout {
-            display: block;
-            width: 100%;
-            text-align: center;
-            background: var(--green);
-            color: #fff;
-            padding: 12px 16px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 16px;
-            border: none;
-            margin-top: 16px;
-        }
-
-        .btn-checkout:hover {
-            background: var(--accent);
-        }
-
-        /* Empty state */
-        .empty {
-            background: #fff;
-            border-radius: 12px;
-            padding: 28px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
-        }
-
-        .empty p {
-            margin: 6px 0 16px;
-        }
-
-        .shop-link {
-            display: inline-block;
-            margin-top: 6px;
-            color: #fff;
-            background: var(--green);
-            padding: 10px 14px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 700;
-        }
-
-        .shop-link:hover {
-            background: var(--accent);
-        }
+        /* Empty */
+        .empty{background:#fff;border-radius:12px;padding:28px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.06)}
+        .shop-link{display:inline-block;margin-top:6px;color:#fff;background:var(--green);padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:700}
+        .shop-link:hover{background:var(--accent)}
 
         /* Tabs */
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid #ccc;
-            margin-bottom: 24px;
-        }
-        .tab-link {
-            padding: 12px 20px;
-            text-decoration: none;
-            color: #555;
-            font-weight: 600;
-            border-bottom: 2px solid transparent;
-            position: relative;
-            top: 1px;
-        }
-        .tab-link:hover {
-            color: var(--green);
-        }
-        .tab-link.active {
-            color: var(--green);
-            border-bottom-color: var(--green);
-        }
+        .tabs{display:flex;border-bottom:1px solid #ccc;margin-bottom:24px}
+        .tab-link{padding:12px 20px;text-decoration:none;color:#555;font-weight:600;border-bottom:2px solid transparent;position:relative;top:1px}
+        .tab-link:hover{color:var(--green)}
+        .tab-link.active{color:var(--green);border-bottom-color:var(--green)}
+        .tab-content{display:none}
+        .tab-content.active{display:block}
 
         /* Footer */
-        .site-footer{
-            background:#222;
-            color:#ccc;
-            padding:40px 6%;
-            margin-top:40px;
-        }
-        .footer-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        .footer-column {
-            flex: 1;
-            min-width: 220px;
-        }
-        .footer-column h3 {
-            color: #fff;
-            margin-bottom: 15px;
-            font-weight: 600;
-            border-bottom: 2px solid var(--green);
-            padding-bottom: 8px;
-            display: inline-block;
-        }
-        .footer-column p {
-            line-height: 1.6;
-            font-size: 14px;
-        }
-        .footer-column ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .footer-column ul li a {
-            text-decoration: none;
-            color: #ccc;
-            display: block;
-            padding: 5px 0;
-            font-size: 14px;
-            transition: color 0.3s;
-        }
-        .footer-column ul li a:hover {
-            color: #fff;
-        }
-        .social-links a {
-            color: #ccc;
-            text-decoration: none;
-            font-size: 20px;
-            margin-right: 15px;
-            transition: color 0.3s;
-        }
-        .social-links a:hover {
-            color: var(--green);
-        }
-        .footer-bottom {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #444;
-            font-size: 14px;
-        }
-
-        @media (max-width: 768px) {
-            .footer-container {
-                flex-direction: column;
-                text-align: center;
-            }
-            .footer-column h3 {
-                border-bottom: none;
-                padding-bottom: 0;
-                margin-bottom: 10px;
-            }
-            .footer-column {
-                margin-bottom: 20px;
-            }
-        }
-
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-
+        .site-footer{background:#222;color:#ccc;padding:40px 6%;margin-top:40px}
+        .footer-container{display:flex;flex-wrap:wrap;justify-content:space-between;gap:30px;margin-bottom:30px}
+        .footer-column{flex:1;min-width:220px}
+        .footer-column h3{color:#fff;margin-bottom:15px;font-weight:600;border-bottom:2px solid var(--green);padding-bottom:8px;display:inline-block}
+        .footer-bottom{text-align:center;padding-top:20px;border-top:1px solid #444;font-size:14px}
     </style>
 </head>
 <body>
 
-<!-- Navbar -->
-
-<!-- Navbar -->
-<!-- Navbar -->
 <nav class="navbar">
     <a href="/" class="brand-logo">
         <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
         <span>SpiceJar</span>
     </a>
+
+    <form class="nav-search" role="search" onsubmit="return false;">
+        <input id="nav-q" type="search" placeholder="Search spices…" aria-label="Search" th:value="${q}">
+        <button id="nav-search-btn" type="button" aria-label="Search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+    </form>
 
     <div class="nav-links">
         <a th:href="@{/menu}">Menu</a>
@@ -543,9 +139,6 @@
         </a>
         <a th:href="@{/contact}">Contact Us</a>
 
-
-
-        <!-- Account -->
         <div class="dropdown">
             <button class="dropdown-toggle">
                 <i class="fas fa-user"></i>
@@ -554,7 +147,6 @@
             <div class="dropdown-menu">
                 <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
-
                 <span th:if="${session.USER != null}">
           Welcome, <strong th:text="${session.USER.firstName}">User</strong>
         </span>
@@ -566,35 +158,42 @@
     </div>
 </nav>
 
-
 <div class="container">
 
-    <!-- Empty State -->
-    <div class="empty" th:if="${(cart == null or cart.items == null or #lists.isEmpty(cart.items)) and (cart == null or cart.savedForLater == null or #lists.isEmpty(cart.savedForLater))}">
+    <!-- Empty -->
+    <div class="empty"
+         th:if="${(cart == null or cart.items == null or #lists.isEmpty(cart.items)) and
+               (cart == null or cart.savedForLater == null or #lists.isEmpty(cart.savedForLater))}">
         <i class="fa-solid fa-bag-shopping" style="font-size:36px;color:var(--green)"></i>
         <p>Your cart is empty.</p>
         <a class="shop-link" th:href="@{/menu}">Browse Menu</a>
     </div>
 
-    <div th:if="${cart != null and (cart.items != null and !#lists.isEmpty(cart.items) or cart.savedForLater != null and !#lists.isEmpty(cart.savedForLater))}">
+    <!-- Tabs only when we have something -->
+    <div th:if="${cart != null and ( (cart.items != null and !#lists.isEmpty(cart.items)) or
+                                   (cart.savedForLater != null and !#lists.isEmpty(cart.savedForLater)) )}">
         <div class="tabs">
-            <a href="#" class="tab-link active" data-tab="cart-tab">Shopping Cart (<span th:text="${cart.items.size()}">0</span>)</a>
-            <a href="#" class="tab-link" data-tab="saved-tab">Saved for later (<span th:text="${cart.savedForLater.size()}">0</span>)</a>
+            <a href="#" class="tab-link active" data-tab="cart-tab">
+                Shopping Cart (<span id="cartCountSpan" th:text="${cart.items.size()}">0</span>)
+            </a>
+            <a href="#" class="tab-link" data-tab="saved-tab">
+                Saved for later (<span id="savedCountSpan" th:text="${cart.savedForLater.size()}">0</span>)
+            </a>
         </div>
     </div>
 
+    <!-- Cart tab -->
     <div id="cart-tab-content" class="tab-content active">
-        <!-- Main Shopping Cart Section -->
         <div th:if="${cart != null and cart.items != null and !#lists.isEmpty(cart.items)}">
             <div class="cart-grid">
-                <!-- Left Side: Cart Items -->
+                <!-- Items -->
                 <main class="cart-items-container">
                     <div class="cart-header">
                         <h1>Shopping Cart</h1>
                         <a href="#">Deselect all items</a>
                     </div>
 
-                    <!-- Cart Items Loop -->
+                    <!-- each item -->
                     <div th:each="it : ${cart.items}" class="cart-item-card">
                         <div class="item-image">
                             <input type="checkbox" checked/>
@@ -602,11 +201,22 @@
                         </div>
 
                         <div class="item-details">
-                            <h3 th:text="${it.name}">Product Name</h3>
-                            <div class="item-stock">In Stock</div>
-                            <div class="item-actions-toolbar">
+                            <h3 th:text="${it.name}">Product name</h3>
 
-                                <form th:action="@{/cart/update}" method="post" class="quantity-form" style="display:inline-flex; align-items:center; gap: 10px;">
+                            <!-- description -->
+                            <div class="small-muted" th:if="${it.description != null}" th:text="${it.description}">
+                                Product short description.
+                            </div>
+
+                            <!-- weight badge -->
+                            <span class="weight-pill" th:if="${it.weightGrams != null}"
+                                  th:text="${it.weightGrams} + ' g'">500 g</span>
+
+                            <div class="item-stock">In Stock</div>
+
+                            <div class="item-actions-toolbar">
+                                <!-- qty form -->
+                                <form th:action="@{/cart/update}" method="post" class="quantity-form" style="display:inline-flex;align-items:center;gap:10px">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                     <input type="hidden" name="productId" th:value="${it.productId}"/>
                                     <div class="quantity-selector">
@@ -618,6 +228,7 @@
 
                                 <span class="separator">|</span>
 
+                                <!-- delete -->
                                 <form th:action="@{/cart/update}" method="post" style="display:inline">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                     <input type="hidden" name="productId" th:value="${it.productId}"/>
@@ -627,6 +238,7 @@
 
                                 <span class="separator">|</span>
 
+                                <!-- save for later -->
                                 <form th:action="@{/cart/saveForLater}" method="post" style="display:inline">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                     <input type="hidden" name="productId" th:value="${it.productId}"/>
@@ -634,7 +246,7 @@
                                 </form>
 
                                 <span class="separator">|</span>
-                                <a href="#" th:href="@{/menu}"class="item-stock">Compare with similar items</a>
+                                <a th:href="@{/menu}" class="small-muted">Compare with similar items</a>
                             </div>
                         </div>
 
@@ -644,47 +256,28 @@
                     </div>
 
                     <div class="cart-subtotal-footer">
-                        Subtotal (<span th:text="${cart.items.size()}">0</span> items): <strong th:text="${#numbers.formatDecimal(cart.subtotal,1,'COMMA',2,'POINT')}">$0.00</strong>
+                        Subtotal (<span th:text="${cart.items.size()}">0</span> items):
+                        <strong th:text="${#numbers.formatDecimal(cart.subtotal,1,'COMMA',2,'POINT')}">$0.00</strong>
                     </div>
                 </main>
 
-                <!-- Right Side: Summary -->
-                <aside class="summary-card">
-                    <!-- Right: Order summary -->
-                    <aside class="card">
-                        <h2>Order summary</h2>
-
-                        <div class="row">
-                            <span>Items</span>
-                            <span th:text="${cart.items.size()}">0</span>
-                        </div>
-
-                        <div class="row">
-                            <span>Subtotal</span>
-                            <span th:text="${#numbers.formatDecimal(cart.subtotal,1,'COMMA',2,'POINT')}">$0.00</span>
-                        </div>
-
-                        <div class="row">
-                            <span>Tax (8%)</span>
-                            <span th:text="${#numbers.formatDecimal(cart.tax,1,'COMMA',2,'POINT')}">$0.00</span>
-                        </div>
-
-                        <div class="row total">
-                            <span>Total</span>
-                            <span th:text="${#numbers.formatDecimal(cart.grandTotal,1,'COMMA',2,'POINT')}">$0.00</span>
-                        </div>
-
+                <!-- Summary -->
+                <aside class="summary-card card">
+                    <h2>Order summary</h2>
+                    <div class="row"><span>Items</span><span th:text="${cart.items.size()}">0</span></div>
+                    <div class="row"><span>Subtotal</span><span th:text="${#numbers.formatDecimal(cart.subtotal,1,'COMMA',2,'POINT')}">$0.00</span></div>
+                    <div class="row"><span>Tax (8%)</span><span th:text="${#numbers.formatDecimal(cart.tax,1,'COMMA',2,'POINT')}">$0.00</span></div>
+                    <div class="row total"><span>Total</span><span th:text="${#numbers.formatDecimal(cart.grandTotal,1,'COMMA',2,'POINT')}">$0.00</span></div>
                     <a class="btn-checkout" th:href="@{/order/checkout}">
                         <i class="fa-solid fa-credit-card"></i> Proceed to checkout
                     </a>
                 </aside>
-                    </aside>
             </div>
         </div>
     </div>
 
+    <!-- Saved tab -->
     <div id="saved-tab-content" class="tab-content">
-        <!-- Saved for Later Section -->
         <div th:if="${cart != null and cart.savedForLater != null and !#lists.isEmpty(cart.savedForLater)}">
             <main class="cart-items-container">
                 <div class="cart-header">
@@ -692,7 +285,6 @@
                     <a href="#">Deselect all items</a>
                 </div>
 
-                <!-- Saved Items Loop -->
                 <div th:each="it : ${cart.savedForLater}" class="cart-item-card">
                     <div class="item-image">
                         <input type="checkbox" checked/>
@@ -700,8 +292,16 @@
                     </div>
 
                     <div class="item-details">
-                        <h3 th:text="${it.name}">Product Name</h3>
+                        <h3 th:text="${it.name}">Product name</h3>
+
+                        <div class="small-muted" th:if="${it.description != null}" th:text="${it.description}">
+                            Product short description.
+                        </div>
+                        <span class="weight-pill" th:if="${it.weightGrams != null}"
+                              th:text="${it.weightGrams} + ' g'">500 g</span>
+
                         <div class="item-stock">In Stock</div>
+
                         <div class="item-actions-toolbar">
                             <form th:action="@{/cart/moveToCart}" method="post" style="display:inline">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -753,82 +353,50 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // Quantity buttons logic
-        document.querySelectorAll('.qty-btn-minus').forEach(button => {
-            button.addEventListener('click', () => {
-                const productId = button.dataset.productId;
-                const input = document.getElementById(`qty-input-${productId}`);
-                let currentValue = parseInt(input.value, 10);
-                if (currentValue > 1) {
-                    input.value = currentValue - 1;
-                    input.closest('form').submit();
-                } else if (currentValue === 1) {
-                    const deleteForm = button.closest('.item-actions-toolbar').querySelector('form[action$="/cart/update"][style*="display:inline"]');
-                    if(deleteForm) deleteForm.submit();
-                }
+        // qty buttons -> submit form
+        document.querySelectorAll('.qty-btn-minus').forEach(btn=>{
+            btn.addEventListener('click',()=>{
+                const id = btn.dataset.productId;
+                const input = document.getElementById(`qty-input-${id}`);
+                const val = Math.max(0, parseInt(input.value||'1',10)-1);
+                input.value = val;
+                input.closest('form').submit();
             });
         });
-
-        document.querySelectorAll('.qty-btn-plus').forEach(button => {
-            button.addEventListener('click', () => {
-                const productId = button.dataset.productId;
-                const input = document.getElementById(`qty-input-${productId}`);
-                let currentValue = parseInt(input.value, 10);
-                input.value = currentValue + 1;
+        document.querySelectorAll('.qty-btn-plus').forEach(btn=>{
+            btn.addEventListener('click',()=>{
+                const id = btn.dataset.productId;
+                const input = document.getElementById(`qty-input-${id}`);
+                input.value = (parseInt(input.value||'0',10)+1);
                 input.closest('form').submit();
             });
         });
 
-        document.querySelectorAll('.qty-input').forEach(input => {
-            let debounceTimer;
-            input.addEventListener('change', () => {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    if(parseInt(input.value, 10) === 0) {
-                        const deleteForm = input.closest('.item-actions-toolbar').querySelector('form[action$="/cart/update"][style*="display:inline"]');
-                        if(deleteForm) deleteForm.submit();
-                    } else {
-                        input.closest('form').submit();
-                    }
-                }, 1000); // 1-second delay
+        // debounce manual change
+        document.querySelectorAll('.qty-input').forEach(input=>{
+            let t;
+            input.addEventListener('change',()=>{
+                clearTimeout(t);
+                t = setTimeout(()=> input.closest('form').submit(), 400);
             });
         });
 
-        // Tab switching logic
-        const tabLinks = document.querySelectorAll('.tab-link');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetTab = e.target.dataset.tab;
-
-                tabLinks.forEach(item => item.classList.remove('active'));
-                tabContents.forEach(item => item.classList.remove('active'));
-
-                e.target.classList.add('active');
-                if (targetTab === 'cart-tab') {
-                    document.getElementById('cart-tab-content').classList.add('active');
-                } else if (targetTab === 'saved-tab') {
-                    document.getElementById('saved-tab-content').classList.add('active');
-                }
-            });
-        });
-
-        // Initial tab state
-        const cartHasItems = document.querySelector('[data-tab="cart-tab"] span').textContent.trim() !== '(0)';
-        const savedHasItems = document.querySelector('[data-tab="saved-tab"] span').textContent.trim() !== '(0)';
-
-        if (cartHasItems) {
-            document.querySelector('[data-tab="cart-tab"]').classList.add('active');
-            document.getElementById('cart-tab-content').classList.add('active');
-        } else if (savedHasItems) {
-            document.querySelector('[data-tab="saved-tab"]').classList.add('active');
-            document.getElementById('saved-tab-content').classList.add('active');
+        // tabs
+        const links = document.querySelectorAll('.tab-link');
+        const cartCount = document.getElementById('cartCountSpan')?.textContent?.trim() || '0';
+        const savedCount = document.getElementById('savedCountSpan')?.textContent?.trim() || '0';
+        function show(tab){
+            document.getElementById('cart-tab-content').classList.toggle('active', tab==='cart');
+            document.getElementById('saved-tab-content').classList.toggle('active', tab==='saved');
+            links.forEach(l=>l.classList.toggle('active', l.dataset.tab=== (tab==='cart'?'cart-tab':'saved-tab')));
         }
+        links.forEach(l=>l.addEventListener('click',e=>{
+            e.preventDefault();
+            show(l.dataset.tab==='cart-tab'?'cart':'saved');
+        }));
+        if (cartCount !== '0') show('cart'); else if (savedCount !== '0') show('saved');
     });
 </script>
-
 
 </body>
 </html>

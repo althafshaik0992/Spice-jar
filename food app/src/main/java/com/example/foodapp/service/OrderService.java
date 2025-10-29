@@ -280,4 +280,11 @@ public class OrderService {
     }
 
 
+    public List<Order> findRecentOrders(int limit) {
+        return repo.findAll(
+                PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"))
+        ).getContent();
+    }
+
+
 }

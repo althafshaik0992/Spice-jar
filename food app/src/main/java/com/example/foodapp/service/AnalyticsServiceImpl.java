@@ -161,5 +161,24 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         return new Series(labels, values);
     }
 
+    @Override
+    public LinkedHashMap<String, BigDecimal> revenueByDay(int lastNDays) {
+        var fmt = java.time.format.DateTimeFormatter.ofPattern("MMM d");
+        var today = java.time.LocalDate.now();
+
+        var out = new LinkedHashMap<String, BigDecimal>();
+        for (int i = lastNDays - 1; i >= 0; i--) {
+            var day = today.minusDays(i);
+            var start = day.atStartOfDay();
+            var end   = day.plusDays(1).atStartOfDay();
+
+            BigDecimal revenue = orderRepository.sumGrandTotalBetween(start, end)
+                    .orElse(java.math.BigDecimal.ZERO);
+
+            out.put(day.format(fmt), revenue);
+        }
+        return out;
+    }
+
 
 }

@@ -2,6 +2,7 @@ package com.example.foodapp.controller;
 
 import com.example.foodapp.model.ChatProductDTO;
 import com.example.foodapp.model.Product;
+import com.example.foodapp.model.ProductVariant;
 import com.example.foodapp.service.CategoryService;
 import com.example.foodapp.service.ProductService;
 import com.example.foodapp.util.Cart;
@@ -17,12 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
@@ -198,6 +194,30 @@ public class HomeController {
 
         return "menu"; // your menu.html
     }
+
+//
+//@GetMapping("/menu")
+//public String menu(
+//        @RequestParam(value = "q", required = false) String q,
+//        @RequestParam(value = "min", required = false) Double min,
+//        @RequestParam(value = "max", required = false) Double max,
+//        Model model
+//) {
+//    List<Product> products = productService.findAll();
+//
+//    // ✅ Normalize: always set price/weight for products with variants
+//    for (Product p : products) {
+//        if (p.getVariants() != null && !p.getVariants().isEmpty()) {
+//            p.getVariants().sort(Comparator.comparing(ProductVariant::getPrice));
+//            ProductVariant cheapest = p.getVariants().get(0);
+//            p.setPrice(cheapest.getPrice());
+//            p.setWeight(cheapest.getWeight());
+//        }
+//    }
+//
+//    model.addAttribute("products", products);
+//    return "menu"; // menu.html view
+//}
 
 
 }

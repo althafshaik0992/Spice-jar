@@ -85,6 +85,9 @@ public class ProductService {
         return repo.count();
     }
 
+    public List<Product> findLowStock(int threshold){
+        return repo.findLowStock(threshold);
+    }
 
 
 

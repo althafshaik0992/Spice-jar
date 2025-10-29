@@ -1,10 +1,16 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <title>Admin • SpiceJar</title>
+    <!-- Inline favicon to avoid 404 -->
+    <link rel="icon" type="image/svg+xml"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -17,8 +23,6 @@
         .soft{box-shadow:0 10px 30px rgba(0,0,0,.25)}
         .chip{background:#111a2a;border:1px solid #273447}
         .ring-subtle{box-shadow:0 0 0 1px rgba(39,52,71,.8) inset}
-
-        /* pretty scrollbars (WebKit) */
         ::-webkit-scrollbar{height:10px;width:10px}
         ::-webkit-scrollbar-thumb{background:#223049;border-radius:999px}
         ::-webkit-scrollbar-track{background:transparent}
@@ -44,31 +48,33 @@
             <nav class="hidden md:flex items-center gap-1 ml-4">
                 <a th:href="@{/admin}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Dashboard</a>
                 <a th:href="@{/admin/orders}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Orders</a>
-                <a th:href="@{/admin/menu}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Menu</a>
+                <a th:href="@{/admin/catalog}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Menu</a>
                 <a th:href="@{/admin/categories}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Categories</a>
             </nav>
         </div>
 
         <!-- Right utilities -->
         <div class="flex items-center gap-3">
-            <!-- Quick search (visual only) -->
             <div class="hidden md:flex items-center gap-2 px-3 h-10 rounded-xl ring-subtle bg-[#0f172a]">
                 <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
                 <input type="search" placeholder="Search orders, menu…" class="bg-transparent outline-none text-sm placeholder:text-slate-500 w-48"/>
                 <span class="text-xs text-slate-500 hidden lg:inline">/ to focus</span>
             </div>
 
-            <!-- Back to site -->
             <a th:href="@{/}" class="hidden sm:inline-flex items-center gap-2 px-3 h-10 rounded-xl text-sm text-slate-200 hover:bg-white/5">
                 <i class="fa-solid fa-up-right-from-square"></i>
                 <span>Site</span>
             </a>
 
-            <!-- User dropdown -->
+            <!-- User dropdown (uses Spring Security principal, not session.USER) -->
             <div class="relative group">
                 <button class="inline-flex items-center gap-2 px-3 h-10 rounded-xl bg-emerald-600/15 text-emerald-300 hover:bg-emerald-600/25">
                     <i class="fa-solid fa-circle-user"></i>
-                    <span th:text="${session.USER != null ? session.USER.firstName : 'Admin'}">Admin</span>
+                    <span>
+                        <!-- shows authenticated username or fallback -->
+                        <span sec:authorize="isAuthenticated()" sec:authentication="name">Admin</span>
+                        <span sec:authorize="!isAuthenticated()">Admin</span>
+                    </span>
                     <i class="fa-solid fa-chevron-down text-[11px] opacity-70"></i>
                 </button>
                 <div class="absolute right-0 mt-2 hidden group-hover:block w-56 rounded-xl border border-[#1f2637] bg-[#0c1528] shadow-2xl">
@@ -87,7 +93,7 @@
         </div>
     </div>
 
-    <!-- Sub-header: breadcrumb + range quick switch -->
+    <!-- Sub-header -->
     <div class="border-t border-[#1f2637]">
         <div class="max-w-7xl mx-auto px-5 h-12 flex items-center justify-between">
             <div class="text-sm text-slate-400">
@@ -221,16 +227,16 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="o : ${recentOrders}" class="border-b border-[#1f2637]">
+                    <tr th:each="o: ${recentOrders}" class="border-b border-[#1f2637]">
                         <td class="py-3 pr-4" th:text="${o.id}">123</td>
                         <td class="py-3 pr-4" th:text="${o.customerName}">Jane Doe</td>
                         <td class="py-3 pr-4" th:text="'$ ' + ${#numbers.formatDecimal(o.grandTotal,1,'COMMA',2,'POINT')}">$ 0.00</td>
                         <td class="py-3 pr-4">
-              <span class="px-2 py-1 rounded text-xs"
-                    th:classappend="${o.status=='PAID'} ? 'bg-emerald-600/20 text-emerald-300' :
-                                    (${o.status=='SHIPPED'} ? 'bg-blue-600/20 text-blue-300' :
-                                                              'bg-yellow-600/20 text-yellow-300')"
-                    th:text="${o.status}">PAID</span>
+                          <span class="px-2 py-1 rounded text-xs"
+                                th:classappend="${o.status=='PAID'} ? 'bg-emerald-600/20 text-emerald-300' :
+                                                (${o.status=='SHIPPED'} ? 'bg-blue-600/20 text-blue-300' :
+                                                                          'bg-yellow-600/20 text-yellow-300')"
+                                th:text="${o.status}">PAID</span>
                         </td>
                         <td class="py-3 pr-4" th:text="${#temporals.format(o.createdAt,'MMM d, h:mm a')}">Oct 2</td>
                         <td class="py-3">
@@ -246,24 +252,40 @@
         </div>
 
         <!-- Low Stock -->
+        <!-- Low Stock -->
         <div class="card soft p-6">
             <div class="flex items-center justify-between mb-3">
                 <h2 class="text-xl font-semibold">Low Stock</h2>
-                <a th:href="@{/admin/menu}" class="text-xs text-slate-300 hover:text-white">Manage</a>
+                <a th:href="@{/admin/catalog}" class="text-xs text-slate-300 hover:text-white">Manage</a>
             </div>
             <ul class="space-y-2" th:if="${lowStock != null and !lowStock.isEmpty()}">
                 <li th:each="it : ${lowStock}" class="flex items-center justify-between">
                     <span th:text="${it.name}">Turmeric</span>
-                    <span class="text-xs text-yellow-300" th:text="'Qty: ' + ${it.quantity}">Qty: 5</span>
+                    <span class="text-xs text-yellow-300"
+                          th:text="${!#lists.isEmpty(it.variants)
+                   ? 'Min variant qty: ' + (
+                         #lists.isEmpty(it.variants.?[stock != null])
+                         ? '0'
+                         : #numbers.formatInteger(
+                               T(java.util.Collections).min(it.variants.?[stock != null].![stock]),
+                               1, 'COMMA'
+                           )
+                     )
+                   : 'Qty: ' + #numbers.formatInteger(it.stock == null ? 0 : it.stock, 1, 'COMMA')}">
+      Qty
+    </span>
                 </li>
             </ul>
-            <p class="text-slate-400 text-sm" th:if="${lowStock == null or lowStock.isEmpty()}">All good! No items under threshold.</p>
+            <p class="text-slate-400 text-sm" th:if="${lowStock == null or lowStock.isEmpty()}">
+                All good! No items under threshold.
+            </p>
         </div>
+
     </section>
 
     <!-- Quick Actions -->
     <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <a th:href="@{/admin/menu/add}" class="card soft p-6 hover:bg-[#101a2c] transition group">
+        <a th:href="@{/admin/catalog}" class="card soft p-6 hover:bg-[#101a2c] transition group">
             <i class="fa-solid fa-plus text-emerald-400"></i>
             <div class="mt-2 font-semibold">Add Product</div>
             <div class="text-slate-400 text-sm">Create a new menu item</div>
@@ -280,7 +302,7 @@
         </a>
     </section>
 
-    <footer class="pt-4 pb-10 text-center text-[13px] text-slate-500">
+    <footer class="pt-4 pb-10 text-center text[13px] text-slate-500">
         © <span th:text="${#calendars.format(#calendars.createNow(),'yyyy')}">2025</span> SpiceJar Admin
     </footer>
 </main>
@@ -350,7 +372,6 @@
         });
     }
 
-    // tiny UX: focus the search when user presses '/'
     document.addEventListener('keydown', (e) => {
         if (e.key === '/' && !/input|textarea/i.test(document.activeElement.tagName)) {
             const search = document.querySelector('input[type="search"]');

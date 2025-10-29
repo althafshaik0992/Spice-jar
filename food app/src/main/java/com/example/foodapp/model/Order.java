@@ -1,5 +1,6 @@
 package com.example.foodapp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -77,5 +78,16 @@ public class Order {
         return getSubtotal()
                 .add(getTax())
                 .setScale(2, RoundingMode.HALF_UP);
+    }
+
+
+    @JsonIgnore
+    public String getFullAddress() {
+        StringBuilder sb = new StringBuilder();
+        if (street != null && !street.isBlank()) sb.append(street);
+        if (city != null && !city.isBlank()) sb.append(!sb.isEmpty() ? ", " : "").append(city);
+        if (state != null && !state.isBlank()) sb.append(!sb.isEmpty() ? ", " : "").append(state);
+        if (zip != null && !zip.isBlank()) sb.append(" ").append(zip);
+        return sb.toString();
     }
 }

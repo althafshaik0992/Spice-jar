@@ -67,7 +67,12 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     List<Object[]> revenueByDay(@Param("from") LocalDateTime from,
                                 @Param("to")   LocalDateTime to);
 
-
+    @Query("select coalesce(sum(o.total), 0) " +
+            "from Order o " +
+            "where o.createdAt >= :start and o.createdAt < :end")
+    Optional<BigDecimal> sumGrandTotalBetween(
+            @Param("start") java.time.LocalDateTime start,
+            @Param("end")   java.time.LocalDateTime end);
 
 
 }

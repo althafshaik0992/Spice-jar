@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
+<link rel="icon" type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
@@ -183,7 +187,13 @@
           <td class="py-3 pr-4" th:text="${o.id}">1</td>
           <td class="py-3 pr-4" th:text="${#temporals.format(o.createdAt, 'MMM d, yyyy • h:mm a')}">Aug 29, 2025 • 9:45 AM</td>
           <td class="py-3 pr-4" th:text="${o.customerName}">John Doe</td>
-          <td class="py-3 pr-4" th:text="${o.street + ', ' + o.city + ', ' + o.state + ' ' + o.zip}">123 Main St…</td>
+          <td class="py-3 pr-4"
+              th:text="${(o.street != null && !#strings.isEmpty(o.street) ? o.street + ', ' : '') +
+              (o.city   != null ? o.city   + ', ' : '') +
+              (o.state  != null ? o.state  + ' '  : '') +
+              (o.zip    != null ? o.zip           : '')}">
+            123 Main Street
+          </td>
           <td class="py-3 pr-4" th:text="${#lists.size(o.items)}">1</td>
           <td class="py-3 pr-4" th:text="'$ ' + ${#numbers.formatDecimal(o.subtotal,1,'COMMA',2,'POINT')}">25.00</td>
           <td class="py-3 pr-4" th:text="'$ ' + ${#numbers.formatDecimal(o.tax,1,'COMMA',2,'POINT')}">0.00</td>

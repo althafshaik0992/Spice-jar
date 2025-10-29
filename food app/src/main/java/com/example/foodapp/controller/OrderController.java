@@ -1,11 +1,14 @@
 // src/main/java/com/example/foodapp/controller/OrderController.java
 package com.example.foodapp.controller;
 
+import com.example.foodapp.Ai.CartService;
 import com.example.foodapp.model.Address;
 import com.example.foodapp.model.Order;
 import com.example.foodapp.model.OrderItem;
 import com.example.foodapp.model.User;
 import com.example.foodapp.service.AddressService;
+import com.example.foodapp.service.EmailService;
+import com.example.foodapp.service.InventoryService;
 import com.example.foodapp.service.OrderService;
 import com.example.foodapp.util.Cart;
 import com.example.foodapp.util.CartItem;
@@ -26,9 +29,15 @@ public class OrderController extends BaseController {
     private final OrderService orderService;
     private final AddressService addressService;
 
-    public OrderController(OrderService orderService, AddressService addressService) {
+    private final InventoryService inventoryService;
+
+    private final EmailService emailService;
+
+    public OrderController(OrderService orderService, AddressService addressService, InventoryService inventoryService, EmailService emailService) {
         this.orderService = orderService;
         this.addressService = addressService;
+        this.inventoryService = inventoryService;
+        this.emailService = emailService;
     }
 
     @GetMapping("/checkout")
@@ -50,7 +59,7 @@ public class OrderController extends BaseController {
                         @RequestParam String customerName,
                         @RequestParam String email,
                         @RequestParam String phone,
-                       // @RequestParam String street,
+                        @RequestParam String street,
                         @RequestParam String city,
                         @RequestParam String state,
                         @RequestParam String zip,
@@ -67,12 +76,14 @@ public class OrderController extends BaseController {
             Address a = addressService.findById(addressId).orElse(null);
             if (a != null && a.getUser() != null && a.getUser().getId().equals(user.getId())) {
                 customerName = nvl(a.getFullName(), customerName);
-                phone       = nvl(a.getPhone(), phone);
-              //  street      = nvl(a.getLine1(), street);
-                city        = nvl(a.getCity(), city);
-                state       = nvl(a.getState(), state);
-                zip         = nvl(a.getZip(), zip);
-                country     = nvl(a.getCountry(), country);
+                phone = nvl(a.getPhone(), phone);
+                String fullStreet = joinNonBlank(a.getLine1(), a.getLine2());
+                street = nvl(fullStreet, street);
+                street = nvl(a.getLine1(), street);
+                city = nvl(a.getCity(), city);
+                state = nvl(a.getState(), state);
+                zip = nvl(a.getZip(), zip);
+                country = nvl(a.getCountry(), country);
             }
         }
 
@@ -82,7 +93,7 @@ public class OrderController extends BaseController {
         o.setCustomerName(customerName);
         o.setEmail(email);
         o.setPhone(phone);
-       // o.setStreet(street);
+        o.setStreet(street);
         o.setCity(city);
         o.setState(state);
         o.setZip(zip);
@@ -95,6 +106,9 @@ public class OrderController extends BaseController {
             it.setQuantity(ci.getQty());
             it.setPrice(ci.getPrice());
             it.setImageUrl(ci.getImageUrl());
+            it.setLineTotal(ci.getPrice()
+                    .multiply(BigDecimal.valueOf(ci.getQty()))
+                    .setScale(2, RoundingMode.HALF_UP));
             return it;
         }).collect(Collectors.toList()));
 
@@ -108,12 +122,32 @@ public class OrderController extends BaseController {
 
         o.setStatus("PENDING_PAYMENT");
 
+
         orderService.save(o);
         cart.clear();
+
+        emailService.sendOrderConfirmation(o.getId());
+
+
+        // ⬇️ decrement inventory immediately (or after payment success if you prefer)
+        inventoryService.applyOrder(o);
+
 
         return "redirect:/payment/checkout?orderId=" + o.getId();
     }
 
-    private static BigDecimal nz(BigDecimal v) { return v == null ? BigDecimal.ZERO : v; }
-    private static String nvl(String v, String fb) { return (v == null || v.isBlank()) ? fb : v; }
+    private static BigDecimal nz(BigDecimal v) {
+        return v == null ? BigDecimal.ZERO : v;
+    }
+
+    private static String nvl(String v, String fb) {
+        return (v == null || v.isBlank()) ? fb : v;
+    }
+
+
+    private static String joinNonBlank(String... parts) {
+        return java.util.Arrays.stream(parts)
+                .filter(s -> s != null && !s.isBlank())
+                .collect(java.util.stream.Collectors.joining(" "));
+    }
 }

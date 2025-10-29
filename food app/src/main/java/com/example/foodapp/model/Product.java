@@ -2,6 +2,8 @@ package com.example.foodapp.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Product {
@@ -24,14 +26,26 @@ public class Product {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @Column(nullable = false)
+    private Integer weight;
+
+    @Column(nullable = false)
+    private  Integer stock;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductVariant> variants = new ArrayList<>();
+
     public Product() {}
 
-    public Product(String name, String description, BigDecimal price, String imageUrl, Category category) {
+    public Product(Long id, String name, String description, BigDecimal price, String imageUrl, Category category, Integer weight, Integer stock) {
+        this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
         this.imageUrl = imageUrl;
-        this.category = category; // keep the passed category
+        this.category = category;
+        this.weight = weight;
+        this.stock = stock;
     }
 
     public Long getId() { return id; }
@@ -51,4 +65,33 @@ public class Product {
 
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
+    }
+
+    public Integer getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Integer weight) {
+        this.weight = weight;
+    }
+
+
+    public List<ProductVariant> getVariants() { return variants; }
+    public void setVariants(List<ProductVariant> variants) { this.variants = variants; }
+
+    // convenience for full replace (used on save/update)
+    public void replaceVariants(List<ProductVariant> newOnes) {
+        this.variants.clear();
+        if (newOnes != null) this.variants.addAll(newOnes);
+        for (ProductVariant v : this.variants) v.setProduct(this);
+    }
+
+
 }

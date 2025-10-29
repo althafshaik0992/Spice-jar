@@ -57,5 +57,22 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = "SELECT p FROM Product p ORDER BY p.id DESC LIMIT :limit",
             nativeQuery = true)
     List<Product> findTopNProducts(@Param("limit") int limit);
+
+
+    @Query("select distinct p from Product p " +
+            "left join fetch p.category " +
+            "left join fetch p.variants")
+    List<Product> findAllWithCategoryAndVariants();
+
+
+    @Query("""
+       select distinct p
+       from Product p
+       left join p.variants v
+       where (p.variants is empty and (p.stock is not null and p.stock <= :threshold))
+          or (v.id is not null and v.stock is not null and v.stock <= :threshold)
+       order by p.name asc
+       """)
+    List<Product> findLowStock(int threshold);
 }
 

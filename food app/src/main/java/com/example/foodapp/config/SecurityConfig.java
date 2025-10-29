@@ -150,7 +150,7 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // everything else in /admin must be ADMIN
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN").anyRequest().permitAll()
                 )
 
                 // Admin form login
