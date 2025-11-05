@@ -4,11 +4,14 @@ package com.example.foodapp.controller;
 import com.example.foodapp.model.Address;
 import com.example.foodapp.model.User;
 import com.example.foodapp.service.AddressService;
+import com.example.foodapp.service.EmailServiceWelcome;
 import com.example.foodapp.service.UserService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/addresses")
@@ -16,10 +19,12 @@ public class AddressController {
 
     private final AddressService addressService;
     private final UserService userService;
+    private final EmailServiceWelcome emailService;
 
-    public AddressController(AddressService addressService, UserService userService) {
+    public AddressController(AddressService addressService, UserService userService, EmailServiceWelcome emailService) {
         this.addressService = addressService;
         this.userService = userService;
+        this.emailService = emailService;
     }
 
     // ===== Helpers ============================================================
@@ -113,5 +118,20 @@ public class AddressController {
 
         addressService.delete(a);
         return "redirect:/addresses";
+    }
+
+
+
+
+
+
+    private Long extractUserId(Object sessionUser) {
+        try {
+            var m = sessionUser.getClass().getMethod("getId");
+            Object id = m.invoke(sessionUser);
+            if (id instanceof Number) return ((Number) id).longValue();
+        } catch (Exception ignore) {
+        }
+        return null;
     }
 }

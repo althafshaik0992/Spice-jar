@@ -1,5 +1,8 @@
 package com.example.foodapp.util;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -7,17 +10,34 @@ import java.util.List;
 
 public class Cart {
 
+    // === getters ===
+    @Getter
     private List<CartItem> items = new ArrayList<>();
+    @Getter
     private List<CartItem> savedForLater = new ArrayList<>();
 
-    // === getters ===
-    public List<CartItem> getItems() {
-        return items;
+    @Getter
+    @Setter
+    private BigDecimal discount = BigDecimal.ZERO;
+
+
+
+    @Getter
+    @Setter
+    private String appliedCouponCode;
+
+    public void recompute(BigDecimal taxRate){
+        BigDecimal subtotal = items.stream()
+                .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQty())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (discount.compareTo(subtotal) > 0) discount = subtotal;
+        BigDecimal base = subtotal.subtract(discount);
+        BigDecimal tax = base.multiply(taxRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal grandTotal = base.add(tax).setScale(2, BigDecimal.ROUND_HALF_UP);
     }
 
-    public List<CartItem> getSavedForLater() {
-        return savedForLater;
-    }
+    public int countItems(){ return items.stream().mapToInt(CartItem::getQty).sum(); }
+
 
     // === cart operations ===
     public void addItem(CartItem item) {
@@ -31,6 +51,7 @@ public class Cart {
             items.add(item);
         }
     }
+
     public void addItem(Long productId, String name, int qty, BigDecimal price, String imageUrl) {
         addItem(new CartItem(productId, name, qty, price, imageUrl));
     }
@@ -48,8 +69,8 @@ public class Cart {
         savedForLater.clear();
     }
 
-    public int size(){
-       return items.size();
+    public int size() {
+        return items.size();
     }
 
     public boolean isEmpty() {
@@ -82,4 +103,5 @@ public class Cart {
                 .mapToInt(CartItem::getQty)
                 .sum();
     }
+
 }

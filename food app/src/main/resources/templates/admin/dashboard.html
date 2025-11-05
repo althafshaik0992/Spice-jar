@@ -1,138 +1,405 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en" class="overflow-x-hidden">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Admin • SpiceJar</title>
+    <!-- Inline favicon to avoid 404 -->
+    <link rel="icon" type="image/svg+xml"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        :root{color-scheme:dark}
+        body{background:#0b1020;color:#e2e8f0}
+        .surface{background:#0b1220}
+        .card{background:#0b1220;border:1px solid #1f2637;border-radius:16px}
+        .soft{box-shadow:0 10px 30px rgba(0,0,0,.25)}
+        .chip{background:#111a2a;border:1px solid #273447}
+        .ring-subtle{box-shadow:0 0 0 1px rgba(39,52,71,.8) inset}
+        ::-webkit-scrollbar{height:10px;width:10px}
+        ::-webkit-scrollbar-thumb{background:#223049;border-radius:999px}
+        ::-webkit-scrollbar-track{background:transparent}
     </style>
 </head>
-<body class="flex bg-gray-900 text-gray-100 min-h-screen overflow-x-hidden">
+<body class="min-h-screen">
 
-<!-- Sidebar -->
-<aside class="fixed left-0 top-0 h-screen w-64 bg-gray-800 p-6 flex flex-col justify-between shadow-lg">
-    <div>
-        <div class="text-3xl font-bold mb-8 text-green-500">SpiceJar</div>
-        <nav class="space-y-2">
-            <a href="/admin" class="flex items-center p-3 rounded-xl transition-colors duration-200 hover:bg-gray-700 font-semibold text-white bg-green-600 shadow-md">
-                <i class="fas fa-chart-line mr-3"></i> Dashboard
+<!-- Global Nav -->
+<header class="sticky top-0 z-40 border-b border-[#1f2637] bg-[#0b1220]/85 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+        <!-- Brand + primary nav -->
+        <div class="flex items-center gap-4">
+            <a th:href="@{/admin}" class="flex items-center gap-2 group">
+                <div class="h-9 w-9 grid place-items-center rounded-xl bg-emerald-600 text-white font-black shadow-lg shadow-emerald-900/40 ring-1 ring-emerald-400/30 group-hover:scale-[1.02] transition">
+                    SJ
+                </div>
+                <div>
+                    <div class="text-sm text-slate-300">SpiceJar</div>
+                    <div class="text-[13px] text-slate-400 -mt-0.5">Admin</div>
+                </div>
             </a>
-            <a href="/admin/menu" class="flex items-center p-3 rounded-xl transition-colors duration-200 hover:bg-gray-700 text-gray-300 hover:text-white">
-                <i class="fas fa-box-open mr-3"></i> Menu
+
+            <nav class="hidden md:flex items-center gap-1 ml-4">
+                <a th:href="@{/admin}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Dashboard</a>
+                <a th:href="@{/admin/orders}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Orders</a>
+                <a th:href="@{/admin/catalog}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Menu</a>
+                <a th:href="@{/admin/categories}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Categories</a>
+            </nav>
+        </div>
+
+        <!-- Right utilities -->
+        <div class="flex items-center gap-3">
+            <div class="hidden md:flex items-center gap-2 px-3 h-10 rounded-xl ring-subtle bg-[#0f172a]">
+                <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
+                <input type="search" placeholder="Search orders, menu…" class="bg-transparent outline-none text-sm placeholder:text-slate-500 w-48"/>
+                <span class="text-xs text-slate-500 hidden lg:inline">/ to focus</span>
+            </div>
+
+            <a th:href="@{/}" class="hidden sm:inline-flex items-center gap-2 px-3 h-10 rounded-xl text-sm text-slate-200 hover:bg-white/5">
+                <i class="fa-solid fa-up-right-from-square"></i>
+                <span>Site</span>
             </a>
-            <a href="/admin/categories" class="flex items-center p-3 rounded-xl transition-colors duration-200 hover:bg-gray-700 text-gray-300 hover:text-white">
-                <i class="fas fa-tags mr-3"></i> Categories
-            </a>
-            <a href="/admin/orders" class="flex items-center p-3 rounded-xl transition-colors duration-200 hover:bg-gray-700 text-gray-300 hover:text-white">
-                <i class="fas fa-truck mr-3"></i> Orders
-            </a>
-        </nav>
+
+            <!-- User dropdown (uses Spring Security principal, not session.USER) -->
+            <div class="relative group">
+                <button class="inline-flex items-center gap-2 px-3 h-10 rounded-xl bg-emerald-600/15 text-emerald-300 hover:bg-emerald-600/25">
+                    <i class="fa-solid fa-circle-user"></i>
+                    <span>
+                        <!-- shows authenticated username or fallback -->
+                        <span sec:authorize="isAuthenticated()" sec:authentication="name">Admin</span>
+                        <span sec:authorize="!isAuthenticated()">Admin</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-down text-[11px] opacity-70"></i>
+                </button>
+                <div class="absolute right-0 mt-2 hidden group-hover:block w-56 rounded-xl border border-[#1f2637] bg-[#0c1528] shadow-2xl">
+                    <div class="px-3 py-2 text-[12px] text-slate-400">Signed in</div>
+                    <a th:href="@{/admin}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5"><i class="fa-solid fa-chart-line"></i> Overview</a>
+                    <a th:href="@{/admin/orders}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5"><i class="fa-solid fa-receipt"></i> Orders</a>
+                    <div class="h-px bg-[#1f2637] my-1"></div>
+                    <form th:action="@{/admin/logout}" method="post" class="px-3 py-2">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="w-full flex items-center gap-2 text-left text-sm text-rose-300 hover:text-rose-200 hover:bg-rose-600/10 px-2 py-2 rounded-lg">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="mt-8">
-        <a href="/logout" class="flex items-center p-3 rounded-xl transition-colors duration-200 hover:bg-gray-700 text-gray-300 hover:text-white">
-            <i class="fas fa-sign-out-alt mr-3"></i> Logout
+
+    <!-- Sub-header -->
+    <div class="border-t border-[#1f2637]">
+        <div class="max-w-7xl mx-auto px-5 h-12 flex items-center justify-between">
+            <div class="text-sm text-slate-400">
+                <a th:href="@{/admin}" class="hover:text-slate-200">Admin</a>
+                <span class="mx-2 opacity-50">/</span>
+                <span class="text-slate-300">Dashboard</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="?range=7d"  class="chip text-xs px-3 py-1 rounded-lg text-slate-200 hover:bg-white/5">7d</a>
+                <a href="?range=30d" class="chip text-xs px-3 py-1 rounded-lg text-slate-200 hover:bg-white/5">30d</a>
+                <a href="?range=90d" class="chip text-xs px-3 py-1 rounded-lg text-slate-200 hover:bg-white/5">90d</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-5 py-8 space-y-8">
+
+    <!-- KPI Row -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="card soft p-6">
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400 text-sm">Total Orders</span>
+                <span class="text-[11px] text-emerald-300/80 bg-emerald-600/10 px-2 py-0.5 rounded">live</span>
+            </div>
+            <div class="mt-2 text-4xl font-extrabold" th:text="${ordersCount} ?: 0">0</div>
+            <div class="mt-1 text-xs text-slate-500">All time</div>
+        </div>
+
+        <div class="card soft p-6">
+            <div class="text-slate-400 text-sm">Total Revenue</div>
+            <div class="mt-2 text-4xl font-extrabold"
+                 th:text="'$ ' + (${totalRevenue} != null ? ${#numbers.formatDecimal(totalRevenue,1,'COMMA',2,'POINT')} : '0.00')">$ 0.00</div>
+            <div class="mt-1 text-xs text-slate-500">All time gross</div>
+        </div>
+
+        <div class="card soft p-6">
+            <div class="text-slate-400 text-sm">Total menu items</div>
+            <div class="mt-2 text-4xl font-extrabold" th:text="${productsCount} ?: 0">0</div>
+            <div class="mt-1 text-xs text-slate-500">Published</div>
+        </div>
+
+        <div class="card soft p-6">
+            <div class="text-slate-400 text-sm">Total Categories</div>
+            <div class="mt-2 text-4xl font-extrabold" th:text="${categoriesCount} ?: 0">0</div>
+            <div class="mt-1 text-xs text-slate-500">Active</div>
+        </div>
+    </section>
+
+    <!-- Advanced KPIs -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="card soft p-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-emerald-400 font-semibold">Avg. Order Value</h3>
+                <span class="chip text-xs px-2 py-1 rounded">Last 7d</span>
+            </div>
+            <div class="mt-2 text-3xl font-bold"
+                 th:text="'$ ' + (${avgOrderValue7d} != null ? ${#numbers.formatDecimal(avgOrderValue7d,1,'COMMA',2,'POINT')} : '0.00')">$ 0.00</div>
+            <div class="mt-1 text-sm"
+                 th:classappend="${(aovChangePct?:0) > 0} ? 'text-emerald-400' : 'text-rose-400'">
+                <i class="fa-solid" th:classappend="${(aovChangePct?:0) > 0} ? ' fa-arrow-up' : ' fa-arrow-down'"></i>
+                <span th:text="${#numbers.formatDecimal(aovChangePct?:0,1,'COMMA',1,'POINT')} + '%'">0.0%</span>
+                vs previous 7d
+            </div>
+        </div>
+
+        <div class="card soft p-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-emerald-400 font-semibold">Repeat Customers</h3>
+                <span class="chip text-xs px-2 py-1 rounded">Last 30d</span>
+            </div>
+            <div class="mt-2 text-3xl font-bold"
+                 th:text="${#numbers.formatDecimal(repeatRate30d?:0,1,'COMMA',1,'POINT')} + '%'">0%</div>
+            <div class="mt-1 text-sm text-slate-400">Customers with ≥ 2 orders</div>
+        </div>
+
+        <div class="card soft p-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-emerald-400 font-semibold">Refund Rate</h3>
+                <span class="chip text-xs px-2 py-1 rounded">Last 30d</span>
+            </div>
+            <div class="mt-2 text-3xl font-bold"
+                 th:text="${#numbers.formatDecimal(refundRate30d?:0,1,'COMMA',1,'POINT')} + '%'">0%</div>
+            <div class="mt-1 text-sm text-slate-400">Refunded / total orders</div>
+        </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div class="lg:col-span-2 card soft p-6">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-xl font-semibold">Revenue Trend</h2>
+                <div class="space-x-2">
+                    <a href="?range=7d"  class="chip px-3 py-1 rounded text-xs text-slate-200 hover:bg-white/5">7d</a>
+                    <a href="?range=30d" class="chip px-3 py-1 rounded text-xs text-slate-200 hover:bg-white/5">30d</a>
+                    <a href="?range=90d" class="chip px-3 py-1 rounded text-xs text-slate-200 hover:bg-white/5">90d</a>
+                </div>
+            </div>
+            <div class="relative h-72">
+                <canvas id="revenueChart" class="absolute inset-0 w-full h-full"></canvas>
+            </div>
+        </div>
+
+        <div class="card soft p-6">
+            <h2 class="text-xl font-semibold mb-3">Top Products</h2>
+            <div class="relative h-72">
+                <canvas id="topProductsChart" class="absolute inset-0 w-full h-full"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tables -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <!-- Recent Orders -->
+        <div class="lg:col-span-2 card soft p-6">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-xl font-semibold">Recent Orders</h2>
+                <a th:href="@{/admin/orders}" class="text-emerald-400 text-sm hover:underline">View all</a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm border-separate [border-spacing:0]">
+                    <thead>
+                    <tr class="text-slate-300">
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Order #</th>
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Customer</th>
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Total</th>
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Status</th>
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Date</th>
+                        <th class="py-2 text-left border-b border-[#1f2637]"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="o: ${recentOrders}" class="border-b border-[#1f2637]">
+                        <td class="py-3 pr-4" th:text="${o.id}">123</td>
+                        <td class="py-3 pr-4" th:text="${o.customerName}">Jane Doe</td>
+                        <td class="py-3 pr-4" th:text="'$ ' + ${#numbers.formatDecimal(o.grandTotal,1,'COMMA',2,'POINT')}">$ 0.00</td>
+                        <td class="py-3 pr-4">
+                          <span class="px-2 py-1 rounded text-xs"
+                                th:classappend="${o.status=='PAID'} ? 'bg-emerald-600/20 text-emerald-300' :
+                                                (${o.status=='SHIPPED'} ? 'bg-blue-600/20 text-blue-300' :
+                                                                          'bg-yellow-600/20 text-yellow-300')"
+                                th:text="${o.status}">PAID</span>
+                        </td>
+                        <td class="py-3 pr-4" th:text="${#temporals.format(o.createdAt,'MMM d, h:mm a')}">Oct 2</td>
+                        <td class="py-3">
+                            <a th:href="@{/admin/orders/{id}(id=${o.id})}" class="text-emerald-400 hover:underline">Details</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(recentOrders)}">
+                        <td colspan="6" class="py-6 text-center text-slate-400">No recent orders.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Low Stock -->
+        <!-- Low Stock -->
+        <div class="card soft p-6">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-xl font-semibold">Low Stock</h2>
+                <a th:href="@{/admin/catalog}" class="text-xs text-slate-300 hover:text-white">Manage</a>
+            </div>
+            <ul class="space-y-2" th:if="${lowStock != null and !lowStock.isEmpty()}">
+                <li th:each="it : ${lowStock}" class="flex items-center justify-between">
+                    <span th:text="${it.name}">Turmeric</span>
+                    <span class="text-xs text-yellow-300"
+                          th:text="${!#lists.isEmpty(it.variants)
+                   ? 'Min variant qty: ' + (
+                         #lists.isEmpty(it.variants.?[stock != null])
+                         ? '0'
+                         : #numbers.formatInteger(
+                               T(java.util.Collections).min(it.variants.?[stock != null].![stock]),
+                               1, 'COMMA'
+                           )
+                     )
+                   : 'Qty: ' + #numbers.formatInteger(it.stock == null ? 0 : it.stock, 1, 'COMMA')}">
+      Qty
+    </span>
+                </li>
+            </ul>
+            <p class="text-slate-400 text-sm" th:if="${lowStock == null or lowStock.isEmpty()}">
+                All good! No items under threshold.
+            </p>
+        </div>
+
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <a th:href="@{/admin/catalog}" class="card soft p-6 hover:bg-[#101a2c] transition group">
+            <i class="fa-solid fa-plus text-emerald-400"></i>
+            <div class="mt-2 font-semibold">Add Product</div>
+            <div class="text-slate-400 text-sm">Create a new menu item</div>
         </a>
-    </div>
-</aside>
+        <a th:href="@{/admin/categories}" class="card soft p-6 hover:bg-[#101a2c] transition group">
+            <i class="fa-solid fa-layer-group text-emerald-400"></i>
+            <div class="mt-2 font-semibold">Add Category</div>
+            <div class="text-slate-400 text-sm">Organize your menu</div>
+        </a>
+        <a th:href="@{/admin/orders(status=${'PENDING'})}" class="card soft p-6 hover:bg-[#101a2c] transition group">
+            <i class="fa-solid fa-truck-ramp-box text-emerald-400"></i>
+            <div class="mt-2 font-semibold">Fulfill Orders</div>
+            <div class="text-slate-400 text-sm">See pending shipments</div>
+        </a>
 
-<!-- Main Content -->
-<main class="flex-1 ml-64 p-6 md:p-10 overflow-x-hidden">
-    <header class="flex justify-between items-center mb-10">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-white">Admin Dashboard</h1>
-        <span class="text-lg md:text-xl font-medium text-green-400">Welcome, Admin</span>
-    </header>
+        <!-- Quick Action: Coupons -->
+        <a th:href="@{/admin/coupons}" class="card soft p-6 hover:bg-[#101a2c] transition group">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-ticket text-emerald-400"></i>
+                        <div class="font-semibold">Coupons</div>
+                    </div>
+                    <div class="text-slate-400 text-sm mt-1">Manage discount codes</div>
+                </div>
+                <span class="chip text-[11px] px-2 py-0.5">Promo</span>
+            </div>
 
-    <!-- Stat Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <div class="bg-gray-800 p-6 rounded-2xl shadow-lg transition-transform transform hover:scale-105">
-            <h2 class="text-lg font-semibold text-green-400">Total Orders</h2>
-            <p class="text-4xl md:text-5xl font-bold mt-2" th:text="${ordersCount}">0</p>
-        </div>
-        <div class="bg-gray-800 p-6 rounded-2xl shadow-lg transition-transform transform hover:scale-105">
-            <h2 class="text-lg font-semibold text-green-400">Total Revenue</h2>
-            <p class="text-4xl md:text-5xl font-bold mt-2" th:text="'$' + ${totalRevenue}">$0.00</p>
-        </div>
-        <div class="bg-gray-800 p-6 rounded-2xl shadow-lg transition-transform transform hover:scale-105">
-            <h2 class="text-lg font-semibold text-green-400">Total menu</h2>
-            <p class="text-4xl md:text-5xl font-bold mt-2" th:text="${productsCount}">0</p>
-        </div>
-        <div class="bg-gray-800 p-6 rounded-2xl shadow-lg transition-transform transform hover:scale-105">
-            <h2 class="text-lg font-semibold text-green-400">Total Categories</h2>
-            <p class="text-4xl md:text-5xl font-bold mt-2" th:text="${categoriesCount}">0</p>
-        </div>
-    </div>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <a th:href="@{/admin/coupons}" class="inline-flex items-center gap-2 rounded-xl px-3 py-2 font-semibold bg-[#0f172a] text-slate-200 ring-subtle hover:bg-white/5">
+                    <i class="fa-solid fa-list"></i> List
+                </a>
+                <a th:href="@{/admin/coupons/new}" class="inline-flex items-center gap-2 rounded-xl px-3 py-2 font-semibold bg-emerald-500 text-[#082312] hover:bg-emerald-400">
+                    <i class="fa-solid fa-plus"></i> New
+                </a>
+            </div>
+        </a>
 
-    <!-- Orders Chart -->
-    <div class="bg-gray-800 p-6 rounded-2xl shadow-lg">
-        <h2 class="text-2xl font-semibold mb-4 text-white">Orders by Day</h2>
+    </section>
 
-        <!-- Give the canvas a fixed-height wrapper to prevent layout overflow -->
-        <div class="relative h-80 md:h-96 overflow-hidden">
-            <canvas id="ordersChart" class="absolute inset-0 w-full h-full"></canvas>
-        </div>
-    </div>
+    <footer class="pt-4 pb-10 text-center text[13px] text-slate-500">
+        © <span th:text="${#calendars.format(#calendars.createNow(),'yyyy')}">2025</span> SpiceJar Admin
+    </footer>
 </main>
 
+<!-- Charts -->
 <script th:inline="javascript">
-    // Data from Thymeleaf (fallbacks provided)
-    const labels = /*[[${labels}]]*/ [];
-    const values = /*[[${values}]]*/ [];
+    const revLabels = /*[[${revLabels}]]*/ [];
+    const revValues = /*[[${revValues}]]*/ [];
 
-    const ctx = document.getElementById('ordersChart').getContext('2d');
-
-    new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Orders',
-                data: values,
-                backgroundColor: [
-                    '#22c55e', '#ef4444', '#f97316', '#f59e0b',
-                    '#eab308', '#06b6d4', '#3b82f6'
-                ],
-                hoverOffset: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: { padding: 0 },
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#fff',
-                        boxWidth: 14,
-                        padding: 14,
-                        font: { size: 13 }
-                    }
+    const rc = document.getElementById('revenueChart');
+    if (rc) {
+        new Chart(rc.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: revLabels ?? [],
+                datasets: [{
+                    label: 'Revenue',
+                    data: revValues ?? [],
+                    tension: 0.35,
+                    borderWidth: 3,
+                    fill: true,
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34,197,94,.15)',
+                    pointRadius: 0,
+                    pointHoverRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,.08)'} },
+                    y: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,.08)'} }
                 },
-                tooltip: {
-                    backgroundColor: 'rgba(255,255,255,0.95)',
-                    titleColor: '#111',
-                    bodyColor: '#111',
-                    borderColor: '#ddd',
-                    borderWidth: 1,
-                    displayColors: false,
-                    padding: 12,
-                    cornerRadius: 8,
-                    caretSize: 8,
-                    callbacks: {
-                        label: (ctx) => {
-                            const total = ctx.dataset.data.reduce((s, n) => s + n, 0);
-                            const v = ctx.parsed;
-                            const pct = total > 0 ? ((v / total) * 100).toFixed(1) : 0;
-                            return `${ctx.label}: ${v} orders (${pct}%)`;
-                        }
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index', intersect: false,
+                        callbacks: { label: (ctx) => '$' + (ctx.parsed.y??0).toLocaleString() }
                     }
                 }
             }
+        });
+    }
+
+    const tpLabels = /*[[${topProductNames}]]*/ [];
+    const tpQty    = /*[[${topProductQty}]]*/ [];
+
+    const tpc = document.getElementById('topProductsChart');
+    if (tpc) {
+        new Chart(tpc.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: tpLabels ?? [],
+                datasets: [{ label: 'Units sold', data: tpQty ?? [], backgroundColor: '#3b82f6' }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(148,163,184,.08)' } },
+                    y: { ticks: { color: '#cbd5e1' }, grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === '/' && !/input|textarea/i.test(document.activeElement.tagName)) {
+            const search = document.querySelector('input[type="search"]');
+            if (search) { e.preventDefault(); search.focus(); }
         }
     });
 </script>

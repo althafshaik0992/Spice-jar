@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Admin • Coupons</title>
+
+    <!-- favicon (inline to avoid 404) -->
+    <link rel="icon" type="image/svg+xml"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root{color-scheme:dark}
+        body{background:#0b1020;color:#e2e8f0}
+        .surface{background:#0b1220}
+        .card{background:#0b1220;border:1px solid #1f2637;border-radius:16px}
+        .soft{box-shadow:0 10px 30px rgba(0,0,0,.25)}
+        .chip{background:#111a2a;border:1px solid #273447}
+        .ring-subtle{box-shadow:0 0 0 1px rgba(39,52,71,.8) inset}
+        ::-webkit-scrollbar{height:10px;width:10px}
+        ::-webkit-scrollbar-thumb{background:#223049;border-radius:999px}
+        ::-webkit-scrollbar-track{background:transparent}
+
+        /* Page-specific */
+        .field{background:#0a1020;border:1px solid #203057;color:#e7eef7;border-radius:10px;padding:9px 12px}
+        .field:focus{outline:none;border-color:#33508a;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+
+        table{width:100%;border-collapse:separate;border-spacing:0}
+        thead th{font-size:12px;color:#9fb2c9;letter-spacing:.2px;font-weight:700;padding:12px 14px;background:#0b142a;border-bottom:1px solid #1f2a44;text-align:left}
+        tbody td{padding:14px;border-bottom:1px dashed #1f2a44;vertical-align:middle}
+        tbody tr:hover{background:#0b142a}
+        tbody tr:last-child td{border-bottom:none}
+
+        .code-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#0e1b33;border:1px solid #1f2a44;color:#a4fac7;font-weight:800;letter-spacing:.3px}
+        .status{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-weight:700;font-size:12px;border:1px solid #1f2a44}
+        .ok{background:rgba(34,197,94,.1);color:#86efac}
+        .off{background:rgba(100,116,139,.1);color:#cbd5e1}
+
+        .icon-btn{background:#0e1b33;border:1px solid #1f2a44;color:#cbd5e1;width:34px;height:34px;border-radius:8px;display:grid;place-items:center;cursor:pointer}
+        .icon-btn:hover{border-color:#33508a}
+        .danger{color:#fecaca;border-color:#472222;background:#1a0f11}
+        .danger:hover{border-color:#7f1d1d}
+    </style>
+</head>
+<body class="min-h-screen">
+
+<!-- ========== Global Nav (same as dashboard) ========== -->
+<header class="sticky top-0 z-40 border-b border-[#1f2637] bg-[#0b1220]/85 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+        <!-- Brand + primary nav -->
+        <div class="flex items-center gap-4">
+            <a th:href="@{/admin}" class="flex items-center gap-2 group">
+                <div class="h-9 w-9 grid place-items-center rounded-xl bg-emerald-600 text-white font-black shadow-lg shadow-emerald-900/40 ring-1 ring-emerald-400/30 group-hover:scale-[1.02] transition">
+                    SJ
+                </div>
+                <div>
+                    <div class="text-sm text-slate-300">SpiceJar</div>
+                    <div class="text-[13px] text-slate-400 -mt-0.5">Admin</div>
+                </div>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-1 ml-4">
+                <a th:href="@{/admin}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Dashboard</a>
+                <a th:href="@{/admin/orders}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Orders</a>
+                <a th:href="@{/admin/catalog}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Menu</a>
+                <a th:href="@{/admin/categories}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Categories</a>
+            </nav>
+        </div>
+
+        <!-- Right utilities -->
+        <div class="flex items-center gap-3">
+            <div class="hidden md:flex items-center gap-2 px-3 h-10 rounded-xl ring-subtle bg-[#0f172a]">
+                <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
+                <input type="search" placeholder="Search orders, menu…" class="bg-transparent outline-none text-sm placeholder:text-slate-500 w-48"/>
+                <span class="text-xs text-slate-500 hidden lg:inline">/ to focus</span>
+            </div>
+
+            <a th:href="@{/}" class="hidden sm:inline-flex items-center gap-2 px-3 h-10 rounded-xl text-sm text-slate-200 hover:bg-white/5">
+                <i class="fa-solid fa-up-right-from-square"></i>
+                <span>Site</span>
+            </a>
+
+            <!-- User dropdown -->
+            <div class="relative group">
+                <button class="inline-flex items-center gap-2 px-3 h-10 rounded-xl bg-emerald-600/15 text-emerald-300 hover:bg-emerald-600/25">
+                    <i class="fa-solid fa-circle-user"></i>
+                    <span>
+            <span sec:authorize="isAuthenticated()" sec:authentication="name">Admin</span>
+            <span sec:authorize="!isAuthenticated()">Admin</span>
+          </span>
+                    <i class="fa-solid fa-chevron-down text-[11px] opacity-70"></i>
+                </button>
+                <div class="absolute right-0 mt-2 hidden group-hover:block w-56 rounded-xl border border-[#1f2637] bg-[#0c1528] shadow-2xl">
+                    <div class="px-3 py-2 text-[12px] text-slate-400">Signed in</div>
+                    <a th:href="@{/admin}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5"><i class="fa-solid fa-chart-line"></i> Overview</a>
+                    <a th:href="@{/admin/orders}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5"><i class="fa-solid fa-receipt"></i> Orders</a>
+                    <div class="h-px bg-[#1f2637] my-1"></div>
+                    <form th:action="@{/admin/logout}" method="post" class="px-3 py-2">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="w-full flex items-center gap-2 text-left text-sm text-rose-300 hover:text-rose-200 hover:bg-rose-600/10 px-2 py-2 rounded-lg">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sub-header -->
+    <div class="border-t border-[#1f2637]">
+        <div class="max-w-7xl mx-auto px-5 h-12 flex items-center justify-between">
+            <div class="text-sm text-slate-400">
+                <a th:href="@{/admin}" class="hover:text-slate-200">Admin</a>
+                <span class="mx-2 opacity-50">/</span>
+                <span class="text-slate-300">Coupons</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="?range=7d"  class="chip text-xs px-3 py-1 rounded-lg text-slate-200 hover:bg-white/5">7d</a>
+                <a href="?range=30d" class="chip text-xs px-3 py-1 rounded-lg text-slate-200 hover:bg-white/5">30d</a>
+                <a href="?range=90d" class="chip text-xs px-3 py-1 rounded-lg text-slate-200 hover:bg-white/5">90d</a>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- ========== /Global Nav ========== -->
+
+<main class="max-w-7xl mx-auto px-5 py-8 space-y-5">
+    <!-- Toolbar -->
+    <section class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 class="text-2xl font-semibold">Coupons</h1>
+        <div class="flex items-center gap-2">
+            <input class="field w-60" type="search" placeholder="Filter by code…" id="codeFilter" oninput="filterTable(this.value)"/>
+            <select class="field w-44" id="statusFilter" onchange="filterStatus(this.value)">
+                <option value="">All statuses</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+            <a class="inline-flex items-center gap-2 rounded-xl px-4 py-2 font-semibold bg-emerald-500 text-[#082312] hover:bg-emerald-400"
+               th:href="@{/admin/coupons/new}">
+                <i class="fa-solid fa-plus"></i> New coupon
+            </a>
+        </div>
+    </section>
+
+    <!-- Table -->
+    <section class="card soft overflow-hidden">
+        <table id="couponTable">
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Type</th>
+                <th>Value</th>
+                <th>Min subtotal</th>
+                <th>Starts</th>
+                <th>Expires</th>
+                <th>Status</th>
+                <th style="text-align:right">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="c : ${coupons}">
+                <td><span class="code-pill" th:text="${c.code}">SAVE10</span></td>
+                <td th:text="${c.type}">PERCENT</td>
+                <td th:text="${c.type.name()=='PERCENT' ? c.value + '%' : '$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT')}">10%</td>
+                <td th:text="${'$' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">$0.00</td>
+                <td th:text="${c.startsOn != null ? c.startsOn : '—'}">—</td>
+                <td th:text="${c.expiresOn != null ? c.expiresOn : '—'}">—</td>
+                <td>
+          <span th:classappend="${c.active} ? 'status ok' : 'status off'">
+            <i class="fa-solid" th:classappend="${c.active} ? ' fa-check' : ' fa-minus'"></i>
+            <span th:text="${c.active ? 'Active' : 'Inactive'}">Active</span>
+          </span>
+                </td>
+                <td>
+                    <div class="flex justify-end gap-2">
+                        <a th:href="@{|/admin/coupons/${c.id}/edit|}" class="icon-btn" title="Edit">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        <form th:action="@{|/admin/coupons/${c.id}/delete|}" method="post" onsubmit="return confirm('Delete coupon?')">
+                            <button type="submit" class="icon-btn danger" title="Delete">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(coupons)}">
+                <td colspan="8" class="py-8 text-center text-slate-400">No coupons yet.</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <footer class="pt-2 pb-8 text-center text-[13px] text-slate-500">
+        © <span th:text="${#calendars.format(#calendars.createNow(),'yyyy')}">2025</span> SpiceJar Admin
+    </footer>
+</main>
+
+<script>
+    // quick search focus (like dashboard)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === '/' && !/input|textarea/i.test(document.activeElement.tagName)) {
+            const search = document.querySelector('input[type="search"]');
+            if (search) { e.preventDefault(); search.focus(); }
+        }
+    });
+
+    // Client-side filters
+    function filterTable(q){
+        q = (q || '').toLowerCase();
+        document.querySelectorAll('#couponTable tbody tr').forEach(r=>{
+            // skip empty-state row
+            if (r.querySelector('td[colspan]')) return;
+            const code = r.querySelector('.code-pill')?.textContent?.toLowerCase() || '';
+            r.style.display = code.includes(q) ? '' : 'none';
+        });
+    }
+    function filterStatus(val){
+        document.querySelectorAll('#couponTable tbody tr').forEach(r=>{
+            if (r.querySelector('td[colspan]')) return;
+            const status = r.querySelector('td:nth-last-child(2) span')?.textContent?.trim() || '';
+            r.style.display = (!val || status===val) ? '' : 'none';
+        });
+    }
+</script>
+</body>
+</html>

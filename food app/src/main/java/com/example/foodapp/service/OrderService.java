@@ -2,6 +2,8 @@ package com.example.foodapp.service;
 
 import com.example.foodapp.model.Order;
 import com.example.foodapp.repository.OrderRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -254,4 +256,35 @@ public class OrderService {
 
         return invoiceText.toString().getBytes(StandardCharsets.UTF_8);
     }
+
+    public Order getOrderById(Long id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + id));
+    }
+
+
+
+    public BigDecimal totalRevenue() {
+        // repository already returns 0 when there are no paid orders
+        return repo.totalRevenue();
+    }
+
+
+
+    public List<Order> recent(int limit) {
+        // choose either the derived method or a pageable sort
+        // return orderRepository.findTop10ByOrderByCreatedAtDesc();
+        return repo
+                .findAll(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt")))
+                .getContent();
+    }
+
+
+    public List<Order> findRecentOrders(int limit) {
+        return repo.findAll(
+                PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"))
+        ).getContent();
+    }
+
+
 }

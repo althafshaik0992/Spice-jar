@@ -1,44 +1,162 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Sign In</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin Sign In • SpiceJar</title>
+
+  <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <!-- Tailwind (CDN) for quick beautiful styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#f5f7fb;margin:0}
-    .nav{background:#111;color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}
-    .nav a{color:#fff;text-decoration:none;margin-right:16px}
-    .card{max-width:420px;margin:60px auto;background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08);padding:24px}
-    h1{font-size:20px;margin:0 0 12px}
-    label{display:block;margin:12px 0 6px;color:#333}
-    input{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;box-sizing:border-box}
-    button{margin-top:16px;width:100%;padding:12px;border:0;border-radius:10px;background:#218838;color:#fff;font-weight:600;cursor:pointer}
-    button:hover{filter:brightness(.95)}
-    .links{margin-top:12px;text-align:center}
+    :root { color-scheme: light dark }
+    .glass {
+      @apply bg-white/70 dark:bg-slate-800/60 backdrop-blur-xl border border-white/30 dark:border-white/10;
+    }
+    .input {
+      @apply w-full rounded-xl border border-slate-200/70 dark:border-slate-600 bg-white/70 dark:bg-slate-800/60
+      px-4 py-3 pl-11 outline-none ring-2 ring-transparent focus:ring-emerald-400/40 transition;
+    }
+    .field-icon {
+      @apply absolute left-3 top-1/2 -translate-y-1/2 text-slate-400;
+    }
   </style>
 </head>
-<body>
-<header class="nav">
-  <div><a href="/">SpiceJar</a></div>
-  <nav>
-    <a href="/admin">Dashboard</a>
-    <a href="/admin/menu">menu</a>
-    <a href="/admin/categories">Categories</a>
-    <a href="/admin/orders">Orders</a>
-  </nav>
+
+<body class="min-h-screen bg-gradient-to-br from-emerald-50 via-emerald-100 to-emerald-200
+             dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-100">
+
+<!-- Top nav -->
+<header class="w-full border-b border-white/20 dark:border-white/10 bg-white/40 dark:bg-slate-900/40 backdrop-blur">
+  <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2 font-bold tracking-tight text-emerald-700 dark:text-emerald-400">
+      <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-black">SJ</span>
+      <span>SpiceJar</span>
+    </a>
+    <nav class="hidden md:flex items-center gap-5 text-sm">
+      <a href="/admin" class="hover:text-emerald-700 dark:hover:text-emerald-300">Dashboard</a>
+      <a href="/admin/menu" class="hover:text-emerald-700 dark:hover:text-emerald-300">Menu</a>
+      <a href="/admin/categories" class="hover:text-emerald-700 dark:hover:text-emerald-300">Categories</a>
+      <a href="/admin/orders" class="hover:text-emerald-700 dark:hover:text-emerald-300">Orders</a>
+    </nav>
+  </div>
 </header>
-<main>
-  <div class="card">
-    <h1>Admin Sign In</h1>
-    <form th:action="@{/admin/login}" method="post">
-      <label>Username</label>
-      <input type="text" name="username" required/>
-      <label>Password</label>
-      <input type="password" name="password" required/>
-      <button type="submit">Sign in</button>
-    </form>
-    <div class="links"><a href="/" style="color:#218838">Back to site</a></div>
+
+<main class="relative">
+  <!-- soft background ornament -->
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+    <div class="absolute -top-40 -left-40 h-80 w-80 rounded-full bg-emerald-300/40 blur-3xl"></div>
+    <div class="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-emerald-400/30 blur-3xl"></div>
+  </div>
+
+  <div class="max-w-6xl mx-auto px-4 py-14 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+    <!-- Left: form card -->
+    <section class="glass rounded-3xl p-8 shadow-xl">
+      <div class="mb-6">
+        <h1 class="text-2xl font-extrabold tracking-tight">Admin Sign In</h1>
+        <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">Access the SpiceJar back office.</p>
+      </div>
+
+      <!-- Alerts -->
+      <div th:if="${param.error}" class="mb-4 rounded-xl border border-rose-300/60 bg-rose-50/80 text-rose-700 px-4 py-3 text-sm">
+        Invalid username or password.
+      </div>
+      <div th:if="${param.logout}" class="mb-4 rounded-xl border border-emerald-300/60 bg-emerald-50/80 text-emerald-700 px-4 py-3 text-sm">
+        You have been signed out.
+      </div>
+
+      <form th:action="@{/admin/login}" method="post" class="space-y-4">
+        <!-- CSRF -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <!-- Username -->
+        <div class="relative">
+            <span class="field-icon">
+              <!-- user icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.2 0-8 2.1-8 5v1h16v-1c0-2.9-3.8-5-8-5Z"/></svg>
+            </span>
+          <input class="input" type="text" name="username" placeholder="Username" autocomplete="username" required/>
+        </div>
+
+        <!-- Password -->
+        <div class="relative">
+            <span class="field-icon">
+              <!-- lock icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17 8h-1V6a4 4 0 1 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Zm-6 0V6a3 3 0 0 1 6 0v2Z"/></svg>
+            </span>
+          <input class="input" type="password" name="password" placeholder="Password" autocomplete="current-password" required/>
+        </div>
+
+        <!-- Remember + actions -->
+        <div class="flex items-center justify-between text-sm">
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" name="remember-me" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"/>
+            Remember me
+          </label>
+          <a href="/" class="text-emerald-700 dark:text-emerald-300 hover:underline">Back to site</a>
+        </div>
+
+        <button
+                class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold py-3 shadow-lg shadow-emerald-600/20 transition">
+          Sign in
+        </button>
+      </form>
+
+      <!-- Help footnote -->
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-5">
+        Trouble signing in? Contact an administrator to reset your credentials.
+      </p>
+    </section>
+
+    <!-- Right: highlights / tips -->
+    <aside class="hidden lg:block">
+      <div class="glass rounded-3xl p-8 shadow-xl">
+        <h2 class="font-semibold text-lg mb-2">What you can manage</h2>
+        <ul class="space-y-3 text-sm text-slate-700 dark:text-slate-300">
+          <li class="flex items-start gap-3">
+              <span class="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-emerald-600/15 text-emerald-700 dark:text-emerald-300">
+                <i class="fa-solid fa-gauge-high"></i>
+              </span>
+            Real-time dashboard: orders, revenue, and trends
+          </li>
+          <li class="flex items-start gap-3">
+              <span class="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-emerald-600/15 text-emerald-700 dark:text-emerald-300">
+                <i class="fa-solid fa-bowl-food"></i>
+              </span>
+            Menu & categories: add, edit, schedule, or hide items
+          </li>
+          <li class="flex items-start gap-3">
+              <span class="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-emerald-600/15 text-emerald-700 dark:text-emerald-300">
+                <i class="fa-solid fa-truck"></i>
+              </span>
+            Orders: update status, print invoices, track fulfillment
+          </li>
+        </ul>
+
+        <div class="mt-6 grid grid-cols-2 gap-3">
+          <a href="/admin" class="rounded-xl border border-emerald-600/30 text-emerald-700 dark:text-emerald-300 px-4 py-3 text-center hover:bg-emerald-600/10">
+            Dashboard
+          </a>
+          <a href="/admin/orders" class="rounded-xl border border-emerald-600/30 text-emerald-700 dark:text-emerald-300 px-4 py-3 text-center hover:bg-emerald-600/10">
+            Orders
+          </a>
+          <a href="/admin/menu" class="rounded-xl border border-emerald-600/30 text-emerald-700 dark:text-emerald-300 px-4 py-3 text-center hover:bg-emerald-600/10">
+            Menu
+          </a>
+          <a href="/admin/categories" class="rounded-xl border border-emerald-600/30 text-emerald-700 dark:text-emerald-300 px-4 py-3 text-center hover:bg-emerald-600/10">
+            Categories
+          </a>
+        </div>
+      </div>
+    </aside>
   </div>
 </main>
+
+<!-- Font Awesome (icons used in the right panel, optional) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
 </body>
 </html>

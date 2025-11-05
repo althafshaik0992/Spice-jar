@@ -1,10 +1,13 @@
 package com.example.foodapp.controller;
 
 import com.example.foodapp.model.Order;
+import com.example.foodapp.model.User;
 import com.example.foodapp.service.OrderService;
 import com.example.foodapp.service.PaymentService;
 import com.example.foodapp.service.PaypalService;
 import com.example.foodapp.service.StripeService;
+import com.example.foodapp.util.GlobalData;
+import com.example.foodapp.util.SessionCart;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -15,39 +18,49 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.Map;
 
+import static com.example.foodapp.util.GlobalData.cart;
+
 @Controller
 @RequestMapping("/payment")
-public class PaymentCheckoutController {
+public class PaymentCheckoutController extends BaseController {
 
     private final OrderService orderService;
     private final PaymentService paymentService;
     private final PaypalService paypalService;
     private final StripeService stripeService;
+    private final SessionCart cart;
+
+
 
     public PaymentCheckoutController(OrderService orderService,
                                      PaymentService paymentService,
                                      PaypalService paypalService,
-                                     StripeService stripeService) {
+                                     StripeService stripeService, SessionCart cart) {
         this.orderService = orderService;
         this.paymentService = paymentService;
         this.paypalService = paypalService;
         this.stripeService = stripeService;
+        this.cart = cart;
     }
 
     @Value("${app.paypal.currency:USD}")
     private String paypalCurrency;
 
-    /** Show the payment choice page for an order */
     @GetMapping("/checkout")
-    public String page(@RequestParam Long orderId, HttpSession session, Model m){
-        if (session.getAttribute("USER") == null) return "redirect:/login";
-        Order order = orderService.findById(orderId);
-        if (order == null) return "redirect:/orders";
-        // optional: ensure belongs to current user
-
-        m.addAttribute("order", order);
-        return "payment"; // the HTML above
+    public String page(@RequestParam(required = false) Long orderId,
+                       HttpSession session, Model m) {
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
+        m.addAttribute("cart", cart);
+        m.addAttribute("cartCount", cart.getCount());
+        return "payment";
     }
+
+
+
+
+
+
 
     /** COD: mark pending and return 200 */
     @PostMapping("/cod")
@@ -117,5 +130,22 @@ public class PaymentCheckoutController {
         m.addAttribute("order", order);
         m.addAttribute("payment", payment);
         return "order_success";
+    }
+
+    @PostMapping("/wallet/start")
+    @ResponseBody
+    public Map<String, Object> startWallet(@RequestBody Map<String, Object> body, HttpSession session) {
+        if (session.getAttribute("USER") == null) return Map.of("ok", false);
+        Long orderId = ((Number) body.get("orderId")).longValue();
+        var out = stripeService.createWalletIntent(orderId);
+        return Map.of("ok", true, "clientSecret", out.get("clientSecret"), "paymentIntentId", out.get("paymentIntentId"));
+    }
+
+    /** Stripe webhook (configure the endpoint URL in your Stripe dashboard) */
+    @PostMapping("/stripe/webhook")
+    public ResponseEntity<String> stripeWebhook(@RequestHeader(value = "Stripe-Signature", required = false) String sig,
+                                                @RequestBody String payload) {
+        stripeService.handleStripeWebhook(payload, sig);
+        return ResponseEntity.ok("ok");
     }
 }

@@ -1,25 +1,29 @@
 package com.example.foodapp.controller;
 
 import com.example.foodapp.model.Category;
-import com.example.foodapp.model.Order;
 import com.example.foodapp.model.Product;
+import com.example.foodapp.service.AnalyticsService;
+import com.example.foodapp.service.CategoryService;
+import com.example.foodapp.service.OrderService;
+import com.example.foodapp.service.ProductService;
 import com.example.foodapp.repository.CategoryRepository;
-import com.example.foodapp.service.*;
+
 import jakarta.servlet.http.HttpSession;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Controller
@@ -27,53 +31,103 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
+    private final ProductService productService;
+    private final CategoryRepository categoryRepository;
     private final AnalyticsService analyticsService;
     private final CategoryService categoryService;
-    private final ProductService productService;
     private final OrderService orderService;
-    private final CategoryRepository categoryRepository;
 
-    public AdminController(AnalyticsService analyticsService,
-                           CategoryService categoryService,
-                           ProductService productService,
-                           OrderService orderService,
-                           CategoryRepository categoryRepository) {
+
+
+
+    public AdminController(ProductService productService, CategoryRepository categoryRepository, AnalyticsService analyticsService, CategoryService categoryService, OrderService orderService) {
+        this.productService = productService;
+        this.categoryRepository = categoryRepository;
         this.analyticsService = analyticsService;
         this.categoryService = categoryService;
-        this.productService = productService;
         this.orderService = orderService;
-        this.categoryRepository = categoryRepository;
     }
 
-    /* -------------------- DASHBOARD -------------------- */
 
     @GetMapping({"", "/"})
-    public String dashboard(Model m, HttpSession session) {
-        var daily = analyticsService.dailyOrdersLast7Days();
-        m.addAttribute("labels", daily.keySet());
-        m.addAttribute("values", daily.values());
+    public String dashboard(Model m) {
+        // Get last 7 days revenue as an ordered map (label -> amount)
+        LinkedHashMap<String, BigDecimal> rev = analyticsService.revenueByDay(7);
+
+        // The dashboard.html expects revLabels and revValues
+        m.addAttribute("revLabels", new java.util.ArrayList<>(rev.keySet()));
+        m.addAttribute("revValues", new java.util.ArrayList<>(rev.values()));
+
         m.addAttribute("ordersCount", orderService.findAll().size());
+        // ✅ Fetch last 5–10 orders for dashboard table
+        m.addAttribute("recentOrders", orderService.recent(10));
         m.addAttribute("productsCount", productService.findAll().size());
         m.addAttribute("categoriesCount", categoryService.findAll().size());
-        m.addAttribute("totalRevenue" ,orderService.calculateTotalRevenue());
+        m.addAttribute("totalRevenue", orderService.calculateTotalRevenue());
+        final int LOW_STOCK_THRESHOLD = 5; // tweak as you like or make it configurable
+        m.addAttribute("lowStock", productService.findLowStock(LOW_STOCK_THRESHOLD));
+
         return "admin/dashboard";
     }
 
-    /* -------------------- CATALOG (Products + Categories) -------------------- */
 
-    // Single page for managing both
+    // 🟢 Show catalog
     @GetMapping("/catalog")
-    public String catalog(Model model) {
-        model.addAttribute("products", productService.findAll());      // should eager-load category (findAllWithCategory)
-        model.addAttribute("categories", categoryService.findAll());
-        return "admin/catalog";                                        // your combined page
+    public String showCatalog(Model model,
+                              @ModelAttribute("toast") String toast,
+                              @ModelAttribute("error") String error) {
+        model.addAttribute("products", productService.findAll());
+        model.addAttribute("categories", categoryRepository.findAll());
+        return "admin/catalog";
     }
 
-    // Backward-compat: redirect old endpoints to catalog
-    @GetMapping("/products")
-    public String productsRedirect() {
+    // 🟢 Add product (handles file upload + image URL)
+    @PostMapping(value = "/products", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String createProduct(@RequestParam String name,
+                                @RequestParam(required = false) String description,
+                                @RequestParam BigDecimal price,
+                                @RequestParam Integer weight,
+                                @RequestParam Integer stock,
+                                @RequestParam Long categoryId,
+                                @RequestParam("imageFile") MultipartFile imageFile,
+                                RedirectAttributes ra) throws IOException {
+
+        // ✅ Category lookup
+        Category cat = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid category: " + categoryId));
+
+        // ✅ Handle image upload
+        String imageUrl = null;
+        if (imageFile != null && !imageFile.isEmpty()) {
+            Path uploadsDir = Paths.get("uploads");
+            Files.createDirectories(uploadsDir);
+
+            String fileName = System.currentTimeMillis() + "-" +
+                    imageFile.getOriginalFilename().replaceAll("\\s+", "_");
+            Path dest = uploadsDir.resolve(fileName);
+            Files.copy(imageFile.getInputStream(), dest, StandardCopyOption.REPLACE_EXISTING);
+
+            imageUrl = "/uploads/" + fileName;  // ✅ Accessible via static mapping
+        }
+
+        // ✅ Build product
+        Product p = new Product();
+        p.setName(name);
+        p.setDescription(description);
+        p.setPrice(price);
+        p.setWeight(weight);
+        p.setStock(stock);
+        p.setCategory(cat);
+        p.setImageUrl(imageUrl);
+
+        productService.save(p);
+
+        ra.addFlashAttribute("toast", "Product added successfully!");
         return "redirect:/admin/catalog";
     }
+
+
+
 
     @GetMapping("/categories")
     public String categoriesRedirect() {
@@ -95,81 +149,68 @@ public class AdminController {
         return "redirect:/admin/catalog";
     }
 
-    /* -------------------- PRODUCT actions -------------------- */
-
-    @PostMapping("/products")
-    public String createProduct(@RequestParam String name,
-                                @RequestParam(required = false) String description,
-                                @RequestParam BigDecimal price,
-                                @RequestParam Long categoryId,
-                                @RequestParam("imageFile") MultipartFile imageFile) throws IOException {
-
-        Category cat = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid category: " + categoryId));
-
-        String imageUrl = null;
-        if (!imageFile.isEmpty()) {
-            Path uploadsDir = Paths.get("uploads");
-            Files.createDirectories(uploadsDir);
-            String fileName = System.currentTimeMillis() + "-" +
-                    imageFile.getOriginalFilename().replaceAll("\\s+", "_");
-            Path dest = uploadsDir.resolve(fileName);
-            Files.copy(imageFile.getInputStream(), dest, StandardCopyOption.REPLACE_EXISTING);
-            imageUrl = "/uploads/" + fileName;
-        }
-
-        Product p = new Product();
-        p.setName(name);
-        p.setDescription(description);
-        p.setPrice(price);
-        p.setImageUrl(imageUrl);
-        p.setCategory(cat);
-
-        productService.save(p);
-        return "redirect:/admin/catalog";
-    }
-
-
-    @PostMapping("/products/delete")
-    public String deleteProduct(@RequestParam Long id) {
-        productService.delete(id);
-        return "redirect:/admin/catalog";
-    }
-
-    @PostMapping("/products/update")
+    // 🟡 Update product
+    @PostMapping(value = "/products/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public String updateProduct(@RequestParam Long id,
                                 @RequestParam String name,
                                 @RequestParam(required = false) String description,
                                 @RequestParam BigDecimal price,
-                                @RequestParam Long categoryId) {
+                                @RequestParam Integer weight,
+                                @RequestParam Integer stock,
+                                @RequestParam Long categoryId,
+                                @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+                                RedirectAttributes ra) throws IOException {
 
-        // Find the existing product by ID
-        Product product = productService.findById(id);
-
-        // Check if the product exists before attempting to update
-        if (product == null) {
-            // You could redirect with an error message, but throwing an exception is clear for a developer
+        Product existing = productService.findById(id);
+        if (existing == null) {
             throw new IllegalArgumentException("Invalid product ID: " + id);
         }
-
-        // Find the category
         Category cat = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid category ID: " + categoryId));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid category: " + categoryId));
 
-        // Update fields
-        product.setName(name);
-        product.setDescription(description);
-        product.setPrice(price);
-        product.setCategory(cat);
-        // Note: Image is not updated via this form to keep the process simple.
+        existing.setName(name);
+        existing.setDescription(description);
+        existing.setPrice(price);
+        existing.setWeight(weight);
+        existing.setStock(stock);
+        existing.setCategory(cat);
 
-        productService.save(product);
+        // Update image if new one provided
+        if (imageFile != null && !imageFile.isEmpty()) {
+            Path uploadsDir = Paths.get("uploads");
+            Files.createDirectories(uploadsDir);
+
+            String fileName = System.currentTimeMillis() + "-" +
+                    imageFile.getOriginalFilename().replaceAll("\\s+", "_");
+            Path dest = uploadsDir.resolve(fileName);
+            Files.copy(imageFile.getInputStream(), dest, StandardCopyOption.REPLACE_EXISTING);
+
+            existing.setImageUrl("/uploads/" + fileName);
+        }
+
+        productService.save(existing);
+        ra.addFlashAttribute("toast", "Product updated successfully!");
+        return "redirect:/admin/catalog";
+    }
+
+    // 🔴 Delete product
+    @PostMapping("/products/delete")
+    public String deleteProduct(@RequestParam Long id, RedirectAttributes ra) {
+        productService.delete(id);
+        ra.addFlashAttribute("toast", "Product deleted!");
+        return "redirect:/admin/catalog";
+    }
+
+    // ⚠️ Handle missing params gracefully
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public String handleMissingParam(MissingServletRequestParameterException ex, RedirectAttributes ra) {
+        ra.addFlashAttribute("error", "Missing field: " + ex.getParameterName());
         return "redirect:/admin/catalog";
     }
 
 
 
-    /* -------------------- ORDERS -------------------- */
+
     @GetMapping("/orders")
     public String orders(@RequestParam(required = false) String q,
                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,

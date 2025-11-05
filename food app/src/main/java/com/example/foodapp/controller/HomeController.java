@@ -1,9 +1,14 @@
 package com.example.foodapp.controller;
 
 import com.example.foodapp.model.ChatProductDTO;
+import com.example.foodapp.model.Coupon;
 import com.example.foodapp.model.Product;
+import com.example.foodapp.model.ProductVariant;
+import com.example.foodapp.repository.CouponRepository;
 import com.example.foodapp.service.CategoryService;
+import com.example.foodapp.service.CouponService;
 import com.example.foodapp.service.ProductService;
+import com.example.foodapp.service.ReviewService;
 import com.example.foodapp.util.Cart;
 import com.example.foodapp.util.CartUtils;
 import com.example.foodapp.util.GlobalData;
@@ -17,12 +22,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
@@ -34,6 +35,8 @@ public class HomeController {
 
     private final ProductService productService;
 
+    private final ReviewService reviewService;
+
 
 
     private ChatProductDTO chatProduct;
@@ -42,12 +45,16 @@ public class HomeController {
 
 
 
-    public HomeController(ProductService productService, CategoryService categoryService) {
+    private final CouponRepository couponRepository;
+
+
+
+    public HomeController(ProductService productService, ReviewService reviewService, CategoryService categoryService,  CouponRepository couponRepository) {
         this.productService = productService;
-
+        this.reviewService = reviewService;
         this.categoryService = categoryService;
+        this.couponRepository = couponRepository;
     }
-
 
 
 
@@ -59,15 +66,39 @@ public class HomeController {
 
     @GetMapping("/")
     public String index(Model m, HttpSession session) {
+        var today = java.time.LocalDate.now();
+
+        java.util.List<com.example.foodapp.model.Coupon> coupons;
+        try {
+            coupons = couponRepository.findAll(); // or your typed finder
+        } catch (Exception e) {
+            coupons = java.util.Collections.emptyList();
+        }
+
+        coupons = coupons.stream()
+                .filter(c -> Boolean.TRUE.equals(c.getActive()))
+                .filter(c -> c.getStartsOn() == null || !today.isBefore(c.getStartsOn()))
+                .filter(c -> c.getExpiresOn() == null || !today.isAfter(c.getExpiresOn()))
+                .sorted(java.util.Comparator
+                        .comparing((com.example.foodapp.model.Coupon c) ->
+                                c.getStartsOn() == null ? java.time.LocalDate.MIN : c.getStartsOn())
+                        .thenComparing(com.example.foodapp.model.Coupon::getCode,
+                                String.CASE_INSENSITIVE_ORDER))
+                .toList();
+
+        System.out.println(">>> availableCoupons size = " + coupons.size()); // DEBUG
+
+        m.addAttribute("availableCoupons", coupons);
+        m.addAttribute("couponCount", coupons.size()); // DEBUG helper
+
         m.addAttribute("products", productService.findAll());
         var cart = session.getAttribute("CART");
-        if (cart != null) {
-            m.addAttribute("cartCount", CartUtils.getCartTotalQuantity((com.example.foodapp.util.Cart) cart));
-        } else {
-            m.addAttribute("cartCount", 0);
-        }
+        m.addAttribute("cartCount", cart != null
+                ? com.example.foodapp.util.CartUtils.getCartTotalQuantity((com.example.foodapp.util.Cart) cart)
+                : 0);
         return "index";
     }
+
 
 
 
@@ -87,52 +118,52 @@ public class HomeController {
     }
 
 
-    @PostMapping(
-            value = "/api/chat",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @ResponseBody
-    public Map<String, Object> chat(@RequestBody(required = false) Map<String, String> body,
-                                    HttpSession session) {
-        String msg = (body == null ? "" : String.valueOf(body.getOrDefault("message", ""))).trim();
-        Map<String, Object> out = new HashMap<>();
-
-        if (msg.isEmpty()) {
-            out.put("reply", "Please type a message, e.g. “Show best sellers”.");
-            return out;
-        }
-
-        // 1) “add … to cart”
-        String lower = msg.toLowerCase(Locale.ROOT);
-        if (lower.startsWith("add") || lower.startsWith("i want")) {
-            @SuppressWarnings("unchecked")
-            List<ChatProductDTO> last = (List<ChatProductDTO>) session.getAttribute("CHAT_SUGG");
-            if (last != null && !last.isEmpty()) {
-                ChatProductDTO pick = last.get(0);
-                out.put("reply", "Added “" + pick.getName() + "” to your cart. 🛒");
-                // Let the front-end POST to /cart/add with CSRF:
-                out.put("addToCartProductId", pick.getId());
-                return out;
-            } else {
-                out.put("reply", "I don’t have a product selected yet. Ask me for a spice and I’ll suggest a few!");
-                return out;
-            }
-        }
-
-        // 2) product / category search
-        List<ChatProductDTO> suggestions = tryFindProducts(msg);
-        if (!suggestions.isEmpty()) {
-            session.setAttribute("CHAT_SUGG", suggestions);
-            out.put("reply", "Here are a few matches. Want me to add one?");
-            out.put("cards", suggestions);
-            return out;
-        }
-
-        // 3) fallback
-        out.put("reply", answer(msg));
-        return out;
-    }
+//    @PostMapping(
+//            value = "/api/chat",
+//            consumes = MediaType.APPLICATION_JSON_VALUE,
+//            produces = MediaType.APPLICATION_JSON_VALUE
+//    )
+//    @ResponseBody
+//    public Map<String, Object> chat(@RequestBody(required = false) Map<String, String> body,
+//                                    HttpSession session) {
+//        String msg = (body == null ? "" : String.valueOf(body.getOrDefault("message", ""))).trim();
+//        Map<String, Object> out = new HashMap<>();
+//
+//        if (msg.isEmpty()) {
+//            out.put("reply", "Please type a message, e.g. “Show best sellers”.");
+//            return out;
+//        }
+//
+//        // 1) “add … to cart”
+//        String lower = msg.toLowerCase(Locale.ROOT);
+//        if (lower.startsWith("add") || lower.startsWith("i want")) {
+//            @SuppressWarnings("unchecked")
+//            List<ChatProductDTO> last = (List<ChatProductDTO>) session.getAttribute("CHAT_SUGG");
+//            if (last != null && !last.isEmpty()) {
+//                ChatProductDTO pick = last.get(0);
+//                out.put("reply", "Added “" + pick.getName() + "” to your cart. 🛒");
+//                // Let the front-end POST to /cart/add with CSRF:
+//                out.put("addToCartProductId", pick.getId());
+//                return out;
+//            } else {
+//                out.put("reply", "I don’t have a product selected yet. Ask me for a spice and I’ll suggest a few!");
+//                return out;
+//            }
+//        }
+//
+//        // 2) product / category search
+//        List<ChatProductDTO> suggestions = tryFindProducts(msg);
+//        if (!suggestions.isEmpty()) {
+//            session.setAttribute("CHAT_SUGG", suggestions);
+//            out.put("reply", "Here are a few matches. Want me to add one?");
+//            out.put("cards", suggestions);
+//            return out;
+//        }
+//
+//        // 3) fallback
+//        out.put("reply", answer(msg));
+//        return out;
+//    }
 
     private List<ChatProductDTO> tryFindProducts(String q) {
         String s = q.trim();
@@ -172,6 +203,9 @@ public class HomeController {
     }
 
 
+
+
+
     @GetMapping("/menu")
     public String menu(
             @RequestParam(required = false) String q,
@@ -179,16 +213,27 @@ public class HomeController {
             @RequestParam(required = false) BigDecimal max,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false, defaultValue = "nameAsc") String sort,
-            Model m,HttpSession session
+            Model m, HttpSession session
     ) {
-//        var user = session.getAttribute("USER");
-//        if (user == null) return "redirect:/login";
         Cart cart = (Cart) session.getAttribute("CART");
         int cartCount = (cart != null) ? cart.getTotalQuantity() : 0;
-        m.addAttribute("products", productService.filter(q, min, max, categoryId, sort));
-        m.addAttribute("categories", categoryService.findAll());
 
-        // keep the current filter values so the form shows them
+        // 1) get the products ONCE
+        List<Product> products = productService.filter(q, min, max, categoryId, sort);
+        m.addAttribute("products", products);
+
+        // 2) compute maps using the SAME list
+        Map<Long, Double> avgMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, p -> reviewService.avg(p)));
+        Map<Long, Long> cntMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, p -> reviewService.count(p)));
+
+        // 3) add maps
+        m.addAttribute("avgMap", avgMap);
+        m.addAttribute("cntMap", cntMap);
+
+        // other model data
+        m.addAttribute("categories", categoryService.findAll());
         m.addAttribute("q", q);
         m.addAttribute("min", min);
         m.addAttribute("max", max);
@@ -196,7 +241,57 @@ public class HomeController {
         m.addAttribute("sort", sort);
         m.addAttribute("cartCount", cartCount);
 
-        return "menu"; // your menu.html
+        return "menu";
+    }
+
+
+//
+//@GetMapping("/menu")
+//public String menu(
+//        @RequestParam(value = "q", required = false) String q,
+//        @RequestParam(value = "min", required = false) Double min,
+//        @RequestParam(value = "max", required = false) Double max,
+//        Model model
+//) {
+//    List<Product> products = productService.findAll();
+//
+//    // ✅ Normalize: always set price/weight for products with variants
+//    for (Product p : products) {
+//        if (p.getVariants() != null && !p.getVariants().isEmpty()) {
+//            p.getVariants().sort(Comparator.comparing(ProductVariant::getPrice));
+//            ProductVariant cheapest = p.getVariants().get(0);
+//            p.setPrice(cheapest.getPrice());
+//            p.setWeight(cheapest.getWeight());
+//        }
+//    }
+//
+//    model.addAttribute("products", products);
+//    return "menu"; // menu.html view
+//}
+
+
+    private List<Coupon> loadActiveCouponsSafely() {
+        try {
+            // If you chose Option B in the repo, use this:
+            return couponRepository.findActiveCurrentlyValid(LocalDate.now());
+
+            // If you chose Option A instead, comment the line above and uncomment this:
+            // return couponRepository.findByActiveTrueOrderByStartsOnAscCodeAsc();
+
+        } catch (Exception ignored) {
+            // Fallback: filter + sort in memory
+            var today = LocalDate.now();
+            return couponRepository.findAll().stream()
+                    .filter(c -> Boolean.TRUE.equals(c.getActive()))
+                    .filter(c ->
+                            (c.getStartsOn() == null || !today.isBefore(c.getStartsOn())) &&
+                                    (c.getExpiresOn() == null || !today.isAfter(c.getExpiresOn()))
+                    )
+                    .sorted(Comparator
+                            .comparing((Coupon c) -> c.getStartsOn() == null ? LocalDate.MIN : c.getStartsOn())
+                            .thenComparing(Coupon::getCode, String.CASE_INSENSITIVE_ORDER))
+                    .toList();
+        }
     }
 
 

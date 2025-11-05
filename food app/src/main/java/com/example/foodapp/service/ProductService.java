@@ -3,6 +3,8 @@ package com.example.foodapp.service;
 import com.example.foodapp.model.Product;
 import com.example.foodapp.repository.ProductRepository;
 import com.example.foodapp.repository.ProductSpecs;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -66,4 +69,27 @@ public class ProductService {
         }
         return list;
     }
+
+    public List<Product> search(String query, int limit) {
+        if (query == null || query.isBlank()) return List.of();
+
+        // Add pagination + fuzzy search
+        Pageable pageable = PageRequest.of(0, Math.max(1, Math.min(limit, 12)));
+
+        return repo.searchByKeyword(query.toLowerCase(), pageable);
+    }
+
+
+
+    public long count() {
+        return repo.count();
+    }
+
+    public List<Product> findLowStock(int threshold){
+        return repo.findLowStock(threshold);
+    }
+
+
+
+
 }

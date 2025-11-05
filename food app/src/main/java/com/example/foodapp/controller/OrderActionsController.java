@@ -3,6 +3,7 @@ package com.example.foodapp.controller;
 
 
 import com.example.foodapp.model.Order;
+import com.example.foodapp.service.EmailService;
 import com.example.foodapp.service.OrderService;
 import com.example.foodapp.service.TrackingService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,6 +23,7 @@ public class OrderActionsController {
 
     private final OrderService orderService;
     private final TrackingService trackingService;
+    private final EmailService emailService;
 
     @GetMapping("/{id}/track")
     public String trackOrder(@PathVariable Long id, Model model) {
@@ -99,19 +101,43 @@ public class OrderActionsController {
         return "redirect:/orders/" + orderId;
     }
 
-    @GetMapping("/{id}/invoice")
-    public void invoice(@PathVariable Long id, HttpServletResponse resp, RedirectAttributes ra) throws IOException {
-        Order o = orderService.findById(id);
-        if (o == null) {
-            resp.sendRedirect("/orders");
-            return;
+//    @GetMapping("/{id}/invoice")
+//    public void invoice(@PathVariable Long id, HttpServletResponse resp, RedirectAttributes ra) throws IOException {
+//        Order o = orderService.findById(id);
+//        if (o == null) {
+//            resp.sendRedirect("/orders");
+//            return;
+//        }
+//        // Demo PDF (plain text stream). Replace with real PDF generation.
+//        resp.setContentType("application/pdf");
+//        resp.setHeader("Content-Disposition", "attachment; filename=invoice-" + id + ".pdf");
+//        byte[] pdfBytes = orderService.generateInvoicePdf(o); // implement a simple stub
+//        resp.getOutputStream().write(pdfBytes);
+//        resp.flushBuffer();
+//    }
+
+
+    @GetMapping("/{id}/email")
+    public String sendEmailGet(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            emailService.sendOrderConfirmation(id);
+            ra.addFlashAttribute("msg", "Email receipt sent.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("err", "Failed to send email: " + e.getMessage());
         }
-        // Demo PDF (plain text stream). Replace with real PDF generation.
-        resp.setContentType("application/pdf");
-        resp.setHeader("Content-Disposition", "attachment; filename=invoice-" + id + ".pdf");
-        byte[] pdfBytes = orderService.generateInvoicePdf(o); // implement a simple stub
-        resp.getOutputStream().write(pdfBytes);
-        resp.flushBuffer();
+        return "redirect:/orders/" + id;
+    }
+
+    // For forms: /order/{id}/email OR /orders/{id}/email  (POST)
+    @PostMapping("{id}/email")
+    public String sendEmailPost(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            emailService.sendOrderConfirmation(id);
+            ra.addFlashAttribute("msg", "Email receipt sent.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("err", "Failed to send email: " + e.getMessage());
+        }
+        return "redirect:/orders/" + id;
     }
 }
 

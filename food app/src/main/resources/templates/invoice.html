@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Invoice #<span th:text="${order.id}">123</span></title>
+    <style>
+        body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0}
+        .wrap{max-width:800px;margin:24px auto;padding:0 24px}
+        .hdr{display:flex;justify-content:space-between;align-items:center;margin:18px 0}
+        .brand{font-weight:800;font-size:20px;color:#16a34a}
+        .box{border:1px solid #e5e7eb;border-radius:10px;padding:14px;margin-top:10px}
+        h1{font-size:22px;margin:0 0 4px}
+        table{width:100%;border-collapse:collapse;margin-top:14px}
+        th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:14px}
+        thead th{background:#f7faf7}
+        .totals{margin-top:14px}
+        .row{display:flex;justify-content:space-between;padding:6px 0}
+        .row.total{font-weight:800;font-size:16px;border-top:1px dashed #ddd;margin-top:6px;padding-top:10px}
+        .muted{color:#64748b;font-size:12px;margin-top:18px}
+        /* PDF-friendly (no external fonts, no position:fixed) */
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="hdr">
+        <div class="brand">The Spice Jar</div>
+        <div>Invoice #<span th:text="${order.confirmationNumber}">123</span></div>
+    </div>
+
+    <div class="box">
+        <h1>Billing Details</h1>
+        <div><strong>Name:</strong> <span th:text="${order.customerName}">Jane Doe</span></div>
+        <div><strong>Email:</strong> <span th:text="${order.email}">jane@example.com</span></div>
+        <div><strong>Phone:</strong> <span th:text="${order.phone}">555-123-4567</span></div>
+        <div style="margin-top:6px"><strong>Address:</strong></div>
+        <div th:text="${order.street}">123 Main St</div>
+        <div>
+            <span th:text="${order.city}">Anytown</span>,
+            <span th:text="${order.state}">CA</span>
+            <span th:text="${order.zip}">12345</span>
+        </div>
+        <div th:text="${order.country}">USA</div>
+        <div style="margin-top:8px;">
+            <strong>Date:</strong>
+            <span th:text="${#temporals.format(order.createdAt,'MMM d, yyyy h:mm a')}">Sep 24, 2025</span>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Item</th>
+            <th style="width:70px;">Qty</th>
+            <th style="width:110px;">Unit Price</th>
+            <th style="width:130px;">Line Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="it : ${order.items}">
+            <td th:text="${it.productName}">Spice Name</td>
+            <td th:text="${it.quantity}">1</td>
+            <td th:text="${#numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">$0.00</td>
+            <td th:text="${#numbers.formatDecimal(it.price.multiply(new java.math.BigDecimal(it.quantity)),1,'COMMA',2,'POINT')}">$0.00</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <div class="row">
+            <div>Subtotal</div>
+            <div th:text="${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">$0.00</div>
+        </div>
+        <div class="row">
+            <div>Tax</div>
+            <div th:text="${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">$0.00</div>
+        </div>
+        <div class="row total">
+            <div>Total</div>
+            <div th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">$0.00</div>
+        </div>
+    </div>
+
+    <div class="muted">Thank you for shopping with The Spice Jar.</div>
+</div>
+</body>
+</html>

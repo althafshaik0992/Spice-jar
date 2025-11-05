@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title th:text="${subject}">Welcome to The Spice Jar</title>
+    <style>
+        :root{--green:#22c55e;}
+        body{margin:0;background:#f6fbf6;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#111}
+        .wrap{max-width:680px;margin:0 auto;background:#fff}
+        .topbar{background:var(--green);height:6px}
+        .hero{padding:28px 26px 0}
+        .title{font-size:22px;margin:0 0 6px;color:#111}
+        .lead{margin:0 0 16px;color:#374151}
+        .card{margin:16px 26px;padding:16px;border:1px solid #e5e7eb;border-radius:12px}
+        .btn{display:inline-block;background:var(--green);color:#fff;text-decoration:none;font-weight:700;
+            padding:12px 18px;border-radius:10px;margin-right:8px}
+        .muted{color:#6b7280;font-size:12px;margin-top:18px}
+        .footer{padding:18px 26px 28px;color:#6b7280;font-size:12px}
+        .list li{margin-bottom:6px}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="topbar"></div>
+
+    <div class="hero">
+        <img src="https://dummyimage.com/80x80/22c55e/ffffff&text=SJ" width="64" height="64" alt="SpiceJar" style="border-radius:12px">
+        <h1 class="title">Welcome, <span th:text="${firstName}">Spice lover</span>! 🌶️</h1>
+        <p class="lead" th:text="${preheader}">
+            Your account is ready—here’s how to get the most out of The Spice Jar.
+        </p>
+    </div>
+
+    <div class="card">
+        <ul class="list">
+            <li>Explore our <b>bestsellers</b> and new arrivals.</li>
+            <li>Save multiple <b>shipping addresses</b> for faster checkout.</li>
+            <li>Track orders and download invoices anytime.</li>
+        </ul>
+        <div style="margin-top:12px">
+            <a class="btn" th:href="${menuUrl}">Explore Menu</a>
+            <a class="btn" th:href="${accountUrl}" style="background:#0ea5e9">Your Account</a>
+        </div>
+        <p class="muted">If you didn’t create this account, please ignore this message.</p>
+    </div>
+
+    <div class="footer">
+        © <span th:text="${year}">2025</span> The Spice Jar •
+        <a th:href="${helpUrl}">Help</a> •
+        <a th:href="${homeUrl}">Home</a>
+    </div>
+</div>
+</body>
+</html>

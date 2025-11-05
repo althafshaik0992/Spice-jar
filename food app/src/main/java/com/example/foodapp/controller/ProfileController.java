@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Controller
-public class ProfileController {
+public class ProfileController extends BaseController {
 
     private final UserService userService;
     public ProfileController(UserService userService) { this.userService = userService; }
@@ -50,9 +50,9 @@ public class ProfileController {
     public String editProfile(HttpSession session, Model m,
                               @RequestParam(required = false) String msg,
                               @RequestParam(required = false) String error) {
-        User u = requireUser(session);
-        if (u == null) return "redirect:/login";
-        m.addAttribute("user", u);
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
+        m.addAttribute("user", user);
         if (msg != null) m.addAttribute("msg", msg);
         if (error != null) m.addAttribute("error", error);
         return "profile"; // edit form
@@ -61,9 +61,11 @@ public class ProfileController {
     @GetMapping("/profile/view")
     public String viewProfile(HttpSession session, Model m,
                               @RequestParam(required = false) String msg) {
-        User u = requireUser(session);
-        if (u == null) return "redirect:/login";
-        m.addAttribute("user", u);
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
+
+
+        m.addAttribute("user", user);
         if (msg != null) m.addAttribute("msg", msg);
         return "profile_view"; // read-only
     }
@@ -73,8 +75,10 @@ public class ProfileController {
     // Save basic fields
     @PostMapping("/profile")
     public String saveProfile(@ModelAttribute("user") User form, HttpSession session) {
-        User u = requireUser(session);
+        User u = currentUser(session);
         if (u == null) return "redirect:/login";
+
+
 
         u.setFirstName(form.getFirstName());
         u.setLastName(form.getLastName());
@@ -95,8 +99,9 @@ public class ProfileController {
     @PostMapping("/profile/avatar")
     public String uploadAvatar(@RequestParam("avatar") MultipartFile file,
                                HttpSession session) {
-        User u = requireUser(session);
+        User u = currentUser(session);
         if (u == null) return "redirect:/login";
+
         if (file == null || file.isEmpty()) {
             return "redirect:/profile?error=Please+choose+an+image";
         }

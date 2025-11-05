@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${coupon.id==null ? 'Admin • New Coupon' : 'Admin • Edit Coupon'}">Admin • Coupon</title>
+
+  <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root{color-scheme:dark}
+    body{background:#0b1020;color:#e2e8f0}
+    .surface{background:#0b1220}
+    .card{background:#0b1220;border:1px solid #1f2637;border-radius:16px}
+    .soft{box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .chip{background:#111a2a;border:1px solid #273447}
+    .ring-subtle{box-shadow:0 0 0 1px rgba(39,52,71,.8) inset}
+    .field-label{font-size:12px;color:#8aa0b6;letter-spacing:.2px;margin-bottom:6px}
+    .field-input{background:#0a1020;border:1px solid #203057;border-radius:10px;color:#e7eef7;padding:12px}
+    .field-input:focus{outline:none;border-color:#33508a;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+    .helper{background:#0a1328;border:1px solid #1f2a44;border-radius:10px;padding:10px;color:#8aa0b6;font-size:13px}
+    .status-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#0e1b33;border:1px solid #1f2a44;color:#a4fac7;font-weight:700;font-size:12px}
+    .btn-primary{background:#22c55e;color:#082312;border:none;border-radius:10px;padding:10px 14px;font-weight:700}
+    .btn-primary:hover{background:#19b454}
+    .btn-link{color:#9cc4ff}
+    .btn-link:hover{text-decoration:underline}
+  </style>
+</head>
+<body class="min-h-screen">
+
+<header class="sticky top-0 z-40 border-b border-[#1f2637] bg-[#0b1220]/85 backdrop-blur">
+  <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <!-- ✅ use real admin dashboard route -->
+      <a th:href="@{/admin}" class="flex items-center gap-2 group">
+        <div class="h-9 w-9 grid place-items-center rounded-xl bg-emerald-600 text-white font-black shadow-lg shadow-emerald-900/40 ring-1 ring-emerald-400/30 group-hover:scale-[1.02] transition">SJ</div>
+        <div>
+          <div class="text-sm text-slate-300">SpiceJar</div>
+          <div class="text-[13px] text-slate-400 -mt-0.5">Admin</div>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-1 ml-4">
+        <a th:href="@{/admin}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Dashboard</a>
+        <a th:href="@{/admin/orders}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Orders</a>
+        <a th:href="@{/admin/catalog}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Menu</a>
+        <a th:href="@{/admin/categories}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Categories</a>
+      </nav>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="hidden md:flex items-center gap-2 px-3 h-10 rounded-xl ring-subtle bg-[#0f172a]">
+        <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
+        <input type="search" placeholder="Search orders, menu…" class="bg-transparent outline-none text-sm placeholder:text-slate-500 w-48"/>
+        <span class="text-xs text-slate-500 hidden lg:inline">/ to focus</span>
+      </div>
+
+      <!-- ✅ public site root -->
+      <a th:href="@{ / }" class="hidden sm:inline-flex items-center gap-2 px-3 h-10 rounded-xl text-sm text-slate-200 hover:bg-white/5">
+        <i class="fa-solid fa-up-right-from-square"></i>
+        <span>Site</span>
+      </a>
+
+      <div class="relative group">
+        <button class="inline-flex items-center gap-2 px-3 h-10 rounded-xl bg-emerald-600/15 text-emerald-300 hover:bg-emerald-600/25">
+          <i class="fa-solid fa-circle-user"></i>
+          <span>
+            <span sec:authorize="isAuthenticated()" sec:authentication="name">Admin</span>
+            <span sec:authorize="!isAuthenticated()">Admin</span>
+          </span>
+          <i class="fa-solid fa-chevron-down text-[11px] opacity-70"></i>
+        </button>
+        <div class="absolute right-0 mt-2 hidden group-hover:block w-56 rounded-xl border border-[#1f2637] bg-[#0c1528] shadow-2xl">
+          <div class="px-3 py-2 text-[12px] text-slate-400">Signed in</div>
+          <a th:href="@{/admin}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5"><i class="fa-solid fa-chart-line"></i> Overview</a>
+          <a th:href="@{/admin/orders}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5"><i class="fa-solid fa-receipt"></i> Orders</a>
+          <div class="h-px bg-[#1f2637] my-1"></div>
+          <form th:action="@{/admin/logout}" method="post" class="px-3 py-2">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="w-full flex items-center gap-2 text-left text-sm text-rose-300 hover:text-rose-200 hover:bg-rose-600/10 px-2 py-2 rounded-lg">
+              <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-header -->
+  <div class="border-t border-[#1f2637]">
+    <div class="max-w-7xl mx-auto px-5 h-12 flex items-center justify-between">
+      <div class="text-sm text-slate-400">
+        <a th:href="@{/admin}" class="hover:text-slate-200">Admin</a>
+        <span class="mx-2 opacity-50">/</span>
+        <!-- ✅ coupons list route -->
+        <a th:href="@{/admin/coupons}" class="hover:text-slate-200">Coupons</a>
+        <span class="mx-2 opacity-50">/</span>
+        <span class="text-slate-300" th:text="${coupon.id==null ? 'New' : 'Edit'}">New</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="?range=7d"  class="chip text-xs px-3 py-1 rounded-lg text-slate-200 hover:bg-white/5">7d</a>
+        <a href="?range=30d" class="chip text-xs px-3 py-1 rounded-lg text-slate-200 hover:bg-white/5">30d</a>
+        <a href="?range=90d" class="chip text-xs px-3 py-1 rounded-lg text-slate-200 hover:bg-white/5">90d</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-5 py-8">
+  <h1 class="text-2xl font-semibold mb-4" th:text="${coupon.id==null ? 'Create coupon' : 'Edit coupon'}">Create coupon</h1>
+
+  <!-- ✅ correct form action -->
+  <form class="card soft p-5" th:action="@{/admin/coupons}" method="post" th:object="${coupon}">
+    <div class="flex items-center justify-between border-b border-dashed border-[#1f2a44] pb-3 mb-3">
+      <h2 class="text-base font-semibold">Coupon details</h2>
+      <span class="status-pill">
+        <i class="fa-solid fa-bolt"></i>
+        <span th:text="${coupon.active} ? 'Active' : 'Inactive'">Active</span>
+      </span>
+    </div>
+
+    <input type="hidden" th:field="*{id}"/>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="field-label">Code (unique)</label>
+        <input class="field-input" th:field="*{code}" placeholder="SAVE10" required/>
+        <div class="text-[13px] text-slate-400 mt-1">Recommended: UPPERCASE letters/numbers, no spaces.</div>
+      </div>
+
+      <div>
+        <label class="field-label">Type</label>
+        <select id="typeSelect" class="field-input" th:field="*{type}">
+          <option th:each="t : ${types}" th:value="${t}" th:text="${t}">PERCENT</option>
+        </select>
+      </div>
+
+      <div>
+        <label id="valueLabel" class="field-label"
+               th:text="${coupon.type?.name()=='PERCENT' ? 'Percent (e.g., 10 for 10%)' : 'Amount ($)'}">
+          Percent (e.g., 10 for 10%)
+        </label>
+        <input class="field-input" th:field="*{value}" type="number" step="0.01" min="0" required/>
+      </div>
+
+      <div>
+        <label class="field-label">Min subtotal ($)</label>
+        <input class="field-input" th:field="*{minSubtotal}" type="number" step="0.01" min="0" placeholder="0.00"/>
+      </div>
+
+      <div>
+        <label class="field-label">Starts on</label>
+        <input class="field-input" th:field="*{startsOn}" type="date"/>
+      </div>
+
+      <div>
+        <label class="field-label">Expires on</label>
+        <input class="field-input" th:field="*{expiresOn}" type="date"/>
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="inline-flex items-center gap-3">
+          <input type="checkbox" th:field="*{active}" class="h-4 w-4"/>
+          <span class="text-sm">Active</span>
+        </label>
+        <div class="helper mt-2">
+          When inactive, the code won’t validate at checkout even if dates are valid.
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-3 mt-5">
+      <!-- ✅ back to list route -->
+      <a class="btn-link" th:href="@{/admin/coupons}">
+        <i class="fa-solid fa-arrow-left"></i> Cancel
+      </a>
+      <button class="btn-primary" type="submit">
+        <i class="fa-solid fa-floppy-disk"></i> Save
+      </button>
+    </div>
+  </form>
+</main>
+
+<script>
+  const typeSel = document.getElementById('typeSelect');
+  const lbl = document.getElementById('valueLabel');
+  function setLabel(){
+    if (!typeSel || !lbl) return;
+    lbl.textContent = (typeSel.value === 'PERCENT')
+            ? 'Percent (e.g., 10 for 10%)'
+            : 'Amount ($)';
+  }
+  typeSel?.addEventListener('change', setLabel);
+  setLabel();
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && !/input|textarea/i.test(document.activeElement.tagName)) {
+      const search = document.querySelector('input[type="search"]');
+      if (search) { e.preventDefault(); search.focus(); }
+    }
+  });
+</script>
+</body>
+</html>

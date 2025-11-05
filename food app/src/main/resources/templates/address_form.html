@@ -1,6 +1,10 @@
 <!-- src/main/resources/templates/address_form.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
+<link rel="icon" type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 <head>
     <meta charset="UTF-8"/>
     <title>Address • The Spice Jar</title>
@@ -107,30 +111,23 @@
         </a>
         <a th:href="@{/contact}">Contact Us</a>
 
-        <!-- Categories -->
-        <div class="dropdown">
-            <button class="dropdown-toggle">
-                <i class="fa-solid fa-list"></i> Categories
-            </button>
-            <div class="dropdown-menu">
-                <a th:each="c : ${categories}"
-                   th:href="@{/category/{id}(id=${c.id})}"
-                   th:text="${c.name}">Category</a>
-            </div>
-        </div>
+
 
         <!-- Account -->
         <div class="dropdown">
             <button class="dropdown-toggle">
-                <i class="fas fa-user"></i>  Account
+                <i class="fas fa-user"></i>
+                <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">Account</span>
             </button>
             <div class="dropdown-menu">
                 <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+
                 <span th:if="${session.USER != null}">
-                 Welcome, <span th:text="${session.USER.firstName}">user</span>
-                </span>
-                <a  th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
+          Welcome, <strong th:text="${session.USER.firstName}">User</strong>
+        </span>
+                <a th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
+                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
                 <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
             </div>
         </div>

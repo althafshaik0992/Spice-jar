@@ -4,6 +4,10 @@
     <meta charset="utf-8"/>
     <title>Order Details • The Spice Jar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="icon" type="image/svg+xml"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
@@ -36,12 +40,65 @@
         .btn.track{background:#2563eb;color:#fff}
         .btn.cancel{background:#dc2626;color:#fff}
         .btn.return{background:#f59e0b;color:#fff}
-        .btn.pay{background:#16a34a;color:#fff} /* NEW: Pay now */
+        .btn.pay{background:#16a34a;color:#fff}
+        .btn.mail{background:#111;color:#fff} /* NEW: resend email */
         .btn:hover{opacity:.9}
 
         .status{padding:4px 10px;border-radius:8px;font-weight:700;font-size:14px;display:inline-block}
         .status.paid{background-color:var(--green);color:#fff}
         .status.pending{background-color:#ffc107;color:#000}
+
+        /* --- navbar reused from your site --- */
+        .navbar{
+            background:#fff; padding:6px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex; justify-content:space-between; align-items:center;
+            position:sticky; top:0; z-index:1000; height:60px;
+        }
+        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
+        .brand-logo video{width:36px; height:auto; border-radius:4px}
+        .nav-links{display:flex; align-items:center; gap:18px}
+        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
+        .nav-links a:hover{color:var(--green)}
+        .dropdown{position:relative}
+        .dropdown-toggle{background:none; border:none; cursor:pointer; font-size:15px; color:#333; display:flex; align-items:center; gap:6px}
+        .dropdown-menu{display:none; position:absolute; right:0; top:100%; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
+            border-radius:6px; overflow:hidden; min-width:180px}
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a, .dropdown-menu span{display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap}
+        .dropdown-menu a:hover{background:#f4f4f4}
+        .cart-icon-container { position: relative; display: inline-block; }
+        .cart-count-badge { position: absolute; top: -8px; right: -8px; background-color: var(--accent); color: white; border-radius: 50%;
+            padding: 2px 6px; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px;
+        }
+
+        /* Shipping + Code section */
+        .ship-qr-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:18px}
+        @media(max-width:900px){.ship-qr-bar{grid-template-columns:1fr}}
+        .card-lite{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+        .title-small{font-weight:800;margin:0 0 10px;color:#333;display:flex;align-items:center;gap:8px}
+
+        .code-box{
+            border:1px dashed #e6e6e6;
+            background:#fff;
+            border-radius:12px;
+            height:260px;              /* equal height for both */
+            display:flex;
+            align-items:center;        /* vertical center */
+            justify-content:center;    /* horizontal center */
+            padding:10px;
+        }
+        .code-box canvas, .code-box svg, .code-box img{
+            max-width:100%;
+            max-height:100%;
+            display:block;
+        }
+        .downloads{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap}
+        .dl{border:1px solid #cce6cc;background:#eaf9ea;color:#14532d;padding:8px 12px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+        .dl:hover{filter:brightness(0.98)}
+
+        /* Product image cell */
+        .it-img{width:60px;height:60px;border-radius:6px;object-fit:cover}
     </style>
 </head>
 <body>
@@ -64,39 +121,30 @@
         </a>
         <a th:href="@{/contact}">Contact Us</a>
 
-        <!-- Categories -->
         <div class="dropdown">
             <button class="dropdown-toggle">
-                <i class="fa-solid fa-list"></i> Categories
-            </button>
-            <div class="dropdown-menu">
-                <a th:each="c : ${categories}"
-                   th:href="@{/category/{id}(id=${c.id})}"
-                   th:text="${c.name}">Category</a>
-            </div>
-        </div>
-
-        <!-- Account -->
-        <div class="dropdown">
-            <button class="dropdown-toggle">
-                <i class="fas fa-user"></i>  Account
+                <i class="fas fa-user"></i>
+                <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">Account</span>
             </button>
             <div class="dropdown-menu">
                 <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+
                 <span th:if="${session.USER != null}">
-                 Welcome, <span th:text="${session.USER.firstName}">user</span>
-                </span>
-                <a  th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
+          Welcome, <strong th:text="${session.USER.firstName}">User</strong>
+        </span>
+                <a th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
+                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
                 <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
             </div>
         </div>
     </div>
 </nav>
 
-
 <main class="wrap">
     <h1><i class="fa-solid fa-receipt"></i> Order Details</h1>
+    <div th:if="${msg}" style="margin:10px 0;padding:10px;border-radius:8px;background:#ecfdf5;color:#065f46" th:text="${msg}"></div>
+    <div th:if="${err}" style="margin:10px 0;padding:10px;border-radius:8px;background:#fef2f2;color:#991b1b" th:text="${err}"></div>
 
     <section class="card">
         <div class="grid">
@@ -117,9 +165,7 @@
             </div>
             <div class="info">
                 <div class="label">PLACED ON</div>
-                <div class="val" th:text="${#temporals.format(order.createdAt,'MMM d, yyyy • h:mm a')}">
-                    Aug 29, 2025
-                </div>
+                <div class="val" th:text="${#temporals.format(order.createdAt,'MMM d, yyyy • h:mm a')}">Aug 29, 2025</div>
             </div>
         </div>
 
@@ -146,15 +192,11 @@
                 <td th:text="${#numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">$0.00</td>
                 <td th:text="${#numbers.formatDecimal(it.price.multiply(new java.math.BigDecimal(it.quantity)),1,'COMMA',2,'POINT')}">$0.00</td>
                 <td>
-                    <!-- Per-item return button -->
-                    <form
-                            th:if="${#lists.contains({'DELIVERED','SHIPPED','PAID'}, order.status)}"
-                            th:action="@{/orders/{orderId}/returnItem/{itemId}(orderId=${order.id}, itemId=${it.id})}"
-                            method="post">
+                    <form th:if="${#lists.contains({'DELIVERED','SHIPPED','PAID'}, order.status)}"
+                          th:action="@{/orders/{orderId}/returnItem/{itemId}(orderId=${order.id}, itemId=${it.id})}"
+                          method="post">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button class="btn return" type="submit">
-                            <i class="fa-solid fa-rotate-left"></i> Return Item
-                        </button>
+                        <button class="btn return" type="submit"><i class="fa-solid fa-rotate-left"></i> Return Item</button>
                     </form>
                 </td>
             </tr>
@@ -162,22 +204,52 @@
         </table>
 
         <div class="totals">
-            <div class="row">
-                <div>Subtotal</div>
-                <div th:text="${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">$0.00</div>
-            </div>
-            <div class="row">
-                <div>Tax (8%)</div>
-                <div th:text="${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">$0.00</div>
-            </div>
-            <div class="row total">
-                <div>Total Paid</div>
-                <div th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">$0.00</div>
-            </div>
+            <div class="row"><div>Subtotal</div><div th:text="${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">$0.00</div></div>
+            <div class="row"><div>Tax (8%)</div><div th:text="${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">$0.00</div></div>
+            <div class="row total"><div>Total Paid</div><div th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">$0.00</div></div>
         </div>
 
-        <!-- Global order-level actions -->
-        <div class="actions">
+
+        <!-- SHIPPING + QR + BARCODE (perfectly aligned) -->
+        <div class="ship-qr-bar">
+            <!-- Shipping address -->
+            <div class="card-lite">
+                <h3 class="title-small"><i class="fa-solid fa-location-dot"></i> Shipping address</h3>
+                <div style="white-space:pre-line;line-height:1.5">
+                    <div th:text="${order.customerName}">Customer Name</div>
+                    <div th:text="${order.phone}">5551234567</div>
+                    <div th:text="${order.street}">123 Main St, Apt 206</div>
+                    <div>
+                        <span th:text="${order.city}">Glen Allen</span>,
+                        <span th:text="${order.state}">VA</span>
+                        <span th:text="${order.zip}">23059</span>
+                    </div>
+                    <div th:text="${order.country}">United States</div>
+                </div>
+            </div>
+
+            <!-- QR -->
+            <div class="qr-and-barcode">
+                <div class="qr-panel">
+                    <h4>🔳 QR Code</h4>
+                    <div id="qrBox" style="width:260px;height:260px;border:1px dashed #e5e7eb;border-radius:12px;background:#fff"></div>
+                    <button id="btnDownloadQr" class="btn purple">
+                        <i class="fa-solid fa-qrcode"></i> Download QR (PNG)
+                    </button>
+                </div>
+
+                <div class="barcode-panel">
+                    <h4>▮▮ Barcode (Code-128)</h4>
+                    <svg id="barcodeSvg" style="width:260px;height:120px;border:1px dashed #e5e7eb;border-radius:12px;background:#fff"></svg>
+                    <button id="btnDownloadBarcode" class="btn btn-light" type="button"
+                            onclick="(function(){const s=document.getElementById('barcodeSvg');const blob=new Blob([s.outerHTML],{type:'image/svg+xml'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='shipping-barcode.svg';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);})();">
+                        Download Barcode (SVG)
+                    </button>
+                </div>
+            </div>
+
+
+            <div class="actions">
             <a class="btn track" th:href="@{/orders/{id}/track(id=${order.id})}">
                 <i class="fa-solid fa-truck"></i> Track Package
             </a>
@@ -186,12 +258,22 @@
                 <i class="fa-solid fa-file-invoice"></i> Download Invoice
             </a>
 
-            <!-- NEW: Pay now button for pending payment -->
-            <a class="btn pay"
-               th:if="${order.status == 'PENDING_PAYMENT'}"
+            <!-- Pay now for pending payment -->
+            <a class="btn pay" th:if="${order.status == 'PENDING_PAYMENT'}"
                th:href="@{/payment/checkout(orderId=${order.id})}">
                 <i class="fa-solid fa-credit-card"></i> Pay now
             </a>
+
+            <!-- NEW: Resend email confirmation (always visible if we have an email) -->
+            <form th:if="${order.email != null}"
+                  th:action="@{/orders/{id}/email(id=${order.id})}"
+                  method="post" style="display:inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button class="btn mail" type="submit">
+                    <i class="fa-solid fa-envelope"></i> Send email receipt
+                </button>
+            </form>
+
 
             <form th:if="${order.status == 'PENDING_PAYMENT' or order.status == 'PENDING_COD' or order.status == 'PAID'}"
                   th:action="@{/orders/{id}/cancel(id=${order.id})}" method="post">
@@ -201,14 +283,12 @@
 
             <form
                     th:if="${#lists.contains({'DELIVERED','SHIPPED','PAID'}, order.status)
-                        and order.createdAt != null
-                        and #temporals.createNow().minusDays(30).isBefore(order.createdAt)}"
+                       and order.createdAt != null
+                       and #temporals.createNow().minusDays(30).isBefore(order.createdAt)}"
                     th:action="@{/orders/{id}/return(id=${order.id})}"
                     method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                <button class="btn return" type="submit">
-                    <i class="fa-solid fa-rotate-left"></i> Return Order
-                </button>
+                <button class="btn return" type="submit"><i class="fa-solid fa-rotate-left"></i> Return Order</button>
             </form>
         </div>
     </section>
@@ -219,6 +299,77 @@
         <p>&copy; <span th:text="${T(java.time.Year).now()}">2025</span> The Spice Jar. All rights reserved.</p>
     </div>
 </footer>
+
+<!-- QR & Barcode libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js" defer></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // ==== 1) Build the shipping text for QR ====
+        // These come from your model; keep the fallbacks to avoid "undefined"
+        const name    = /*[[${order.customerName}]]*/ '' || '';
+        const phone   = /*[[${order.phone}]]*/ '' || '';
+        const street  = /*[[${order.street}]]*/ '' || '';
+        const city    = /*[[${order.city}]]*/ '' || '';
+        const state   = /*[[${order.state}]]*/ '' || '';
+        const zip     = /*[[${order.zip}]]*/ '' || '';
+        const country = /*[[${order.country}]]*/ '' || '';
+
+        const qrText = [
+            name,
+            phone,
+            street,
+            `${city}, ${state} ${zip}`.trim(),
+            country
+        ].filter(Boolean).join('\n');
+
+        // ==== 2) Render QR ====
+        const qrBox = document.getElementById('qrBox');
+        if (qrBox && window.QRCode) {
+            // Clear previous if any (reloads etc)
+            qrBox.innerHTML = '';
+            const qr = new QRCode(qrBox, {
+                text: qrText || 'No address',
+                width: 260,
+                height: 260,
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        } else {
+            console.warn('QR code container or library not ready');
+        }
+
+        // ==== 3) Download QR as PNG ====
+        const dlQrBtn = document.getElementById('btnDownloadQr');
+        if (dlQrBtn) {
+            dlQrBtn.addEventListener('click', function () {
+                const canvas = qrBox?.querySelector('canvas');
+                if (!canvas) return;
+                const url = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `shipping-qr-order-${/*[[${order.id}]]*/ 'order'}.png`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            });
+        }
+
+        // ==== 4) Render barcode (Code-128) — you already see this working, kept for completeness ====
+        const barcodeEl = document.getElementById('barcodeSvg');
+        const codeText = `${/*[[${order.confirmationNumber}]]*/ ''}`.trim() || `ORD-${/*[[${order.id}]]*/ '0'}`;
+        if (barcodeEl && window.JsBarcode) {
+            JsBarcode(barcodeEl, codeText, {
+                format: 'CODE128',
+                width: 2,
+                height: 70,
+                displayValue: false,
+                margin: 10
+            });
+        }
+    });
+</script>
+
 
 </body>
 </html>
