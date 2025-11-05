@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>The Spice Jar</title>
 
-    <!-- CSRF for Spring Security (chat + cart) -->
+    <!-- CSRF -->
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
-    <!-- SEO / Social -->
+    <!-- SEO -->
     <meta name="description" content="Premium Indian spices and blends delivered fresh. Shop bestsellers like Garam Masala, Turmeric, and more."/>
     <meta property="og:title" content="The Spice Jar"/>
     <meta property="og:description" content="Premium Indian spices & blends delivered fresh."/>
@@ -29,6 +29,29 @@
 
         /* Promo bar */
         .promo { background:#0f5132;color:#fff;padding:6px 6%;font-weight:700;text-align:center }
+        .promo a{ color:#b8ffd6; text-decoration:underline }
+
+        /* ===== Coupon Ticker (top) ===== */
+        .coupon-ticker-wrap{
+            background:#0a3624; color:#d9fbe5; border-top:1px solid #0c3f2a; border-bottom:1px solid #0c3f2a;
+            position:relative; overflow:hidden;
+        }
+        .coupon-ticker{
+            display:flex; gap:28px; padding:8px 0; will-change:transform;
+            animation: ticker 28s linear infinite;
+        }
+        .coupon-chip{
+            display:inline-flex; gap:8px; align-items:center; padding:6px 12px; border-radius:999px;
+            background:#104d33; border:1px solid #1b6a47; color:#c7f8df; font-weight:700; white-space:nowrap;
+        }
+        .coupon-chip .val{ color:#94f1bd; font-weight:800 }
+        .coupon-chip .min{ color:#bdebd4; font-weight:600 }
+        @keyframes ticker{
+            0%{ transform: translateX(0) }
+            100%{ transform: translateX(-50%) }
+        }
+        .ticker-inner{ display:flex; gap:28px; padding:0 6%; }
+        .ticker-ghost{ display:flex; gap:28px; padding-right:6%; }
 
         /* Navbar */
         .navbar{
@@ -49,25 +72,17 @@
             border:none; border-radius:999px; padding:9px 12px; background:var(--green); color:#fff; cursor:pointer;
         }
         .nav-search button:hover{background:var(--accent);}
-
         .nav-links{display:flex; align-items:center; gap:18px; margin-left:auto;}
         .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
         .nav-links a:hover{color:#218838}
-
         .dropdown{position:relative}
         .dropdown-toggle{background:none; border:none; cursor:pointer; font-size:15px; color:#333; display:flex; align-items:center; gap:6px}
         .dropdown-menu{display:none; position:absolute; right:0; top:100%; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1); border-radius:6px; overflow:hidden; min-width:180px}
         .dropdown:hover .dropdown-menu{display:block}
         .dropdown-menu a, .dropdown-menu span{display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap}
         .dropdown-menu a:hover{background:#f4f4f4}
-
-        /* Cart badge */
         .cart-icon-container { position: relative; display: inline-block; }
-        .cart-count-badge {
-            position: absolute; top: -8px; right: -8px; background-color: var(--accent);
-            color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; text-align: center;
-        }
+        .cart-count-badge { position: absolute; top: -8px; right: -8px; background-color: var(--accent); color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; text-align: center; }
 
         /* Hero */
         .hero{
@@ -77,8 +92,8 @@
         }
         .hero-left h1{font-size:40px; line-height:1.15; margin:0 0 12px}
         .cta{background:#fff; color:var(--green); padding:10px 18px; border-radius:30px; text-decoration:none; font-weight:600}
-        .hero-right { position: relative; }
-        .hero-image-revolver { position: relative; width: 420px; height: 280px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,.2); }
+        .hero-right { position: relative; display:flex; gap:18px; align-items:stretch; }
+        .hero-image-revolver { position: relative; width: 420px; height: 280px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,.2); overflow:hidden }
         .hero-image-revolver img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; animation: fade 16s infinite; }
         .hero-image-revolver img:nth-child(1) { animation-delay: 0s; }
         .hero-image-revolver img:nth-child(2) { animation-delay: 4s; }
@@ -86,12 +101,27 @@
         .hero-image-revolver img:nth-child(4) { animation-delay: 12s; }
         @keyframes fade { 0%{opacity:0} 5%{opacity:1} 25%{opacity:1} 30%{opacity:0} 100%{opacity:0} }
 
-        /* Category chips */
+        /* ===== Rotating coupon pills (hero) ===== */
+        .coupon-rotator{
+            width: 260px; align-self:center;
+            display:grid; gap:10px; height: 280px; padding:8px;
+        }
+        .coupon-pill{
+            background:#eef6f0; color:#14532d; border:1px solid #cfe9d8;
+            padding:10px 12px; border-radius:12px; font-weight:700; box-shadow:0 6px 18px rgba(0,0,0,.12);
+            opacity:0; transform: translateY(10px); animation: pillfade 16s infinite;
+        }
+        .coupon-pill small{ display:block; color:#256d47; font-weight:600 }
+        .coupon-pill:nth-child(1){ animation-delay: 0s }
+        .coupon-pill:nth-child(2){ animation-delay: 4s }
+        .coupon-pill:nth-child(3){ animation-delay: 8s }
+        .coupon-pill:nth-child(4){ animation-delay: 12s }
+        @keyframes pillfade{ 0%{opacity:0; transform:translateY(10px)} 5%{opacity:1; transform:translateY(0)} 25%{opacity:1} 30%{opacity:0; transform:translateY(-6px)} 100%{opacity:0} }
+
+        /* Chips / product cards / sections / footer — unchanged */
         .chipbar{padding:12px 6%;display:flex;gap:10px;flex-wrap:wrap;background:#fff}
         .chip{border:1px solid #dfe6df;background:#fff;color:#333;padding:8px 12px;border-radius:999px;font-weight:700;text-decoration:none}
         .chip:hover{border-color:#218838;color:#218838}
-
-        /* Product grid */
         .menu-section{padding:40px 6%}
         .menu-section h2{text-align:center; margin:0 0 24px; color:var(--green)}
         .cards{display:flex; flex-wrap:wrap; gap:24px; justify-content:center}
@@ -102,20 +132,11 @@
         .btn-order{background:var(--green); color:#fff; padding:10px 16px; border-radius:30px; border:none; cursor:pointer}
         .btn-order:hover{background:var(--accent)}
         .order-now-wrap{display:flex; justify-content:center; margin-top:22px}
-        .order-now{
-            display:inline-flex; align-items:center; gap:8px;
-            background:var(--green); color:#fff; font-weight:800;
-            padding:12px 18px; border-radius:999px; text-decoration:none;
-            box-shadow:0 8px 24px rgba(0,0,0,.12);
-        }
+        .order-now{display:inline-flex; align-items:center; gap:8px;background:var(--green); color:#fff; font-weight:800;padding:12px 18px; border-radius:999px; text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.12);}
         .order-now:hover{background:var(--accent)}
-
-        /* Sections */
         .section{padding:30px 6%;background:#fff}
         .section h2{color:#218838;text-align:center;margin:0 0 16px}
         .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-
-        /* Footer */
         .site-footer{background:#222; color:#fff; padding:40px 6%; margin-top:40px}
         .footer-container{display:flex; flex-wrap:wrap; justify-content:space-between; gap:30px; margin-bottom:30px}
         .footer-column{flex:1; min-width:220px}
@@ -125,52 +146,47 @@
         .footer-column ul li a{text-decoration:none; color:#ccc; display:block; padding:5px 0; font-size:14px; transition:color .3s}
         .footer-column ul li a:hover{color:#fff}
         .footer-bottom{text-align:center; padding-top:20px; border-top:1px solid #444; font-size:14px}
-
-        @media (max-width: 900px){
-            .nav-links{display:none}
-        }
-
-        /* Chat (existing styles) */
-        .sj-chat-toggle {
-            position: fixed; right: 20px; bottom: 20px; z-index: 1200;
-            width: 56px; height: 56px; border-radius: 50%;
-            display: grid; place-items: center; border: none; cursor: pointer;
-            background: var(--green); color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.2);
-        }
-        .sj-chat-toggle:hover { background: var(--accent); }
-        .sj-chat { position: fixed; right: 20px; bottom: 92px; z-index: 1200; width: 340px; max-height: 70vh; border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 20px 40px rgba(0,0,0,.2); display: none; flex-direction: column; }
-        .sj-chat.open { display: flex; }
-        .sj-chat__header { background: var(--green); color: #fff; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
-        .sj-chat__title { font-weight: 700; font-size: 15px; }
-        .sj-chat__subtitle { font-size: 12px; opacity: .9; }
-        .sj-chat__body { padding: 12px; background: #f7faf7; overflow-y: auto; flex: 1; }
-        .sj-msg { display: flex; gap: 8px; margin-bottom: 10px; }
-        .sj-msg.bot .bubble { background: #fff; color: #222; border: 1px solid #eee; }
-        .sj-msg.user { justify-content: flex-end; }
-        .sj-msg.user .bubble { background: var(--green); color:#fff; }
-        .bubble { max-width: 78%; padding: 10px 12px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06); font-size: 14px; line-height: 1.35; }
-        .sj-chat__quick { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
-        .sj-chip { border:1px solid #dfe6df; background:#fff; color:#333; padding:6px 10px; border-radius:20px; cursor:pointer; font-size:12px; }
-        .sj-chip:hover { border-color: var(--green); color: var(--green); }
-        .sj-chat__input { padding:10px; background:#fff; border-top:1px solid #eee; display:flex; gap:8px; }
-        .sj-chat__input input { flex:1; border:1px solid #ddd; border-radius:20px; padding:10px 12px; outline:none; font-size:14px; background:#fff; }
-        .sj-send { border:none; background:var(--green); color:#fff; border-radius:20px; padding:0 14px; cursor:pointer; font-weight:600; }
-        .sj-send:disabled { opacity:.6; cursor:not-allowed; }
-
-        /* Toast + Back to top */
-        #sj-toast{position:fixed;right:20px;bottom:20px;background:#111;color:#fff;padding:12px 14px;border-radius:10px;display:none;box-shadow:0 10px 24px rgba(0,0,0,.3);z-index:1300}
-        #backTop{position:fixed;right:20px;bottom:90px;display:none;border:0;border-radius:50%;width:42px;height:42px;background:#111;color:#fff;cursor:pointer}
-        .social-links a { color: #ccc; text-decoration: none; font-size: 20px; margin-right: 15px; transition: color 0.3s; }
-        .social-links a:hover { color: var(--green); }
-        .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid #444; font-size: 14px; }
-        @media (max-width: 768px) { .footer-container { flex-direction: column; text-align: center; } .footer-column { margin-bottom: 20px; } }
+        @media (max-width: 900px){ .nav-links{display:none} }
     </style>
 </head>
 <body>
 
-<!-- Promo bar -->
+<!-- Promo -->
 <div class="promo">
-    Free shipping on orders over $35 • <a href="/menu" style="color:#b8ffd6;text-decoration:underline">Shop now</a>
+    Free shipping on orders over $35 • <a href="/menu">Shop now</a>
+</div>
+
+
+
+
+<!-- ===== Coupon Ticker (only if coupons exist) ===== -->
+<div class="coupon-ticker-wrap" th:if="${availableCoupons != null and !#lists.isEmpty(availableCoupons)}" aria-label="Active coupons">
+    <div class="coupon-ticker">
+        <div class="ticker-inner">
+      <span class="coupon-chip" th:each="c : ${availableCoupons}">
+        <i class="fa-solid fa-tags" aria-hidden="true"></i>
+        <span th:text="${c.code}">SAVE10</span>
+        <span class="val" th:text="${c.type.name()=='PERCENT' ? (c.value + '%') : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT'))}">10%</span>
+        <span class="min" th:if="${c.minSubtotal != null and c.minSubtotal > 0}"
+              th:text="${'Min $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">Min $20.00</span>
+        <span th:if="${c.expiresOn != null}">&nbsp;• ends&nbsp;<span th:text="${#temporals.format(c.expiresOn,'MMM d')}">Dec 31</span></span>
+      </span>
+        </div>
+
+
+
+        <!-- duplicate lane for seamless loop -->
+<!--        <div class="ticker-ghost">-->
+<!--      <span class="coupon-chip" th:each="c : ${availableCoupons}">-->
+<!--        <i class="fa-solid fa-tags" aria-hidden="true"></i>-->
+<!--        <span th:text="${c.code}">SAVE10</span>-->
+<!--        <span class="val" th:text="${c.type.name()=='PERCENT' ? (c.value + '%') : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT'))}">10%</span>-->
+<!--        <span class="min" th:if="${c.minSubtotal != null and c.minSubtotal > 0}"-->
+<!--              th:text="${'Min $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">Min $20.00</span>-->
+<!--        <span th:if="${c.expiresOn != null}">&nbsp;• ends&nbsp;<span th:text="${#temporals.format(c.expiresOn,'MMM d')}">Dec 31</span></span>-->
+<!--      </span>-->
+<!--        </div>-->
+    </div>
 </div>
 
 <!-- Navbar -->
@@ -180,7 +196,6 @@
         <span>SpiceJar</span>
     </a>
 
-    <!-- Compact search -> /menu?q=... -->
     <form class="nav-search" role="search" onsubmit="return false;">
         <input id="nav-q" type="search" placeholder="Search spices…" aria-label="Search" th:value="${q}">
         <button id="nav-search-btn" type="button" aria-label="Search">
@@ -199,7 +214,6 @@
         </a>
         <a th:href="@{/contact}">Contact Us</a>
 
-        <!-- Account -->
         <div class="dropdown">
             <button class="dropdown-toggle">
                 <i class="fas fa-user"></i>
@@ -226,16 +240,35 @@
         <p>Discover a world of aromatic spices, curated for your culinary adventures.</p>
         <a href="#menu" class="cta">Explore Spices</a>
     </div>
+
     <div class="hero-right">
         <div class="hero-image-revolver">
-            <img loading="eager" decoding="async" width="420" height="280" sizes="(max-width: 600px) 90vw, 420px"
-                 th:src="@{/images/spices-about.jpeg}" alt="Assorted spices on a tray"/>
-            <img loading="lazy" decoding="async" width="420" height="280" sizes="(max-width: 600px) 90vw, 420px"
+            <img loading="eager" decoding="async" width="420" height="280"
+                 th:src="@{/images/spices-about.jpeg}" alt="Assorted spices"/>
+            <img loading="lazy" decoding="async" width="420" height="280"
                  th:src="@{/images/chilli powder.jpeg}" alt="Chili powder"/>
-            <img loading="lazy" decoding="async" width="420" height="280" sizes="(max-width: 600px) 90vw, 420px"
+            <img loading="lazy" decoding="async" width="420" height="280"
                  th:src="@{/images/download (2).jpeg}" alt="Cloves"/>
-            <img loading="lazy" decoding="async" width="420" height="280" sizes="(max-width: 600px) 90vw, 420px"
+            <img loading="lazy" decoding="async" width="420" height="280"
                  th:src="@{/images/download (3).jpeg}" alt="Cardamom pods"/>
+        </div>
+
+        <!-- ===== Rotating coupons (only if any) ===== -->
+        <div class="coupon-rotator" th:if="${availableCoupons != null and !#lists.isEmpty(availableCoupons)}">
+            <!-- show up to 4 without using #lists.take -->
+            <div class="coupon-pill"
+                 th:each="c, stat : ${availableCoupons}"
+                 th:if="${stat.index < 4}">
+                <div>
+                    <i class="fa-solid fa-tags" aria-hidden="true"></i>
+                    <span th:text="${c.code}">SAVE10</span>
+                    <span>—</span>
+                    <b th:text="${c.type.name()=='PERCENT' ? (c.value + '%') : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT'))}">10%</b>
+                </div>
+                <small th:if="${c.minSubtotal != null and c.minSubtotal > 0}"
+                       th:text="${'Min $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">Min $20.00</small>
+                <small th:if="${c.expiresOn != null}" th:text="${'Ends ' + #temporals.format(c.expiresOn,'MMM d')}">Ends Dec 31</small>
+            </div>
         </div>
     </div>
 </section>
@@ -248,20 +281,17 @@
     <a class="chip" href="/menu?category=Herbs">Herbs</a>
 </div>
 
-<!-- Product grid -->
+<!-- Product grid (first 4) -->
 <section id="menu" class="menu-section">
     <h2>Best Sellers</h2>
 
     <div class="cards">
-        <!-- Show only first 4 items -->
         <div class="card" th:each="product, stat : ${products}" th:if="${stat.index < 4}">
-            <img loading="lazy" decoding="async" width="280" height="200" sizes="(max-width: 600px) 92vw, 280px"
+            <img loading="lazy" decoding="async" width="280" height="200"
                  th:src="@{${#strings.isEmpty(product.imageUrl) ? '/images/chilli%20powder.jpeg' : product.imageUrl}}"
                  alt="Spices Product"/>
             <div class="card-body">
-                <!-- star + badge -->
                 <div class="row" style="justify-content:center;gap:6px;margin-bottom:6px;display:flex">
-
                     <span class="pill">Bestseller</span>
                 </div>
 
@@ -354,186 +384,49 @@
             </div>
         </div>
     </div>
-    <div class="footer-bottom">
-        <p>&copy; 2025 The Spice Jar. All rights reserved.</p>
-    </div>
+    <div class="footer-bottom"><p>&copy; 2025 The Spice Jar. All rights reserved.</p></div>
 </footer>
 
-<!-- Chat toggle -->
-<button class="sj-chat-toggle" id="sj-toggle" aria-label="Chat with Spice AI">
-    <i class="fa-solid fa-comment"></i>
-</button>
-
-<!-- Chat panel -->
-<div class="sj-chat" id="sj-chat" aria-live="polite" aria-label="Chat window">
-    <div class="sj-chat__header">
-        <div>
-            <div class="sj-chat__title">Spice AI</div>
-            <div class="sj-chat__subtitle">Ask about menu, add to cart, checkout…</div>
-        </div>
-    </div>
-    <div class="sj-chat__body" id="sj-body">
-        <div class="sj-msg bot"><div class="bubble">Hi! I’m Spice AI 🌶️ Try “find turmeric”, “add garam masala 2”, or “checkout”.</div></div>
-        <div class="sj-chat__quick" id="sj-quick">
-            <button class="sj-chip" data-q="find turmeric">Find turmeric</button>
-            <button class="sj-chip" data-q="add cumin 2">Add cumin 2</button>
-            <button class="sj-chip" data-q="checkout">Checkout</button>
-        </div>
-    </div>
-    <div class="sj-chat__input">
-        <input id="sj-input" type="text" placeholder="Type your message…"/>
-        <button class="sj-send" id="sj-send" disabled>Send</button>
-    </div>
-</div>
-
-<!-- Toast + Back to top -->
-<div id="sj-toast">Added to cart ✓</div>
-<button id="backTop" aria-label="Back to top">↑</button>
-
-<!-- Example JSON-LD (static sample; you can render dynamically later) -->
-<script type="application/ld+json">
-    {
-        "@context":"https://schema.org",
-        "@type":"Product",
-        "name":"Garam Masala",
-        "image":"/images/chilli%20powder.jpeg",
-        "description":"Aromatic blend for curries.",
-        "brand": {"@type": "Brand","name": "SpiceJar"},
-        "aggregateRating": {"@type":"AggregateRating","ratingValue":"4.8","reviewCount":"215"},
-        "offers": {"@type":"Offer","priceCurrency":"USD","price":"6.99","availability":"https://schema.org/InStock"}
-    }
-</script>
-
 <script>
-    (function () {
+    (function(){
         const csrf       = document.querySelector('meta[name="_csrf"]')?.content || '';
         const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
 
-        /* ---- NAV SEARCH: /menu?q=... ---- */
         const qInput = document.getElementById('nav-q');
         const goSearch = () => {
             const q = (qInput?.value || '').trim();
-            const url = q ? `/menu?q=${encodeURIComponent(q)}` : '/menu';
-            window.location.href = url;
+            window.location.href = q ? `/menu?q=${encodeURIComponent(q)}` : '/menu';
         };
         document.getElementById('nav-search-btn')?.addEventListener('click', goSearch);
         qInput?.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); goSearch(); }});
 
-        // keyboard shortcut: focus with '/', blur with ESC
-        document.addEventListener('keydown', (e)=>{
-            if (!qInput) return;
-            const tag = (document.activeElement?.tagName || '').toLowerCase();
-            if(e.key==='/' && tag!=='input' && tag!=='textarea'){
-                e.preventDefault(); qInput.focus();
-            }
-            if(e.key==='Escape' && document.activeElement===qInput){ qInput.blur(); }
-        });
-
-        /* ---- CART: update badge + toast + analytics ---- */
         function updateCartCount(count){
             const el=document.getElementById('lblCartCount'); if(el && Number.isFinite(count)) el.textContent=String(count);
         }
         const toast=(msg)=>{
-            const t=document.getElementById('sj-toast'); if(!t) return;
+            let t=document.getElementById('sj-toast');
+            if(!t){ t=document.createElement('div'); t.id='sj-toast'; t.style.cssText='position:fixed;right:20px;bottom:20px;background:#111;color:#fff;padding:12px 14px;border-radius:10px;display:block;box-shadow:0 10px 24px rgba(0,0,0,.3);z-index:1300'; document.body.appendChild(t); }
             t.textContent=msg; t.style.display='block';
             setTimeout(()=>t.style.display='none',1600);
         };
-        const logEvent=(name, data)=> {
-            try {
-                const b = new Blob([JSON.stringify({name, data, ts:Date.now()})], {type:'application/json'});
-                if (!navigator.sendBeacon || !navigator.sendBeacon('/api/analytics', b)) {
-                    // fallback
-                    fetch('/api/analytics', {method:'POST', body:b, headers:{[csrfHeader]: csrf}});
-                }
-            } catch(e){ /* ignore */ }
-        };
 
-        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn=>{
+            btn.addEventListener('click', async (e)=>{
                 const productId = e.currentTarget.getAttribute('data-product-id');
-                const price     = Number(e.currentTarget.getAttribute('data-product-price'));
                 try{
                     const res = await fetch(`/cart/add?productId=${productId}&qty=1`, {
-                        method: 'POST',
-                        headers: {'Content-Type':'application/json', [csrfHeader]: csrf}
+                        method:'POST',
+                        headers:{'Content-Type':'application/json',[csrfHeader]:csrf}
                     });
-                    if(!res.ok) throw new Error('HTTP ' + res.status);
                     const data = await res.json();
                     if (data.status === 'success') {
                         if (typeof data.cartCount !== 'undefined') updateCartCount(data.cartCount);
                         toast('Added to cart ✓');
-                        logEvent('add_to_cart', { productId, price });
                     }
-                }catch(err){
-                    console.error(err);
-                    toast('Could not add to cart');
-                }
+                }catch(err){ console.error(err); toast('Could not add to cart'); }
             });
         });
-
-        /* ---- Chat widget (unchanged behavior) ---- */
-        const toggle = document.getElementById('sj-toggle');
-        const panel  = document.getElementById('sj-chat');
-        const body   = document.getElementById('sj-body');
-        const input  = document.getElementById('sj-input');
-        const send   = document.getElementById('sj-send');
-        const quick  = document.getElementById('sj-quick');
-        const cartBadge = document.getElementById('lblCartCount');
-
-        const addMsg=(role,text,actions)=>{
-            const row=document.createElement('div');
-            row.className='sj-msg ' + (role==='user'?'user':'bot');
-            const b=document.createElement('div'); b.className='bubble'; b.textContent=text;
-            row.appendChild(b); body.appendChild(row);
-            if(actions && actions.length){
-                const wrap=document.createElement('div'); wrap.className='sj-actions';
-                actions.forEach(a=>{
-                    const link=document.createElement('a');
-                    link.className='sj-action'; link.href=a.url; link.textContent=a.label;
-                    wrap.appendChild(link);
-                });
-                body.appendChild(wrap);
-            }
-            body.scrollTop = body.scrollHeight;
-        };
-
-        toggle?.addEventListener('click', ()=> panel.classList.toggle('open'));
-        input?.addEventListener('input', ()=> send.disabled = !input.value.trim());
-
-        quick?.addEventListener('click', (e)=>{
-            const btn = e.target.closest('[data-q]'); if(!btn) return;
-            input.value = btn.getAttribute('data-q');
-            send.disabled = !input.value.trim();
-            send.click();
-        });
-
-        async function sendMsg(){
-            const text = input.value.trim(); if(!text) return;
-            addMsg('user', text); input.value=''; send.disabled=true;
-            try{
-                const r = await fetch('/api/chat', {
-                    method:'POST',
-                    headers: {'Content-Type':'application/json', [csrfHeader]: csrf},
-                    body: JSON.stringify({ text })
-                });
-                const data = await r.json();
-                const reply   = data.text ?? data.reply ?? 'Okay.';
-                const actions = data.actions ?? null;
-                const count   = data.cartCount;
-                addMsg('bot', reply, actions);
-                if(typeof count !== 'undefined' && cartBadge) cartBadge.textContent = String(count);
-            }catch{ addMsg('bot','Sorry, I had trouble answering. Please try again.'); }
-            finally{ send.disabled = !input.value.trim(); }
-        }
-        send?.addEventListener('click', sendMsg);
-        input?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') sendMsg(); });
-
-        /* ---- Back to top ---- */
-        const bt = document.getElementById('backTop');
-        window.addEventListener('scroll',()=>{ bt.style.display = window.scrollY>300?'block':'none'; });
-        bt.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
     })();
 </script>
-
 </body>
 </html>

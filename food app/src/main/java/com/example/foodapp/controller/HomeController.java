@@ -1,9 +1,12 @@
 package com.example.foodapp.controller;
 
 import com.example.foodapp.model.ChatProductDTO;
+import com.example.foodapp.model.Coupon;
 import com.example.foodapp.model.Product;
 import com.example.foodapp.model.ProductVariant;
+import com.example.foodapp.repository.CouponRepository;
 import com.example.foodapp.service.CategoryService;
+import com.example.foodapp.service.CouponService;
 import com.example.foodapp.service.ProductService;
 import com.example.foodapp.service.ReviewService;
 import com.example.foodapp.util.Cart;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,13 +45,16 @@ public class HomeController {
 
 
 
-    public HomeController(ProductService productService, ReviewService reviewService, CategoryService categoryService) {
+    private final CouponRepository couponRepository;
+
+
+
+    public HomeController(ProductService productService, ReviewService reviewService, CategoryService categoryService,  CouponRepository couponRepository) {
         this.productService = productService;
         this.reviewService = reviewService;
-
         this.categoryService = categoryService;
+        this.couponRepository = couponRepository;
     }
-
 
 
 
@@ -59,15 +66,39 @@ public class HomeController {
 
     @GetMapping("/")
     public String index(Model m, HttpSession session) {
+        var today = java.time.LocalDate.now();
+
+        java.util.List<com.example.foodapp.model.Coupon> coupons;
+        try {
+            coupons = couponRepository.findAll(); // or your typed finder
+        } catch (Exception e) {
+            coupons = java.util.Collections.emptyList();
+        }
+
+        coupons = coupons.stream()
+                .filter(c -> Boolean.TRUE.equals(c.getActive()))
+                .filter(c -> c.getStartsOn() == null || !today.isBefore(c.getStartsOn()))
+                .filter(c -> c.getExpiresOn() == null || !today.isAfter(c.getExpiresOn()))
+                .sorted(java.util.Comparator
+                        .comparing((com.example.foodapp.model.Coupon c) ->
+                                c.getStartsOn() == null ? java.time.LocalDate.MIN : c.getStartsOn())
+                        .thenComparing(com.example.foodapp.model.Coupon::getCode,
+                                String.CASE_INSENSITIVE_ORDER))
+                .toList();
+
+        System.out.println(">>> availableCoupons size = " + coupons.size()); // DEBUG
+
+        m.addAttribute("availableCoupons", coupons);
+        m.addAttribute("couponCount", coupons.size()); // DEBUG helper
+
         m.addAttribute("products", productService.findAll());
         var cart = session.getAttribute("CART");
-        if (cart != null) {
-            m.addAttribute("cartCount", CartUtils.getCartTotalQuantity((com.example.foodapp.util.Cart) cart));
-        } else {
-            m.addAttribute("cartCount", 0);
-        }
+        m.addAttribute("cartCount", cart != null
+                ? com.example.foodapp.util.CartUtils.getCartTotalQuantity((com.example.foodapp.util.Cart) cart)
+                : 0);
         return "index";
     }
+
 
 
 
@@ -237,6 +268,31 @@ public class HomeController {
 //    model.addAttribute("products", products);
 //    return "menu"; // menu.html view
 //}
+
+
+    private List<Coupon> loadActiveCouponsSafely() {
+        try {
+            // If you chose Option B in the repo, use this:
+            return couponRepository.findActiveCurrentlyValid(LocalDate.now());
+
+            // If you chose Option A instead, comment the line above and uncomment this:
+            // return couponRepository.findByActiveTrueOrderByStartsOnAscCodeAsc();
+
+        } catch (Exception ignored) {
+            // Fallback: filter + sort in memory
+            var today = LocalDate.now();
+            return couponRepository.findAll().stream()
+                    .filter(c -> Boolean.TRUE.equals(c.getActive()))
+                    .filter(c ->
+                            (c.getStartsOn() == null || !today.isBefore(c.getStartsOn())) &&
+                                    (c.getExpiresOn() == null || !today.isAfter(c.getExpiresOn()))
+                    )
+                    .sorted(Comparator
+                            .comparing((Coupon c) -> c.getStartsOn() == null ? LocalDate.MIN : c.getStartsOn())
+                            .thenComparing(Coupon::getCode, String.CASE_INSENSITIVE_ORDER))
+                    .toList();
+        }
+    }
 
 
 }
