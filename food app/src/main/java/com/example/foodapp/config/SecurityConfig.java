@@ -106,6 +106,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
@@ -204,6 +205,8 @@ public class SecurityConfig {
                                 "/forgotPassword", "/forgot-password",
                                 "/reset-password", "/reset-password/**",
                                 "/api/chat",
+                                // ✅ allow the coupon API
+                                "/api/cart/coupon/**",
                                 "/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**",
                                 "/menu", "/menu/**"
                         ).permitAll()
@@ -221,11 +224,15 @@ public class SecurityConfig {
                         .userInfoEndpoint(u -> u.userService(oAuth2UserService))
                         .successHandler(oAuth2LoginSuccessHandler)
                 )
-                // Keep CSRF, ignore for your chat API
-                .csrf(csrf -> csrf.ignoringRequestMatchers(new AntPathRequestMatcher("/api/chat")))
+                // ✅ Expose CSRF token via cookie so your JS can send it back.
+                //    Keep ignoring only /api/chat as you had before.
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .ignoringRequestMatchers(new AntPathRequestMatcher("/api/chat"))
+                )
                 .logout(l -> l.logoutSuccessUrl("/").permitAll());
 
-        // Critical: keep session "USER" in sync after any successful auth
+        // Keep session "USER" in sync after any successful auth
         http.addFilterAfter(new SyncSessionUserFilter(userService), SecurityContextHolderFilter.class);
 
         return http.build();

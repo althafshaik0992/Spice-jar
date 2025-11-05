@@ -300,6 +300,30 @@
             <div class="mt-2 font-semibold">Fulfill Orders</div>
             <div class="text-slate-400 text-sm">See pending shipments</div>
         </a>
+
+        <!-- Quick Action: Coupons -->
+        <a th:href="@{/admin/coupons}" class="card soft p-6 hover:bg-[#101a2c] transition group">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-ticket text-emerald-400"></i>
+                        <div class="font-semibold">Coupons</div>
+                    </div>
+                    <div class="text-slate-400 text-sm mt-1">Manage discount codes</div>
+                </div>
+                <span class="chip text-[11px] px-2 py-0.5">Promo</span>
+            </div>
+
+            <div class="mt-4 flex flex-wrap gap-2">
+                <a th:href="@{/admin/coupons}" class="inline-flex items-center gap-2 rounded-xl px-3 py-2 font-semibold bg-[#0f172a] text-slate-200 ring-subtle hover:bg-white/5">
+                    <i class="fa-solid fa-list"></i> List
+                </a>
+                <a th:href="@{/admin/coupons/new}" class="inline-flex items-center gap-2 rounded-xl px-3 py-2 font-semibold bg-emerald-500 text-[#082312] hover:bg-emerald-400">
+                    <i class="fa-solid fa-plus"></i> New
+                </a>
+            </div>
+        </a>
+
     </section>
 
     <footer class="pt-4 pb-10 text-center text[13px] text-slate-500">

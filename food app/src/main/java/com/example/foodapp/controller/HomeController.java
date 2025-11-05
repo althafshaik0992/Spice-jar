@@ -5,6 +5,7 @@ import com.example.foodapp.model.Product;
 import com.example.foodapp.model.ProductVariant;
 import com.example.foodapp.service.CategoryService;
 import com.example.foodapp.service.ProductService;
+import com.example.foodapp.service.ReviewService;
 import com.example.foodapp.util.Cart;
 import com.example.foodapp.util.CartUtils;
 import com.example.foodapp.util.GlobalData;
@@ -30,6 +31,8 @@ public class HomeController {
 
     private final ProductService productService;
 
+    private final ReviewService reviewService;
+
 
 
     private ChatProductDTO chatProduct;
@@ -38,8 +41,9 @@ public class HomeController {
 
 
 
-    public HomeController(ProductService productService, CategoryService categoryService) {
+    public HomeController(ProductService productService, ReviewService reviewService, CategoryService categoryService) {
         this.productService = productService;
+        this.reviewService = reviewService;
 
         this.categoryService = categoryService;
     }
@@ -168,6 +172,9 @@ public class HomeController {
     }
 
 
+
+
+
     @GetMapping("/menu")
     public String menu(
             @RequestParam(required = false) String q,
@@ -175,16 +182,27 @@ public class HomeController {
             @RequestParam(required = false) BigDecimal max,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false, defaultValue = "nameAsc") String sort,
-            Model m,HttpSession session
+            Model m, HttpSession session
     ) {
-//        var user = session.getAttribute("USER");
-//        if (user == null) return "redirect:/login";
         Cart cart = (Cart) session.getAttribute("CART");
         int cartCount = (cart != null) ? cart.getTotalQuantity() : 0;
-        m.addAttribute("products", productService.filter(q, min, max, categoryId, sort));
-        m.addAttribute("categories", categoryService.findAll());
 
-        // keep the current filter values so the form shows them
+        // 1) get the products ONCE
+        List<Product> products = productService.filter(q, min, max, categoryId, sort);
+        m.addAttribute("products", products);
+
+        // 2) compute maps using the SAME list
+        Map<Long, Double> avgMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, p -> reviewService.avg(p)));
+        Map<Long, Long> cntMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, p -> reviewService.count(p)));
+
+        // 3) add maps
+        m.addAttribute("avgMap", avgMap);
+        m.addAttribute("cntMap", cntMap);
+
+        // other model data
+        m.addAttribute("categories", categoryService.findAll());
         m.addAttribute("q", q);
         m.addAttribute("min", min);
         m.addAttribute("max", max);
@@ -192,8 +210,9 @@ public class HomeController {
         m.addAttribute("sort", sort);
         m.addAttribute("cartCount", cartCount);
 
-        return "menu"; // your menu.html
+        return "menu";
     }
+
 
 //
 //@GetMapping("/menu")

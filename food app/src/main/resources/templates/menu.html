@@ -8,7 +8,6 @@
           href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
         :root { --green:#218838; --accent:#b7410e; --dark:#111; }
         * { box-sizing: border-box; }
@@ -47,8 +46,11 @@
         .card{width:280px; border-radius:12px; overflow:hidden; background:#fff; box-shadow:0 6px 20px rgba(0,0,0,.08); display:flex; flex-direction:column}
         .card img{width:100%; height:200px; object-fit:cover}
         .card-body{padding:16px; text-align:center}
+        .btn-row{display:flex; gap:8px; justify-content:center; margin-top:10px; flex-wrap:wrap;}
         .btn-order{background:var(--green); color:#fff; padding:10px 16px; border-radius:30px; border:none; cursor:pointer}
         .btn-order:hover{background:var(--accent)}
+        .btn-view{background:#fff; color:#1e7e34; border:1px solid #d7eadf; padding:10px 16px; border-radius:30px; text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-weight:700;}
+        .btn-view:hover{background:#eef6f0}
         .empty{margin:18px 0; text-align:center; color:#666;}
 
         .choices{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:8px}
@@ -69,6 +71,10 @@
         .social-links a:hover { color: var(--green); }
         .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid #444; font-size: 14px; }
         @media (max-width: 768px) { .footer-container { flex-direction: column; text-align: center; } .footer-column { margin-bottom: 20px; } }
+
+        /* small helper */
+        .stars{ color:#f59e0b; display:flex; gap:2px; align-items:center; justify-content:center; margin-top:6px;}
+        .stars .muted{ color:#666; font-size:12px; margin-left:6px;}
     </style>
 </head>
 <body>
@@ -137,16 +143,43 @@
     <div th:if="${#lists.isEmpty(products)}" class="empty">No menu match your filters.</div>
 
     <div class="cards" th:if="${!#lists.isEmpty(products)}">
-        <!-- Each product card; we add helpful data-* so JS can merge duplicates by name -->
+        <!-- Each product card; data-* used by JS for merging & choices -->
         <div class="card"
              th:each="p : ${products}"
              th:attr="data-product-id=${p.id},
                       data-name=${p.name},
                       data-base-price=${p.price},
                       data-base-weight=${p.weight}">
-            <img th:src="${#strings.isEmpty(p.imageUrl) ? '/images/chilli%20powder.jpeg' : p.imageUrl}" alt="Product image"/>
+            <!-- Make image clickable to detail as well (nice UX) -->
+            <a th:href="@{/products/{id}(id=${p.id})}">
+                <img th:src="${#strings.isEmpty(p.imageUrl) ? '/images/chilli%20powder.jpeg' : p.imageUrl}" alt="Product image"/>
+            </a>
             <div class="card-body">
-                <h3 class="product-title" th:text="${p.name}">Product name</h3>
+                <h3 class="product-title">
+                    <a th:href="@{/products/{id}(id=${p.id})}" th:text="${p.name}" style="text-decoration:none; color:inherit">Product name</a>
+                </h3>
+
+                <!-- ⭐⭐⭐⭐⭐ stars from reviews (avg + count) with half-star logic -->
+                <!-- ⭐ Rating from reviews -->
+                <div class="stars"
+                     th:with="avg=${avgMap[p.id]} ?: 0,
+              rc=${cntMap[p.id]} ?: 0,
+              full=${T(java.lang.Math).floor(avg)},
+              rem=${avg - full},
+              half=${rem >= 0.25 and rem < 0.75},
+              roundUp=${rem >= 0.75},
+              full2=${full + (roundUp ? 1 : 0)},
+              empty=${5 - full2 - (half ? 1 : 0)}">
+                    <i class="fa-solid fa-star" th:each="i : ${#numbers.sequence(1, full)}"></i>
+                    <i class="fa-solid fa-star-half-stroke" th:if="${!roundUp and half}"></i>
+                    <i class="fa-regular fa-star" th:each="i : ${#numbers.sequence(1, empty)}"></i>
+                    <span class="muted">
+    <span th:text="${#numbers.formatDecimal(avg,1,'COMMA',1,'POINT')}">0.0</span>
+    (<span th:text="${rc}">0</span>)
+  </span>
+                </div>
+
+
                 <p th:text="${p.description}">Description</p>
 
                 <!-- Price -->
@@ -166,25 +199,24 @@
                             th:text="${#numbers.formatInteger(v.weight,1,'COMMA') + ' g'}">100 g</button>
                 </div>
 
-                <!-- Base meta when no variants -->
-<!--                <div class="meta" th:if="${#lists.isEmpty(p.variants)}">-->
-<!--                    <span class="pill" th:if="${p.weight != null}"-->
-<!--                          th:text="${#numbers.formatInteger(p.weight, 1, 'COMMA') + ' g'}">250 g</span>-->
-<!--                </div>-->
-
                 <br>
 
-                <!-- Add-to-cart form -->
-                <form th:action="@{/cart/add}" method="post" class="add-to-cart-form">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <!-- Both fields exist; JS will set one or both depending on the chosen chip -->
-                    <input type="hidden" name="productId" th:value="${p.id}"/>
-                    <input type="hidden" name="variantId" value=""/>
-                    <input type="hidden" name="qty" value="1"/>
-                    <button class="btn-order" type="submit">
-                        <i class="fas fa-shopping-cart"></i> Add to Cart
-                    </button>
-                </form>
+                <!-- Buttons row: View + Add-to-cart -->
+                <div class="btn-row">
+                    <a class="btn-view"  th:href="@{/products/{id}(id=${p.id})}">
+                        <i class="fa-regular fa-eye"></i> View
+                    </a>
+
+                    <form th:action="@{/cart/add}" method="post" class="add-to-cart-form" style="display:inline">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" name="productId" th:value="${p.id}"/>
+                        <input type="hidden" name="variantId" value=""/>
+                        <input type="hidden" name="qty" value="1"/>
+                        <button class="btn-order" type="submit">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -235,7 +267,6 @@
                 group.querySelectorAll('.choice').forEach(b=>b.setAttribute('aria-pressed','false'));
                 btn.setAttribute('aria-pressed','true');
 
-                // If this chip points to a plain product (no variant), it will have data-variant-id=""
                 pidInput.value = btn.getAttribute('data-product-id');
                 const vid = btn.getAttribute('data-variant-id');
                 if (vid) { vidInput.value = vid; } else { vidInput.value = ''; }
@@ -244,7 +275,6 @@
                 if (priceEl) priceEl.innerHTML = fmt(price);
             }
 
-            // Select the first chip by default
             const first = group.querySelector('.choice[aria-pressed="true"]') || group.querySelector('.choice');
             if (first) select(first);
 
@@ -254,7 +284,6 @@
             });
         }
 
-        // Build a chip for a "plain" product row (no variants)
         function makePlainChoice(productCard){
             const id = productCard.getAttribute('data-product-id');
             const weight = productCard.getAttribute('data-base-weight');
@@ -265,7 +294,7 @@
             btn.className = 'choice';
             btn.type = 'button';
             btn.setAttribute('data-product-id', id);
-            btn.setAttribute('data-variant-id', ''); // plain
+            btn.setAttribute('data-variant-id', '');
             btn.setAttribute('data-price', price);
             if (weight && weight !== 'null') {
                 btn.setAttribute('data-weight', weight);
@@ -276,12 +305,10 @@
             return btn;
         }
 
-        // Merge cards with the same name into one
         function mergeDuplicateProducts(){
             const cards = Array.from(document.querySelectorAll('.card[data-product-id]'));
             const byName = new Map();
 
-            // Collect cards by product name (case-insensitive)
             cards.forEach(card=>{
                 const name = (card.getAttribute('data-name') || card.querySelector('.product-title')?.textContent || '').trim().toLowerCase();
                 if (!name) return;
@@ -291,7 +318,6 @@
 
             byName.forEach(group=>{
                 if (group.length <= 1) {
-                    // Single card; ensure it has at least one chip for plain products
                     const only = group[0];
                     const existingChoices = only.querySelector('.choices');
                     const hasVariantButtons = existingChoices && existingChoices.querySelector('.choice');
@@ -312,43 +338,34 @@
                     return;
                 }
 
-                // We have duplicates – keep the first as primary
                 const primary = group[0];
                 let choices = primary.querySelector('.choices');
                 if (!choices) {
                     choices = document.createElement('div');
                     choices.className = 'choices';
-                    // insert choices just before the <br> (or before the add-to-cart form)
                     const body = primary.querySelector('.card-body');
                     const br = body.querySelector('br');
                     body.insertBefore(choices, br ? br : body.lastElementChild);
                 }
 
-                // Ensure the primary has a chip representing itself if it is a plain product
                 const hasRealVariantsPrimary = !!primary.querySelector('[data-variant-id]');
                 if (!hasRealVariantsPrimary) {
                     const btn = makePlainChoice(primary);
                     if (btn) {
-                        btn.setAttribute('aria-pressed','true'); // default
+                        btn.setAttribute('aria-pressed','true');
                         choices.appendChild(btn);
                     }
                 } else {
-                    // mark the first existing choice as selected by default
                     const firstChoice = choices.querySelector('.choice');
                     if (firstChoice) firstChoice.setAttribute('aria-pressed','true');
                 }
 
-                // Add chips from all secondary cards, then remove them
                 const prices = [];
                 const pushPrice = (p)=>{ const n=Number(p); if(!Number.isNaN(n)) prices.push(n); };
-
-                // Collect prices from already existing primary choices
                 choices.querySelectorAll('.choice').forEach(c=> pushPrice(c.getAttribute('data-price')));
 
                 for (let i = 1; i < group.length; i++){
                     const card = group[i];
-
-                    // 1) If the card has true variants, copy all of them as chips
                     const variantBtns = card.querySelectorAll('.choices .choice');
                     if (variantBtns.length > 0) {
                         variantBtns.forEach(src=>{
@@ -356,38 +373,32 @@
                             btn.className = 'choice';
                             btn.type = 'button';
                             btn.textContent = src.textContent;
-                            btn.setAttribute('data-product-id', src.getAttribute('data-product-id')); // its own product
+                            btn.setAttribute('data-product-id', src.getAttribute('data-product-id'));
                             btn.setAttribute('data-variant-id', src.getAttribute('data-variant-id'));
                             btn.setAttribute('data-price', src.getAttribute('data-price'));
                             choices.appendChild(btn);
                             pushPrice(src.getAttribute('data-price'));
                         });
                     } else {
-                        // 2) Plain product -> add one chip (weight/price)
                         const btn = makePlainChoice(card);
                         if (btn) {
                             choices.appendChild(btn);
                             pushPrice(btn.getAttribute('data-price'));
                         }
                     }
-
-                    // Remove the extra card from DOM
                     card.parentElement.removeChild(card);
                 }
 
-                // Update the primary "price" label to "From $x"
                 const priceEl = primary.querySelector('.price');
                 if (priceEl && prices.length > 0) {
                     const min = Math.min(...prices);
                     priceEl.innerHTML = 'From $ ' + min.toFixed(2);
                 }
 
-                // Wire up selection behavior on the merged choices
                 wireChoiceGroup(primary, choices);
             });
         }
 
-        // AJAX add to cart (unchanged)
         const badge = document.getElementById('lblCartCount');
         document.querySelectorAll('.add-to-cart-form').forEach(form=>{
             form.addEventListener('submit', async e=>{
@@ -428,9 +439,7 @@
             setTimeout(()=>t.remove(),1200);
         }
 
-        // Run the merge after the DOM is ready
         document.addEventListener('DOMContentLoaded', mergeDuplicateProducts);
-        // If Thymeleaf rendered before this script, also run immediately
         if (document.readyState !== 'loading') mergeDuplicateProducts();
     })();
 </script>

@@ -23,16 +23,8 @@
         .card{background:#fff; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.06); padding:18px}
         .imgbox img{width:100%; height:auto; border-radius:12px; object-fit:cover}
         .title{margin:0 0 6px; color:#111; font-size:26px; font-weight:800}
-        /* Navbar */
-        .navbar{
-            background:#fff; padding:6px 6%;
-            box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex; gap:16px; align-items:center; position:sticky; top:0; z-index:1000; height:60px;
-        }
-        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
-        .brand-logo video{width:36px; height:auto; border-radius:4px}
 
-        /* Nav search */
+        /* Nav search (kept for consistency) */
         .nav-search{flex:1; max-width:520px; display:flex; align-items:center; gap:8px}
         .nav-search input{
             width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:999px;
@@ -71,7 +63,7 @@
         .btn-primary{background:var(--green); color:#fff}
         .btn-primary:hover{background:var(--accent)}
         .pill{background:#eef6f0; border:1px solid #d7eadf; color:#1e7e34; padding:4px 10px; border-radius:999px; font-weight:600; font-size:13px}
-        .stars{color:#f59e0b}
+        .stars{color:#f59e0b; display:inline-flex; gap:2px; align-items:center}
         .section-title{font-size:18px; margin:18px 0 10px; font-weight:800}
         .review{border-top:1px dashed #e5efe5; padding:12px 0}
         .review h4{margin:4px 0 6px; font-size:15px}
@@ -82,7 +74,6 @@
         .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
         .crumbs{font-size:13px; margin-bottom:12px; color:#555}
         .crumbs a{color:#218838; text-decoration:none}
-        /* Sections */
         .section{padding:30px 6%;background:#fff}
         .section h2{color:#218838;text-align:center;margin:0 0 16px}
         .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
@@ -98,14 +89,11 @@
         .footer-column ul li a:hover{color:#fff}
         .footer-bottom{text-align:center; padding-top:20px; border-top:1px solid #444; font-size:14px}
 
-        @media (max-width: 900px){
-            .nav-links{display:none}
-        }
+        @media (max-width: 900px){ .nav-links{display:none} }
         .social-links a { color: #ccc; text-decoration: none; font-size: 20px; margin-right: 15px; transition: color 0.3s; }
         .social-links a:hover { color: var(--green); }
         .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid #444; font-size: 14px; }
         @media (max-width: 768px) { .footer-container { flex-direction: column; text-align: center; } .footer-column { margin-bottom: 20px; } }
-
     </style>
 </head>
 <body>
@@ -172,11 +160,19 @@
         <div class="card">
             <h1 class="title" th:text="${p.name}">Product Name</h1>
 
-            <!-- Rating summary -->
-            <div class="row" aria-label="Rating summary">
-                <div class="stars" th:with="avg=${avgRating}">
-                    <i class="fa-solid fa-star" th:each="i : ${#numbers.sequence(1,5)}"
-                       th:classappend="${i <= T(java.lang.Math).round(avg)} ? '' : ' fa-regular'"></i>
+            <!-- Rating summary with half-star logic -->
+            <div class="row" aria-label="Rating summary"
+                 th:with="avg=${avgRating} ?: 0,
+                          full=${T(java.lang.Math).floor(avg)},
+                          rem=${avg - full},
+                          half=${rem >= 0.25 and rem < 0.75},
+                          roundUp=${rem >= 0.75},
+                          full2=${full + (roundUp ? 1 : 0)},
+                          empty=${5 - full2 - (half ? 1 : 0)}">
+                <div class="stars">
+                    <i class="fa-solid fa-star" th:each="i : ${#numbers.sequence(1, full)}" style="font-size:18px"></i>
+                    <i class="fa-solid fa-star-half-stroke" th:if="${!roundUp and half}" style="font-size:18px"></i>
+                    <i class="fa-regular fa-star" th:each="i : ${#numbers.sequence(1, empty)}" style="font-size:18px"></i>
                 </div>
                 <div class="muted">
                     <span th:text="${#numbers.formatDecimal(avgRating,1,'COMMA',1,'POINT')}">0.0</span>/5
@@ -209,8 +205,8 @@
 
             <!-- Base pills -->
             <div class="row" style="margin:8px 0">
-        <span class="pill" th:if="${p.weight != null}"
-              th:text="${#numbers.formatInteger(p.weight,1,'COMMA') + ' g'}">250 g</span>
+                <span class="pill" th:if="${p.weight != null}"
+                      th:text="${#numbers.formatInteger(p.weight,1,'COMMA') + ' g'}">250 g</span>
                 <span class="pill" th:if="${p.category != null}" th:text="${p.category.name}">Category</span>
             </div>
 
@@ -234,8 +230,8 @@
         <div th:each="r : ${reviews}" class="review">
             <div class="row">
                 <div class="stars" th:with="n=${r.rating}">
-                    <i class="fa-solid fa-star" th:each="i:${#numbers.sequence(1,5)}"
-                       th:classappend="${i <= n} ? '' : ' fa-regular'"></i>
+                    <i class="fa-solid fa-star" th:each="i:${#numbers.sequence(1, n)}"></i>
+                    <i class="fa-regular fa-star" th:each="i:${#numbers.sequence(1, 5 - n)}"></i>
                 </div>
                 <div class="meta">
                     by <strong th:text="${r.user != null ? r.user.firstName : 'User'}">User</strong> ·
@@ -252,12 +248,12 @@
         <div class="section-title">Write a review</div>
 
         <div th:if="${!canReview}" class="muted">
-      <span th:if="${session.USER == null}">
-        Please <a th:href="@{/login}">log in</a> to write a review.
-      </span>
+          <span th:if="${session.USER == null}">
+            Please <a th:href="@{/login}">log in</a> to write a review.
+          </span>
             <span th:if="${session.USER != null}">
-        You’ve already reviewed this product. Thank you!
-      </span>
+            You’ve already reviewed this product. Thank you!
+          </span>
         </div>
 
         <form th:if="${canReview}" th:action="@{/products/{id}/reviews(id=${product.id})}" method="post">
@@ -284,10 +280,6 @@
         </form>
     </section>
 </main>
-
-
-
-
 
 <!-- Footer -->
 <footer class="site-footer">
@@ -319,8 +311,11 @@
         <p>&copy; 2025 The Spice Jar. All rights reserved.</p>
     </div>
 </footer>
+
 <script>
+
     (function(){
+        // variant chooser on details page
         const choices = document.querySelectorAll('.choice');
         const variantInput = document.querySelector('input[name="variantId"]');
         const priceEl = document.querySelector('.price');
@@ -344,6 +339,79 @@
             const btn = e.target.closest('.choice'); if (!btn) return;
             select(btn);
         });
+
+        // nav search -> /menu?q=...
+        const qInput = document.getElementById('nav-q');
+        const goSearch = () => {
+            const q = (qInput?.value || '').trim();
+            const url = q ? `/menu?q=${encodeURIComponent(q)}` : '/menu';
+            window.location.href = url;
+        };
+        document.getElementById('nav-search-btn')?.addEventListener('click', goSearch);
+        qInput?.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); goSearch(); }});
+    })();
+
+
+    (function () {
+        // ... keep your existing code ...
+
+        // === Add-to-cart (AJAX) for the product detail page ===
+        const cartBadge = document.getElementById('lblCartCount');
+        const cartForm  = document.querySelector('form[action$="/cart/add"]');
+
+        function toast(msg){
+            const t = document.createElement('div');
+            t.textContent = msg;
+            t.style.position='fixed';
+            t.style.right='20px';
+            t.style.bottom='20px';
+            t.style.background='#218838';
+            t.style.color='#fff';
+            t.style.padding='10px 14px';
+            t.style.borderRadius='12px';
+            t.style.boxShadow='0 6px 16px rgba(0,0,0,.2)';
+            t.style.zIndex='2000';
+            document.body.appendChild(t);
+            setTimeout(()=>t.remove(), 1400);
+        }
+
+        if (cartForm) {
+            cartForm.addEventListener('submit', async (e) => {
+                e.preventDefault(); // stay on the same page
+                const data = new URLSearchParams(new FormData(cartForm));
+                const csrf = cartForm.querySelector('input[name="_csrf"]')?.value;
+
+                try {
+                    const res = await fetch(cartForm.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {})
+                        },
+                        body: data
+                    });
+
+                    // If the server still sends HTML (not JSON), don't crash
+                    const text = await res.text();
+                    let out;
+                    try { out = JSON.parse(text); } catch { out = null; }
+
+                    if (out && out.status === 'success') {
+                        if (cartBadge) cartBadge.textContent = out.cartCount ?? 0;
+                        toast('Added to cart 🛒');
+                    } else {
+                        // fallback if server returned a redirect/html
+                        toast(out?.message || 'Added to cart');
+                        // best effort: bump badge if possible
+                        if (cartBadge && out?.cartCount != null) cartBadge.textContent = out.cartCount;
+                    }
+                } catch (err) {
+                    console.error('Add to cart error:', err);
+                    toast('Error adding to cart');
+                }
+            });
+        }
     })();
 </script>
 

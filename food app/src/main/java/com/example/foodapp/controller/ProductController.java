@@ -6,10 +6,11 @@ import com.example.foodapp.model.User;
 import com.example.foodapp.service.ProductService;
 import com.example.foodapp.service.ReviewService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 @RequestMapping("/products")
@@ -23,10 +24,12 @@ public class ProductController extends BaseController {
         this.reviewService = reviewService;
     }
 
-    @GetMapping("/products/{id}")
+    // ✅ FIX: map to /products/{id}, not /products/products/{id}
+    @GetMapping("/{id}")
     public String details(@PathVariable Long id, Model m, HttpSession session) {
         var p = productService.findById(id);
-        if (p == null) throw new IllegalArgumentException("Product not found");
+        if (p == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
+
         m.addAttribute("product", p);
 
         double avg = reviewService.avg(p);        // 0.0–5.0
@@ -38,10 +41,9 @@ public class ProductController extends BaseController {
         boolean reviewed = user != null && reviewService.userAlreadyReviewed(p.getId(), user.getId());
         m.addAttribute("canReview", user != null && !reviewed);
 
-        m.addAttribute("reviews", reviewService.list(p));  // List<Review> with getRating(), getTitle(), getComment(), etc.
-        return "product";
+        m.addAttribute("reviews", reviewService.list(p));  // List<Review>
+        return "product"; // templates/product.html
     }
-
 
     @PostMapping("/{id}/reviews")
     public String addReview(@PathVariable Long id,
@@ -50,8 +52,9 @@ public class ProductController extends BaseController {
                             @RequestParam String comment,
                             HttpSession session,
                             Model model) {
+
         Product p = productService.findById(id);
-        if (p == null) throw new IllegalArgumentException("Product not found");
+        if (p == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
 
         User user = currentUser(session);
         if (user == null) return "redirect:/login";
@@ -60,7 +63,6 @@ public class ProductController extends BaseController {
             return "redirect:/products/" + id + "?alreadyReviewed=1";
         }
 
-        // (optional) simple server-side checks
         if (rating < 1 || rating > 5 || title.isBlank() || comment.isBlank()) {
             return "redirect:/products/" + id + "?invalid=1";
         }
@@ -68,5 +70,4 @@ public class ProductController extends BaseController {
         reviewService.add(p, user, rating, title, comment);
         return "redirect:/products/" + id + "?reviewed=1";
     }
-
 }
