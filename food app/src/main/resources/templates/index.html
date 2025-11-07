@@ -13,7 +13,7 @@
     <meta name="description" content="Premium Indian spices and blends delivered fresh. Shop bestsellers like Garam Masala, Turmeric, and more."/>
     <meta property="og:title" content="The Spice Jar"/>
     <meta property="og:description" content="Premium Indian spices & blends delivered fresh."/>
-    <meta property="og:image" content="/images/spices-about.jpeg"/>
+    <meta property="og:image" content="/images/spicejar-main.jpg"/>
     <meta property="og:type" content="website"/>
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -31,14 +31,13 @@
         .promo { background:#0f5132;color:#fff;padding:6px 6%;font-weight:700;text-align:center }
         .promo a{ color:#b8ffd6; text-decoration:underline }
 
-        /* ===== Coupon Ticker (top) ===== */
+        /* Coupon ticker */
         .coupon-ticker-wrap{
             background:#0a3624; color:#d9fbe5; border-top:1px solid #0c3f2a; border-bottom:1px solid #0c3f2a;
             position:relative; overflow:hidden;
         }
         .coupon-ticker{
-            display:flex; gap:28px; padding:8px 0; will-change:transform;
-            animation: ticker 28s linear infinite;
+            display:flex; gap:28px; padding:8px 0; will-change:transform; animation: ticker 28s linear infinite;
         }
         .coupon-chip{
             display:inline-flex; gap:8px; align-items:center; padding:6px 12px; border-radius:999px;
@@ -46,12 +45,8 @@
         }
         .coupon-chip .val{ color:#94f1bd; font-weight:800 }
         .coupon-chip .min{ color:#bdebd4; font-weight:600 }
-        @keyframes ticker{
-            0%{ transform: translateX(0) }
-            100%{ transform: translateX(-50%) }
-        }
+        @keyframes ticker{ 0%{ transform: translateX(0) } 100%{ transform: translateX(-50%) } }
         .ticker-inner{ display:flex; gap:28px; padding:0 6%; }
-        .ticker-ghost{ display:flex; gap:28px; padding-right:6%; }
 
         /* Navbar */
         .navbar{
@@ -61,16 +56,9 @@
         }
         .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
         .brand-logo video{width:36px; height:auto; border-radius:4px}
-
-        /* Nav search */
         .nav-search{flex:1; max-width:520px; display:flex; align-items:center; gap:8px}
-        .nav-search input{
-            width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:999px;
-            background:#fff; font-size:14px; outline:none;
-        }
-        .nav-search button{
-            border:none; border-radius:999px; padding:9px 12px; background:var(--green); color:#fff; cursor:pointer;
-        }
+        .nav-search input{ width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:999px; background:#fff; font-size:14px; outline:none; }
+        .nav-search button{ border:none; border-radius:999px; padding:9px 12px; background:var(--green); color:#fff; cursor:pointer; }
         .nav-search button:hover{background:var(--accent);}
         .nav-links{display:flex; align-items:center; gap:18px; margin-left:auto;}
         .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
@@ -84,41 +72,46 @@
         .cart-icon-container { position: relative; display: inline-block; }
         .cart-count-badge { position: absolute; top: -8px; right: -8px; background-color: var(--accent); color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; text-align: center; }
 
-        /* Hero */
-        .hero{
-            display:flex; align-items:center; justify-content:space-between;
-            background:var(--green); color:#fff; padding:28px 6%;
-            min-height:50vh; position: relative; overflow: hidden;
+        /* Walmart-style HERO */
+        .hero-banner {
+            position: relative;
+            background: #1b5e20 url('/images/spicejar-main.jpg') center/cover no-repeat;
+            height: 500px;
+            margin: 24px 6% 0 6%;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,.28);
         }
-        .hero-left h1{font-size:40px; line-height:1.15; margin:0 0 12px}
-        .cta{background:#fff; color:var(--green); padding:10px 18px; border-radius:30px; text-decoration:none; font-weight:600}
-        .hero-right { position: relative; display:flex; gap:18px; align-items:stretch; }
-        .hero-image-revolver { position: relative; width: 420px; height: 280px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,.2); overflow:hidden }
-        .hero-image-revolver img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; animation: fade 16s infinite; }
-        .hero-image-revolver img:nth-child(1) { animation-delay: 0s; }
-        .hero-image-revolver img:nth-child(2) { animation-delay: 4s; }
-        .hero-image-revolver img:nth-child(3) { animation-delay: 8s; }
-        .hero-image-revolver img:nth-child(4) { animation-delay: 12s; }
-        @keyframes fade { 0%{opacity:0} 5%{opacity:1} 25%{opacity:1} 30%{opacity:0} 100%{opacity:0} }
+        .hero-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.25) 60%, rgba(0,0,0,.15) 100%);
+            display:flex; align-items:center; justify-content:space-between; padding: 0 4%; gap: 28px;
+        }
+        .hero-content { color:#fff; max-width: 520px; }
+        .hero-content h1{ font-size:42px; font-weight:800; line-height:1.15; margin:0 0 10px }
+        .hero-content p{ font-size:17px; margin:0 0 18px; color:#f2f2f2 }
+        .cta{background:#fff; color:var(--green); padding:12px 20px; border-radius:30px; text-decoration:none; font-weight:700; display:inline-block }
+        .cta:hover{ background:var(--accent); color:#fff }
 
-        /* ===== Rotating coupon pills (hero) ===== */
-        .coupon-rotator{
-            width: 260px; align-self:center;
-            display:grid; gap:10px; height: 280px; padding:8px;
+        .coupon-area{ width:340px; display:grid; gap:12px }
+        .coupon-card{
+            background: rgba(255,255,255,.88); color:#0f5132; padding:14px 16px; border-radius:12px;
+            box-shadow:0 6px 18px rgba(0,0,0,.20); backdrop-filter: blur(4px);
         }
-        .coupon-pill{
-            background:#eef6f0; color:#14532d; border:1px solid #cfe9d8;
-            padding:10px 12px; border-radius:12px; font-weight:700; box-shadow:0 6px 18px rgba(0,0,0,.12);
-            opacity:0; transform: translateY(10px); animation: pillfade 16s infinite;
-        }
-        .coupon-pill small{ display:block; color:#256d47; font-weight:600 }
-        .coupon-pill:nth-child(1){ animation-delay: 0s }
-        .coupon-pill:nth-child(2){ animation-delay: 4s }
-        .coupon-pill:nth-child(3){ animation-delay: 8s }
-        .coupon-pill:nth-child(4){ animation-delay: 12s }
-        @keyframes pillfade{ 0%{opacity:0; transform:translateY(10px)} 5%{opacity:1; transform:translateY(0)} 25%{opacity:1} 30%{opacity:0; transform:translateY(-6px)} 100%{opacity:0} }
+        .coupon-head{ display:flex; align-items:center; gap:8px; font-weight:800; }
+        .coupon-head i{ color:var(--green) }
+        .coupon-sub{ margin:6px 0; color:#15553a; font-size:14px }
+        .coupon-actions{ display:flex; gap:8px; margin-top:10px }
+        .coupon-btn{ flex:1; background:var(--green); color:#fff; border:none; border-radius:8px; padding:8px 0; cursor:pointer; font-weight:800 }
+        .coupon-btn.apply{ background:#104d33 }
+        .coupon-btn:hover{ background:var(--accent) }
 
-        /* Chips / product cards / sections / footer — unchanged */
+        @media (max-width: 980px){
+            .hero-overlay{ flex-direction:column; justify-content:center; text-align:center; padding: 24px }
+            .coupon-area{ width:100%; max-width: 420px }
+        }
+
+        /* Chips / product cards / sections / footer */
         .chipbar{padding:12px 6%;display:flex;gap:10px;flex-wrap:wrap;background:#fff}
         .chip{border:1px solid #dfe6df;background:#fff;color:#333;padding:8px 12px;border-radius:999px;font-weight:700;text-decoration:none}
         .chip:hover{border-color:#218838;color:#218838}
@@ -156,10 +149,7 @@
     Free shipping on orders over $35 • <a href="/menu">Shop now</a>
 </div>
 
-
-
-
-<!-- ===== Coupon Ticker (only if coupons exist) ===== -->
+<!-- Coupon Ticker -->
 <div class="coupon-ticker-wrap" th:if="${availableCoupons != null and !#lists.isEmpty(availableCoupons)}" aria-label="Active coupons">
     <div class="coupon-ticker">
         <div class="ticker-inner">
@@ -172,20 +162,6 @@
         <span th:if="${c.expiresOn != null}">&nbsp;• ends&nbsp;<span th:text="${#temporals.format(c.expiresOn,'MMM d')}">Dec 31</span></span>
       </span>
         </div>
-
-
-
-        <!-- duplicate lane for seamless loop -->
-<!--        <div class="ticker-ghost">-->
-<!--      <span class="coupon-chip" th:each="c : ${availableCoupons}">-->
-<!--        <i class="fa-solid fa-tags" aria-hidden="true"></i>-->
-<!--        <span th:text="${c.code}">SAVE10</span>-->
-<!--        <span class="val" th:text="${c.type.name()=='PERCENT' ? (c.value + '%') : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT'))}">10%</span>-->
-<!--        <span class="min" th:if="${c.minSubtotal != null and c.minSubtotal > 0}"-->
-<!--              th:text="${'Min $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">Min $20.00</span>-->
-<!--        <span th:if="${c.expiresOn != null}">&nbsp;• ends&nbsp;<span th:text="${#temporals.format(c.expiresOn,'MMM d')}">Dec 31</span></span>-->
-<!--      </span>-->
-<!--        </div>-->
     </div>
 </div>
 
@@ -215,7 +191,7 @@
         <a th:href="@{/contact}">Contact Us</a>
 
         <div class="dropdown">
-            <button class="dropdown-toggle">
+            <button class="dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-user"></i>
                 <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">Account</span>
             </button>
@@ -233,41 +209,32 @@
     </div>
 </nav>
 
-<!-- Hero -->
-<section class="hero">
-    <div class="hero-left">
-        <h1>Flavors that Inspire, Spices that Transform.</h1>
-        <p>Discover a world of aromatic spices, curated for your culinary adventures.</p>
-        <a href="#menu" class="cta">Explore Spices</a>
-    </div>
-
-    <div class="hero-right">
-        <div class="hero-image-revolver">
-            <img loading="eager" decoding="async" width="420" height="280"
-                 th:src="@{/images/spices-about.jpeg}" alt="Assorted spices"/>
-            <img loading="lazy" decoding="async" width="420" height="280"
-                 th:src="@{/images/chilli powder.jpeg}" alt="Chili powder"/>
-            <img loading="lazy" decoding="async" width="420" height="280"
-                 th:src="@{/images/download (2).jpeg}" alt="Cloves"/>
-            <img loading="lazy" decoding="async" width="420" height="280"
-                 th:src="@{/images/download (3).jpeg}" alt="Cardamom pods"/>
+<!-- HERO with coupons -->
+<section class="hero-banner" role="region" aria-label="Spice Jar hero">
+    <div class="hero-overlay">
+        <div class="hero-content">
+            <h1>Shop Fresh Spices Now</h1>
+            <p>Premium Indian spices &amp; blends delivered fresh — straight from Spice Jar.</p>
+            <a href="#menu" class="cta">Explore Spices</a>
         </div>
 
-        <!-- ===== Rotating coupons (only if any) ===== -->
-        <div class="coupon-rotator" th:if="${availableCoupons != null and !#lists.isEmpty(availableCoupons)}">
-            <!-- show up to 4 without using #lists.take -->
-            <div class="coupon-pill"
-                 th:each="c, stat : ${availableCoupons}"
-                 th:if="${stat.index < 4}">
-                <div>
+        <div class="coupon-area" th:if="${availableCoupons != null and !#lists.isEmpty(availableCoupons)}">
+            <div class="coupon-card" th:each="c, stat : ${availableCoupons}" th:if="${stat.index < 3}">
+                <div class="coupon-head">
                     <i class="fa-solid fa-tags" aria-hidden="true"></i>
-                    <span th:text="${c.code}">SAVE10</span>
+                    <span th:text="${c.code}">HURRYUP20</span>
                     <span>—</span>
-                    <b th:text="${c.type.name()=='PERCENT' ? (c.value + '%') : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT'))}">10%</b>
+                    <b th:text="${c.type != null && c.type.name()=='PERCENT' ? (c.value + '%') : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT'))}">
+                        20%
+                    </b>
                 </div>
-                <small th:if="${c.minSubtotal != null and c.minSubtotal > 0}"
-                       th:text="${'Min $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">Min $20.00</small>
-                <small th:if="${c.expiresOn != null}" th:text="${'Ends ' + #temporals.format(c.expiresOn,'MMM d')}">Ends Dec 31</small>
+                <p class="coupon-sub" th:if="${c.minSubtotal != null}"
+                   th:text="${'Min $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">Min $30.00</p>
+                <small th:if="${c.expiresOn != null}" th:text="${'Ends ' + #temporals.format(c.expiresOn,'MMM d')}">Ends Mar 26</small>
+                <div class="coupon-actions">
+                    <button class="coupon-btn" type="button" th:attr="data-code=${c.code}" onclick="copyCoupon(this)">Copy</button>
+<!--                    <a class="coupon-btn apply" th:href="@{/cart/view}">Apply</a>-->
+                </div>
             </div>
         </div>
     </div>
@@ -427,6 +394,23 @@
             });
         });
     })();
+
+    function copyCoupon(btn){
+        const code = btn.getAttribute('data-code');
+        const msg  = btn.closest('.coupon-card').querySelector('small');
+        if(!code) return;
+
+        (navigator.clipboard?.writeText(code) || Promise.reject()).then(()=>{
+            if (msg) { msg.textContent = (msg.textContent?.startsWith('Ends') ? msg.textContent + ' • Copied ✓' : 'Copied ✓'); }
+            setTimeout(()=> { if (msg && msg.textContent?.includes('Copied')) { msg.textContent = msg.textContent.replace(' • Copied ✓','').replace('Copied ✓',''); } }, 1600);
+        }).catch(()=>{
+            const ta = document.createElement('textarea');
+            ta.value = code; document.body.appendChild(ta);
+            ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            if (msg) { msg.textContent = (msg.textContent?.startsWith('Ends') ? msg.textContent + ' • Copied ✓' : 'Copied ✓'); }
+            setTimeout(()=> { if (msg && msg.textContent?.includes('Copied')) { msg.textContent = msg.textContent.replace(' • Copied ✓','').replace('Copied ✓',''); } }, 1600);
+        });
+    }
 </script>
 </body>
 </html>

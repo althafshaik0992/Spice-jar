@@ -232,7 +232,7 @@ public class OrderController extends BaseController {
         }).collect(Collectors.toList()));
 
 
-       // sessionCart.syncFromProducts(GlobalData.cart);
+        // sessionCart.syncFromProducts(GlobalData.cart);
         BigDecimal subtotal = nz(cart.getSubtotal());
         if (subtotal.signum() == 0) {
             subtotal = cart.getItems().stream().map(CartItem::getSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);

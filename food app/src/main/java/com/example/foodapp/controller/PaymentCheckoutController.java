@@ -47,20 +47,17 @@ public class PaymentCheckoutController extends BaseController {
     private String paypalCurrency;
 
     @GetMapping("/checkout")
-    public String page(@RequestParam(required = false) Long orderId,
-                       HttpSession session, Model m) {
+    public String page(@RequestParam Long orderId, HttpSession session, Model m){
+
         User user = currentUser(session);
         if (user == null) return "redirect:/login";
-        m.addAttribute("cart", cart);
-        m.addAttribute("cartCount", cart.getCount());
-        return "payment";
+        Order order = orderService.findById(orderId);
+        if (order == null) return "redirect:/orders";
+        // optional: ensure belongs to current user
+
+        m.addAttribute("order", order);
+        return "payment"; // the HTML above
     }
-
-
-
-
-
-
 
     /** COD: mark pending and return 200 */
     @PostMapping("/cod")
