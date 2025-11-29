@@ -3,6 +3,7 @@ package com.example.foodapp.controller;
 import com.example.foodapp.model.Product;
 import com.example.foodapp.model.ProductVariant;
 import com.example.foodapp.model.User;
+import com.example.foodapp.service.InventoryService;
 import com.example.foodapp.service.ProductService;
 import com.example.foodapp.service.UserService;
 import com.example.foodapp.util.Cart;
@@ -23,10 +24,14 @@ public class CartController {
 
     private final ProductService productService;
     private final UserService userService;
+    private final InventoryService inventoryService;
 
-    public CartController(ProductService productService, UserService userService) {
+    public CartController(ProductService productService,
+                          UserService userService,
+                          InventoryService inventoryService) {
         this.productService = productService;
         this.userService = userService;
+        this.inventoryService = inventoryService;
     }
 
     /** Ensure we always have a Cart object in the session */
@@ -48,23 +53,39 @@ public class CartController {
         return "cart";
     }
 
-    /**
-     * Add to cart (supports optional variantId).
-     * Returns JSON with name/size so UI can toast "Turmeric — 200 g added".
-     */
-    @PostMapping("/add")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> addToCart(@RequestParam Long productId,
-                                                         @RequestParam(required = false) Long variantId,
-                                                         @RequestParam(defaultValue = "1") int qty,
-                                                         HttpSession session) {
+    // ------------------------------------------------------------
+    //  INTERNAL helper used by BOTH add endpoints
+    // ------------------------------------------------------------
+    private Map<String, Object> doAddToCart(Long productId,
+                                            Long variantId,
+                                            int qty,
+                                            HttpSession session) {
+
         Map<String, Object> out = new HashMap<>();
 
         Product p = productService.findById(productId);
         if (p == null) {
             out.put("status", "error");
             out.put("message", "Product not found.");
-            return ResponseEntity.ok(out);
+            return out;
+        }
+
+        // Basic stock check using InventoryService
+        Map<Long, Integer> stockMap =
+                inventoryService.getStocksForProductIds(Collections.singletonList(productId));
+        Integer stock = (stockMap != null) ? stockMap.getOrDefault(productId, 0) : null;
+
+        if (stock != null) {
+            if (stock <= 0) {
+                out.put("status", "error");
+                out.put("message", "This item is currently out of stock.");
+                return out;
+            }
+            if (qty > stock) {
+                out.put("status", "error");
+                out.put("message", "Only " + stock + " left in stock.");
+                return out;
+            }
         }
 
         // Resolve image
@@ -89,7 +110,7 @@ public class CartController {
             if (chosenVariant == null) {
                 out.put("status", "error");
                 out.put("message", "Variant not found for product.");
-                return ResponseEntity.ok(out);
+                return out;
             }
             Integer w = chosenVariant.getWeight();
             sizeLabel = (w != null ? w + " g" : "Variant");
@@ -100,7 +121,7 @@ public class CartController {
             unitPrice = p.getPrice();
         }
 
-        // We keep display name size-aware so different weights show as separate lines
+        // display name size-aware so different weights show as separate lines
         String displayName = p.getName() + " — " + sizeLabel;
 
         Cart cart = getOrCreateCart(session);
@@ -111,18 +132,20 @@ public class CartController {
                         && Objects.equals(item.getName(), displayName))
                 .findFirst();
 
+        int safeQty = Math.max(1, qty);
+
         if (existingItem.isPresent()) {
-            existingItem.get().setQty(existingItem.get().getQty() + Math.max(1, qty));
+            existingItem.get().setQty(existingItem.get().getQty() + safeQty);
         } else {
             Integer weightForLine = (chosenVariant != null) ? chosenVariant.getWeight() : p.getWeight();
             CartItem newItem = new CartItem(
                     p.getId(),
                     displayName,                           // e.g., "Turmeric — 200 g"
-                    Math.max(1, qty),
+                    safeQty,
                     unitPrice,
                     img,
-                    p.getDescription(),                     // ✅ description in cart
-                    weightForLine                           // ✅ grams in cart
+                    p.getDescription(),                     // description in cart
+                    weightForLine                           // grams in cart
             );
             cart.getItems().add(newItem);
         }
@@ -134,13 +157,47 @@ public class CartController {
                 "name", p.getName(),
                 "size", sizeLabel,
                 "unitPrice", unitPrice,
-                "qty", Math.max(1, qty)
+                "qty", safeQty
         ));
         out.put("grandTotal", cart.getItems().stream()
                 .map(ci -> ci.getPrice().multiply(BigDecimal.valueOf(ci.getQty())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add));
 
+        return out;
+    }
+
+    // ------------------------------------------------------------
+    // 1) AJAX version   (used by MENU page JS – returns JSON)
+    // ------------------------------------------------------------
+    @PostMapping(value = "/add", headers = "X-Requested-With=XMLHttpRequest")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addToCartAjax(@RequestParam Long productId,
+                                                             @RequestParam(required = false) Long variantId,
+                                                             @RequestParam(defaultValue = "1") int qty,
+                                                             HttpSession session) {
+
+        Map<String, Object> out = doAddToCart(productId, variantId, qty, session);
         return ResponseEntity.ok(out);
+    }
+
+    // ------------------------------------------------------------
+    // 2) Non-AJAX version (used by PRODUCT VIEW page – redirects)
+    // ------------------------------------------------------------
+    @PostMapping("/add")
+    public String addToCartNonAjax(@RequestParam Long productId,
+                                   @RequestParam(required = false) Long variantId,
+                                   @RequestParam(defaultValue = "1") int qty,
+                                   @RequestHeader(value = "Referer", required = false) String referer,
+                                   HttpSession session) {
+
+        // we ignore the map for now; out-of-stock is already handled in UI
+        doAddToCart(productId, variantId, qty, session);
+
+        // send the user back where they came from, or to product page
+        if (referer != null && !referer.isBlank()) {
+            return "redirect:" + referer;
+        }
+        return "redirect:/product/" + productId;
     }
 
     /** Update quantity OR delete (qty=0) by productId (legacy support) */
@@ -149,7 +206,7 @@ public class CartController {
                          @RequestParam("qty") int qty,
                          HttpSession session) {
         Cart cart = getOrCreateCart(session);
-        for (Iterator<CartItem> it = cart.getItems().iterator(); it.hasNext();) {
+        for (Iterator<CartItem> it = cart.getItems().iterator(); it.hasNext(); ) {
             CartItem ci = it.next();
             if (Objects.equals(ci.getProductId(), productId)) {
                 if (qty <= 0) it.remove();
@@ -189,13 +246,19 @@ public class CartController {
                                HttpSession session) {
         Cart cart = getOrCreateCart(session);
 
+        // Find item in active items
         Optional<CartItem> found = cart.getItems().stream()
                 .filter(ci -> Objects.equals(ci.getProductId(), productId))
                 .findFirst();
 
         found.ifPresent(ci -> {
+            // Mark item as saved for later
+            ci.setSavedForLater(true);
+
+            // Move between lists
             cart.getItems().remove(ci);
 
+            // Merge with existing saved line if present
             Optional<CartItem> inSaved = cart.getSavedForLater().stream()
                     .filter(s -> Objects.equals(s.getProductId(), productId)
                             && Objects.equals(s.getName(), ci.getName()))
@@ -204,16 +267,7 @@ public class CartController {
             if (inSaved.isPresent()) {
                 inSaved.get().setQty(inSaved.get().getQty() + ci.getQty());
             } else {
-                // ✅ preserve description/weight when saving
-                cart.getSavedForLater().add(new CartItem(
-                        ci.getProductId(),
-                        ci.getName(),
-                        ci.getQty(),
-                        ci.getPrice() == null ? BigDecimal.ZERO : ci.getPrice(),
-                        ci.getImageUrl(),
-                        ci.getDescription(),
-                        ci.getWeightGrams()
-                ));
+                cart.getSavedForLater().add(ci);
             }
         });
 
@@ -226,27 +280,31 @@ public class CartController {
     public String moveToCart(@RequestParam Long productId, HttpSession session) {
         Cart cart = getOrCreateCart(session);
 
-        if (cart.getSavedForLater() != null) {
-            CartItem it = cart.getSavedForLater().stream()
-                    .filter(i -> Objects.equals(i.getProductId(), productId))
-                    .findFirst()
-                    .orElse(null);
+        Optional<CartItem> found = cart.getSavedForLater().stream()
+                .filter(ci -> Objects.equals(ci.getProductId(), productId))
+                .findFirst();
 
-            if (it != null) {
-                cart.getSavedForLater().remove(it);
+        found.ifPresent(ci -> {
+            // Mark item as active again
+            ci.setSavedForLater(false);
 
-                Optional<CartItem> existing = cart.getItems().stream()
-                        .filter(ci -> Objects.equals(ci.getProductId(), it.getProductId())
-                                && Objects.equals(ci.getName(), it.getName()))
-                        .findFirst();
+            // Remove from saved list
+            cart.getSavedForLater().remove(ci);
 
-                if (existing.isPresent()) {
-                    existing.get().setQty(existing.get().getQty() + it.getQty());
-                } else {
-                    cart.getItems().add(it); // same instance carries desc/weight
-                }
+            // Merge with existing active line if present
+            Optional<CartItem> existing = cart.getItems().stream()
+                    .filter(i -> Objects.equals(i.getProductId(), ci.getProductId())
+                            && Objects.equals(i.getName(), ci.getName()))
+                    .findFirst();
+
+            if (existing.isPresent()) {
+                existing.get().setQty(existing.get().getQty() + ci.getQty());
+            } else {
+                cart.getItems().add(ci);
             }
-        }
+        });
+
+        session.setAttribute("CART", cart);
         return "redirect:/cart/view";
     }
 

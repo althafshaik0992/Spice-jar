@@ -71,25 +71,34 @@
                 <button class="inline-flex items-center gap-2 px-3 h-10 rounded-xl bg-emerald-600/15 text-emerald-300 hover:bg-emerald-600/25">
                     <i class="fa-solid fa-circle-user"></i>
                     <span>
-                        <!-- shows authenticated username or fallback -->
-                        <span sec:authorize="isAuthenticated()" sec:authentication="name">Admin</span>
-                        <span sec:authorize="!isAuthenticated()">Admin</span>
-                    </span>
+            <span th:text="${session.ADMIN_USER != null ? session.ADMIN_USER.username : 'Admin'}">Admin</span>
+        </span>
                     <i class="fa-solid fa-chevron-down text-[11px] opacity-70"></i>
                 </button>
                 <div class="absolute right-0 mt-2 hidden group-hover:block w-56 rounded-xl border border-[#1f2637] bg-[#0c1528] shadow-2xl">
-                    <div class="px-3 py-2 text-[12px] text-slate-400">Signed in</div>
-                    <a th:href="@{/admin}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5"><i class="fa-solid fa-chart-line"></i> Overview</a>
-                    <a th:href="@{/admin/orders}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5"><i class="fa-solid fa-receipt"></i> Orders</a>
+                    <div class="px-3 py-2 text-[12px] text-slate-400">
+                        Signed in
+                        <span th:if="${session.ADMIN_USER != null}"
+                              th:text="${session.ADMIN_USER.username}"
+                              class="font-semibold ml-1">Admin</span>
+                    </div>
+                    <a th:href="@{/admin}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5">
+                        <i class="fa-solid fa-chart-line"></i> Overview
+                    </a>
+                    <a th:href="@{/admin/orders}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5">
+                        <i class="fa-solid fa-receipt"></i> Orders
+                    </a>
                     <div class="h-px bg-[#1f2637] my-1"></div>
-                    <form th:action="@{/admin/logout}" method="post" class="px-3 py-2">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="w-full flex items-center gap-2 text-left text-sm text-rose-300 hover:text-rose-200 hover:bg-rose-600/10 px-2 py-2 rounded-lg">
+                    <form th:action="@{/admin/logout}" method="get" class="px-3 py-2">
+                        <button type="submit"
+                                class="w-full flex items-center gap-2 text-left text-sm text-rose-300 hover:text-rose-200 hover:bg-rose-600/10 px-2 py-2 rounded-lg">
                             <i class="fa-solid fa-right-from-bracket"></i> Logout
                         </button>
                     </form>
                 </div>
             </div>
+
+
         </div>
     </div>
 
@@ -252,7 +261,6 @@
         </div>
 
         <!-- Low Stock -->
-        <!-- Low Stock -->
         <div class="card soft p-6">
             <div class="flex items-center justify-between mb-3">
                 <h2 class="text-xl font-semibold">Low Stock</h2>
@@ -320,6 +328,29 @@
                 </a>
                 <a th:href="@{/admin/coupons/new}" class="inline-flex items-center gap-2 rounded-xl px-3 py-2 font-semibold bg-emerald-500 text-[#082312] hover:bg-emerald-400">
                     <i class="fa-solid fa-plus"></i> New
+                </a>
+            </div>
+        </a>
+
+        <!-- Quick Action: Gift Cards -->
+        <a th:href="@{/admin/gift-cards}" class="card soft p-6 hover:bg-[#101a2c] transition group">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-gift text-emerald-400"></i>
+                        <div class="font-semibold">Gift Cards</div>
+                    </div>
+                    <div class="text-slate-400 text-sm mt-1">
+                        View, create & manage gift cards
+                    </div>
+                </div>
+                <span class="chip text-[11px] px-2 py-0.5">Gifts</span>
+            </div>
+
+            <div class="mt-4 flex flex-wrap gap-2">
+                <a th:href="@{/admin/gift-cards}"
+                   class="inline-flex items-center gap-2 rounded-xl px-3 py-2 font-semibold bg-[#0f172a] text-slate-200 ring-subtle hover:bg-white/5">
+                    <i class="fa-solid fa-list"></i> Manage
                 </a>
             </div>
         </a>

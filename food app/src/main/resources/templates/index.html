@@ -27,33 +27,20 @@
         body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; background:#f0f8f0; color:#222; }
         a:focus, button:focus, input:focus { outline: 3px solid #94d3a2; outline-offset: 2px; }
 
-        /* Promo bar */
         .promo { background:#0f5132;color:#fff;padding:6px 6%;font-weight:700;text-align:center }
         .promo a{ color:#b8ffd6; text-decoration:underline }
 
         /* Coupon ticker */
-        .coupon-ticker-wrap{
-            background:#0a3624; color:#d9fbe5; border-top:1px solid #0c3f2a; border-bottom:1px solid #0c3f2a;
-            position:relative; overflow:hidden;
-        }
-        .coupon-ticker{
-            display:flex; gap:28px; padding:8px 0; will-change:transform; animation: ticker 28s linear infinite;
-        }
-        .coupon-chip{
-            display:inline-flex; gap:8px; align-items:center; padding:6px 12px; border-radius:999px;
-            background:#104d33; border:1px solid #1b6a47; color:#c7f8df; font-weight:700; white-space:nowrap;
-        }
+        .coupon-ticker-wrap{ background:#0a3624; color:#d9fbe5; border-top:1px solid #0c3f2a; border-bottom:1px solid #0c3f2a; position:relative; overflow:hidden; }
+        .coupon-ticker{ display:flex; gap:28px; padding:8px 0; will-change:transform; animation: ticker 28s linear infinite; }
+        .coupon-chip{ display:inline-flex; gap:8px; align-items:center; padding:6px 12px; border-radius:999px; background:#104d33; border:1px solid #1b6a47; color:#c7f8df; font-weight:700; white-space:nowrap; }
         .coupon-chip .val{ color:#94f1bd; font-weight:800 }
         .coupon-chip .min{ color:#bdebd4; font-weight:600 }
         @keyframes ticker{ 0%{ transform: translateX(0) } 100%{ transform: translateX(-50%) } }
         .ticker-inner{ display:flex; gap:28px; padding:0 6%; }
 
         /* Navbar */
-        .navbar{
-            background:#fff; padding:6px 6%;
-            box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex; gap:16px; align-items:center; position:sticky; top:0; z-index:1000; height:60px;
-        }
+        .navbar{ background:#fff; padding:6px 6%; box-shadow:0 2px 6px rgba(0,0,0,.05); display:flex; gap:16px; align-items:center; position:sticky; top:0; z-index:1000; height:60px; }
         .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
         .brand-logo video{width:36px; height:auto; border-radius:4px}
         .nav-search{flex:1; max-width:520px; display:flex; align-items:center; gap:8px}
@@ -70,34 +57,18 @@
         .dropdown-menu a, .dropdown-menu span{display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap}
         .dropdown-menu a:hover{background:#f4f4f4}
         .cart-icon-container { position: relative; display: inline-block; }
-        .cart-count-badge { position: absolute; top: -8px; right: -8px; background-color: var(--accent); color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; text-align: center; }
+        .cart-count-badge { position: absolute; top: -8px; right: -8px; background-color: var(--accent); color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; }
 
-        /* Walmart-style HERO */
-        .hero-banner {
-            position: relative;
-            background: #1b5e20 url('/images/spicejar-main.jpg') center/cover no-repeat;
-            height: 500px;
-            margin: 24px 6% 0 6%;
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 8px 30px rgba(0,0,0,.28);
-        }
-        .hero-overlay {
-            position: absolute; inset: 0;
-            background: linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.25) 60%, rgba(0,0,0,.15) 100%);
-            display:flex; align-items:center; justify-content:space-between; padding: 0 4%; gap: 28px;
-        }
+        /* Hero */
+        .hero-banner { position: relative; background: #1b5e20 url('/images/spicejar-main.jpg') center/cover no-repeat; height: 500px; margin: 24px 6% 0 6%; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,.28); }
+        .hero-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.25) 60%, rgba(0,0,0,.15) 100%); display:flex; align-items:center; justify-content:space-between; padding: 0 4%; gap: 28px; }
         .hero-content { color:#fff; max-width: 520px; }
         .hero-content h1{ font-size:42px; font-weight:800; line-height:1.15; margin:0 0 10px }
         .hero-content p{ font-size:17px; margin:0 0 18px; color:#f2f2f2 }
         .cta{background:#fff; color:var(--green); padding:12px 20px; border-radius:30px; text-decoration:none; font-weight:700; display:inline-block }
         .cta:hover{ background:var(--accent); color:#fff }
-
         .coupon-area{ width:340px; display:grid; gap:12px }
-        .coupon-card{
-            background: rgba(255,255,255,.88); color:#0f5132; padding:14px 16px; border-radius:12px;
-            box-shadow:0 6px 18px rgba(0,0,0,.20); backdrop-filter: blur(4px);
-        }
+        .coupon-card{ background: rgba(255,255,255,.88); color:#0f5132; padding:14px 16px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.20); backdrop-filter: blur(4px); }
         .coupon-head{ display:flex; align-items:center; gap:8px; font-weight:800; }
         .coupon-head i{ color:var(--green) }
         .coupon-sub{ margin:6px 0; color:#15553a; font-size:14px }
@@ -105,13 +76,9 @@
         .coupon-btn{ flex:1; background:var(--green); color:#fff; border:none; border-radius:8px; padding:8px 0; cursor:pointer; font-weight:800 }
         .coupon-btn.apply{ background:#104d33 }
         .coupon-btn:hover{ background:var(--accent) }
+        @media (max-width: 980px){ .hero-overlay{ flex-direction:column; justify-content:center; text-align:center; padding: 24px } .coupon-area{ width:100%; max-width: 420px } }
 
-        @media (max-width: 980px){
-            .hero-overlay{ flex-direction:column; justify-content:center; text-align:center; padding: 24px }
-            .coupon-area{ width:100%; max-width: 420px }
-        }
-
-        /* Chips / product cards / sections / footer */
+        /* Sections & cards */
         .chipbar{padding:12px 6%;display:flex;gap:10px;flex-wrap:wrap;background:#fff}
         .chip{border:1px solid #dfe6df;background:#fff;color:#333;padding:8px 12px;border-radius:999px;font-weight:700;text-decoration:none}
         .chip:hover{border-color:#218838;color:#218838}
@@ -130,16 +97,75 @@
         .section{padding:30px 6%;background:#fff}
         .section h2{color:#218838;text-align:center;margin:0 0 16px}
         .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-        .site-footer{background:#222; color:#fff; padding:40px 6%; margin-top:40px}
-        .footer-container{display:flex; flex-wrap:wrap; justify-content:space-between; gap:30px; margin-bottom:30px}
-        .footer-column{flex:1; min-width:220px}
-        .footer-column h3{color:#fff; margin-bottom:15px; font-weight:600; border-bottom:2px solid var(--green); padding-bottom:8px; display:inline-block}
-        .footer-column p{line-height:1.6; font-size:14px}
-        .footer-column ul{list-style:none; padding:0; margin:0}
-        .footer-column ul li a{text-decoration:none; color:#ccc; display:block; padding:5px 0; font-size:14px; transition:color .3s}
-        .footer-column ul li a:hover{color:#fff}
-        .footer-bottom{text-align:center; padding-top:20px; border-top:1px solid #444; font-size:14px}
-        @media (max-width: 900px){ .nav-links{display:none} }
+
+        /* ⭐ Rating + meta (same style as menu) */
+        .meta {
+            margin-top: 8px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            color: #555;
+            font-size: 14px;
+        }
+        .rating {
+            margin-top: 6px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+        .rating-stars {
+            display: inline-flex;
+            gap: 2px;
+        }
+        .rating-stars .fa-star,
+        .rating-stars .fa-star-half-stroke {
+            color: #facc15; /* yellow */
+        }
+        .rating-stars .fa-regular {
+            color: #e5e7eb;
+        }
+        .rating-value {
+            font-weight: 600;
+            color: #374151;
+        }
+        .rating-count {
+            color: #6b7280;
+            font-size: 12px;
+        }
+        .btn-view {
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            margin-top:8px;
+            padding:6px 12px;
+            border-radius:999px;
+            border:1px solid #d1d5db;
+            font-size:13px;
+            font-weight:600;
+            color:#374151;
+            text-decoration:none;
+            background:#f9fafb;
+        }
+        .btn-view:hover{
+            background:#e5e7eb;
+        }
+
+        /* Footer */
+        .site-footer{ background:#222; color:#ccc; padding:40px 6%; margin-top:40px; }
+        .footer-container { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px; margin-bottom: 30px; }
+        .footer-column { flex: 1; min-width: 220px; }
+        .footer-column h3 { color: #fff; margin-bottom: 15px; font-weight: 600; border-bottom: 2px solid var(--green); padding-bottom: 8px; display: inline-block; }
+        .footer-column p { line-height: 1.6; font-size: 14px; }
+        .footer-column ul { list-style: none; padding: 0; margin: 0; }
+        .footer-column ul li a { text-decoration: none; color: #ccc; display: block; padding: 5px 0; font-size: 14px; transition: color 0.3s; }
+        .footer-column ul li a:hover { color: #fff; }
+        .social-links a { color: #ccc; text-decoration: none; font-size: 20px; margin-right: 15px; transition: color 0.3s; }
+        .social-links a:hover { color: var(--green); }
+        .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid #444; font-size: 14px; }
+        @media (max-width: 768px) { .footer-container { flex-direction: column; text-align: center; } .footer-column { margin-bottom: 20px; } }
     </style>
 </head>
 <body>
@@ -159,7 +185,7 @@
         <span class="val" th:text="${c.type.name()=='PERCENT' ? (c.value + '%') : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT'))}">10%</span>
         <span class="min" th:if="${c.minSubtotal != null and c.minSubtotal > 0}"
               th:text="${'Min $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">Min $20.00</span>
-        <span th:if="${c.expiresOn != null}">&nbsp;• ends&nbsp;<span th:text="${#temporals.format(c.expiresOn,'MMM d')}">Dec 31</span></span>
+        <span th:if="${c.expiresOn != null}">&nbsp;• ends&nbsp;<span th:text="${#temporals.format(c.expiresOn,'MMM d yyyy')}">Dec 31 2025</span></span>
       </span>
         </div>
     </div>
@@ -215,10 +241,11 @@
         <div class="hero-content">
             <h1>Shop Fresh Spices Now</h1>
             <p>Premium Indian spices &amp; blends delivered fresh — straight from Spice Jar.</p>
-            <a href="#menu" class="cta">Explore Spices</a>
+            <a th:href="@{/menu}" class="cta">Explore Spices</a>
         </div>
 
         <div class="coupon-area" th:if="${availableCoupons != null and !#lists.isEmpty(availableCoupons)}">
+            <!-- render first 3 coupons -->
             <div class="coupon-card" th:each="c, stat : ${availableCoupons}" th:if="${stat.index < 3}">
                 <div class="coupon-head">
                     <i class="fa-solid fa-tags" aria-hidden="true"></i>
@@ -230,11 +257,22 @@
                 </div>
                 <p class="coupon-sub" th:if="${c.minSubtotal != null}"
                    th:text="${'Min $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">Min $30.00</p>
-                <small th:if="${c.expiresOn != null}" th:text="${'Ends ' + #temporals.format(c.expiresOn,'MMM d')}">Ends Mar 26</small>
+                <small th:if="${c.expiresOn != null}"
+                       th:text="${'Ends ' + #temporals.format(c.expiresOn,'MMM d yyyy')}">
+                    Ends Mar 26 2025
+                </small>
                 <div class="coupon-actions">
                     <button class="coupon-btn" type="button" th:attr="data-code=${c.code}" onclick="copyCoupon(this)">Copy</button>
-<!--                    <a class="coupon-btn apply" th:href="@{/cart/view}">Apply</a>-->
                 </div>
+            </div>
+
+            <!-- "More coupons" hint -->
+            <div class="coupon-more" th:if="${#lists.size(availableCoupons) > 4}"
+                 style="margin-top:4px;color:#15553a;font-size:13px">
+                <small>
+                    and <b th:text="${#lists.size(availableCoupons) - 4}">0</b> more exciting coupons —
+                    <a th:href="@{/cart/view}" style="color:#0f5132;font-weight:700;text-decoration:underline">view all</a>
+                </small>
             </div>
         </div>
     </div>
@@ -248,36 +286,91 @@
     <a class="chip" href="/menu?category=Herbs">Herbs</a>
 </div>
 
-<!-- Product grid (first 4) -->
+<!-- Product grid (Best Sellers) – styled like menu cards -->
 <section id="menu" class="menu-section">
     <h2>Best Sellers</h2>
 
-    <div class="cards">
-        <div class="card" th:each="product, stat : ${products}" th:if="${stat.index < 4}">
+    <div class="cards" th:if="${bestSellers != null and !#lists.isEmpty(bestSellers)}">
+        <div class="card" th:each="p : ${bestSellers}">
             <img loading="lazy" decoding="async" width="280" height="200"
-                 th:src="@{${#strings.isEmpty(product.imageUrl) ? '/images/chilli%20powder.jpeg' : product.imageUrl}}"
-                 alt="Spices Product"/>
+                 th:src="${#strings.isEmpty(p.imageUrl) ? '/images/chilli%20powder.jpeg' : p.imageUrl}"
+                 th:alt="${'Spice – ' + (p.name != null ? p.name : 'Product')}" />
             <div class="card-body">
                 <div class="row" style="justify-content:center;gap:6px;margin-bottom:6px;display:flex">
                     <span class="pill">Bestseller</span>
                 </div>
 
-                <h5 th:text="${product.name}">Product Name</h5>
-                <h4>$ <span th:text="${#numbers.formatDecimal(product.price,1,'COMMA',2,'POINT')}">0.00</span></h4>
-
-                <div class="meta" th:if="${product.weight != null}" style="margin:6px 0">
-                    <span class="pill" th:text="${product.weight != null ? #numbers.formatInteger(product.weight, 1, 'COMMA') + ' g' : '—'}">250 g</span>
+                <!-- ⭐ Rating (reusing avgMap / cntMap like menu) -->
+                <div class="rating"
+                     th:if="${avgMap != null and avgMap[p.id] != null and avgMap[p.id] > 0}">
+                    <div class="rating-stars">
+                        <span th:each="i : ${#numbers.sequence(1,5)}">
+                            <i class="fa-star"
+                               th:classappend="${
+                                    avgMap[p.id] >= i        ? ' fa-solid' :
+                                    (avgMap[p.id] >= i - 0.5 ? ' fa-solid fa-star-half-stroke' :
+                                                               ' fa-regular')
+                               }"></i>
+                        </span>
+                    </div>
+                    <span class="rating-value"
+                          th:text="${#numbers.formatDecimal(avgMap[p.id],1,'COMMA',1,'POINT')}">
+                        4.5
+                    </span>
+                    <span class="rating-count"
+                          th:if="${cntMap != null and cntMap[p.id] != null and cntMap[p.id] > 0}"
+                          th:text="'(' + ${cntMap[p.id]} + ' reviews)'">
+                        (12 reviews)
+                    </span>
                 </div>
 
-                <p th:text="${product.description}">Product description.</p>
+                <!-- Optional: no reviews -->
+                <div class="rating"
+                     th:if="${avgMap == null or avgMap[p.id] == null or avgMap[p.id] == 0}">
+                    <span class="rating-count">No reviews yet</span>
+                </div>
 
+                <h5 th:text="${p.name}">Product Name</h5>
+
+                <h4>$ <span th:text="${#numbers.formatDecimal(p.price,1,'COMMA',2,'POINT')}">0.00</span></h4>
+
+                <!-- Weight pill -->
+                <div class="meta" th:if="${p.weight != null}">
+                    <span class="pill"
+                          th:text="${#numbers.formatInteger(p.weight, 1, 'COMMA') + ' g'}">250 g</span>
+                </div>
+
+                <p th:text="${#strings.isEmpty(p.description) ? 'Premium spice blend.' : p.description}">
+                    Premium spice blend.
+                </p>
+
+                <!-- Add to cart uses existing JS (add-to-cart-btn) -->
                 <button class="btn-order add-to-cart-btn"
-                        th:data-product-id="${product.id}"
-                        th:data-product-name="${product.name}"
-                        th:data-product-image="${product.imageUrl}"
-                        th:data-product-price="${product.price}">
+                        th:data-product-id="${p.id}"
+                        th:data-product-name="${p.name}"
+                        th:data-product-image="${p.imageUrl}"
+                        th:data-product-price="${p.price}">
                     <i class="fas fa-shopping-cart"></i> Add to Cart
                 </button>
+
+                <!-- View product -->
+                <a class="btn-view"
+                   th:href="@{/product/{id}(id=${p.id})}">
+                    <i class="fa-regular fa-eye"></i>
+                    <span>View</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="cards" th:if="${bestSellers == null or #lists.isEmpty(bestSellers)}">
+        <div class="card">
+            <div class="card-body">
+                <h5>No best sellers yet</h5>
+                <p>Once orders roll in, we’ll highlight your top products here.</p>
+                <a class="order-now" th:href="@{/menu}">
+                    <i class="fa-solid fa-bowl-food"></i> Browse all
+                </a>
             </div>
         </div>
     </div>
@@ -289,10 +382,27 @@
     </div>
 </section>
 
-<!-- Testimonials -->
 <section class="section">
     <h2>What our customers say</h2>
-    <div class="grid-3">
+
+    <!-- Real reviews -->
+    <div class="grid-3" th:if="${latestReviews != null and !#lists.isEmpty(latestReviews)}">
+        <div th:each="r : ${latestReviews}"
+             style="background:#f8fff8;border:1px solid #dceedd;border-radius:12px;padding:14px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                <span th:utext="${'&#9733;'.repeat(r.rating)}"></span>
+                <span th:utext="${'&#9734;'.repeat(5 - r.rating)}"></span>
+            </div>
+            <div th:text="${r.comment}">Amazing flavor and aroma!</div>
+            <div class="muted" style="margin-top:8px;font-size:13px">
+                — <span th:text="${r.user != null ? r.user.firstName : 'Customer'}">Customer</span>,
+                on <strong th:text="${r.product != null ? r.product.name : 'a product'}">Product</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fallback reviews -->
+    <div class="grid-3" th:if="${latestReviews == null or #lists.isEmpty(latestReviews)}">
         <blockquote style="background:#f8fff8;border:1px solid #dceedd;border-radius:12px;padding:14px">
             “Super fresh spices. My curries taste restaurant-level now!” — Priya S.
         </blockquote>
@@ -317,12 +427,14 @@
 <!-- Newsletter -->
 <section class="section" style="background:#f0f8f0;text-align:center">
     <h2>Get recipes & offers</h2>
-    <form th:action="@{/subscribe}" method="post" style="display:inline-flex;gap:8px;flex-wrap:wrap">
-        <input type="email" name="email" placeholder="your@email.com"
+
+    <form id="newsletter" th:action="@{/subscribe}" method="post" style="display:inline-flex;gap:8px;flex-wrap:wrap">
+        <input id="newsEmail" type="email" name="email" placeholder="your@email.com"
                style="padding:10px 12px;border:1px solid #ddd;border-radius:999px" required>
         <button class="order-now" type="submit" style="border:none">Subscribe</button>
     </form>
-    <p class="muted" style="margin-top:6px">No spam. Unsubscribe anytime.</p>
+
+    <p id="newsMsg" class="muted" style="margin-top:6px"></p>
 </section>
 
 <!-- Footer -->
@@ -397,7 +509,7 @@
 
     function copyCoupon(btn){
         const code = btn.getAttribute('data-code');
-        const msg  = btn.closest('.coupon-card').querySelector('small');
+        const msg  = btn.closest('.coupon-card')?.querySelector('small');
         if(!code) return;
 
         (navigator.clipboard?.writeText(code) || Promise.reject()).then(()=>{
@@ -411,6 +523,24 @@
             setTimeout(()=> { if (msg && msg.textContent?.includes('Copied')) { msg.textContent = msg.textContent.replace(' • Copied ✓','').replace('Copied ✓',''); } }, 1600);
         });
     }
+
+    // Newsletter AJAX subscribe
+    document.getElementById('newsletter')?.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const email = document.getElementById('newsEmail').value.trim();
+        const msg = document.getElementById('newsMsg');
+        const csrf = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+        const res = await fetch('/subscribe', {
+            method:'POST',
+            headers: { 'Content-Type':'application/x-www-form-urlencoded', [csrfHeader]: csrf },
+            body: new URLSearchParams({ email })
+        });
+        const out = await res.json().catch(()=>({}));
+        msg.textContent = out.message || (res.ok ? 'Check your email to confirm.' : 'Something went wrong.');
+    });
+
 </script>
 </body>
 </html>

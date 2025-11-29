@@ -8,6 +8,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -41,9 +44,24 @@ public class PaypalService {
     public StartOut createOrder(Long orderId, String currency) {
         try {
             Order order = orderService.findById(orderId);
-            if (order == null) return new StartOut(false, null, null);
+            if (order == null) {
+                return new StartOut(false, null, null);
+            }
 
-            var payment = paymentService.start(orderId, order.getGrandTotal(), currency, "PAYPAL");
+            // ---------- IMPORTANT: use remainingToPay (after discount + gift card) ----------
+            BigDecimal amountToCharge = order.getRemainingToPay();
+            if (amountToCharge == null || amountToCharge.compareTo(BigDecimal.ZERO) <= 0) {
+                // fallback if no gift card applied yet
+                amountToCharge = order.getGrandTotal();
+            }
+            if (amountToCharge == null) {
+                amountToCharge = BigDecimal.ZERO;
+            }
+            amountToCharge = amountToCharge.setScale(2, RoundingMode.HALF_UP);
+            // ------------------------------------------------------------------------ //
+
+            // create our internal payment row with the same amount
+            var payment = paymentService.start(orderId, amountToCharge, currency, "PAYPAL");
 
             // --- REAL PAYPAL API INTEGRATION ---
             // 1. Get an access token from PayPal
@@ -56,7 +74,8 @@ public class PaypalService {
             Map<String, Object> purchaseUnit = new HashMap<>();
             Map<String, String> amount = new HashMap<>();
             amount.put("currency_code", currency);
-            amount.put("value", order.getGrandTotal().toString());
+            // use the same remainingToPay amount we computed above
+            amount.put("value", amountToCharge.toPlainString());
             purchaseUnit.put("amount", amount);
             requestBody.put("purchase_units", List.of(purchaseUnit));
 
@@ -95,10 +114,6 @@ public class PaypalService {
             // Store the real PayPal order ID in our database
             paymentService.attachProviderPaymentId(payment.getId(), paypalOrderId);
             // --- END REAL PAYPAL API INTEGRATION ---
-
-            // The approval URL is where the browser should go
-            // Previously, we used a fake URL:
-            // String approvalUrl = appUrl + "/fake-paypal-approve?orderId=" + orderId + "&token=" + paypalOrderId;
 
             return new StartOut(true, approvalUrl, payment.getId());
         } catch (Exception e) {

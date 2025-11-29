@@ -5,6 +5,7 @@ import com.example.foodapp.model.Product;
 import com.example.foodapp.model.Review;
 import com.example.foodapp.model.User;
 import com.example.foodapp.repository.ReviewRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,4 +40,26 @@ public class ReviewService {
         r.setApproved(true); // flip to false if you want moderation
         return repo.save(r);
     }
+
+
+    public List<Review> latestApproved(int limit) {
+        return repo.findLatestApproved(PageRequest.of(0, Math.max(1, limit)));
+    }
+
+    /** Save / update a review */
+    public Review save(Review review) {
+        return repo.save(review);
+    }
+
+
+
+    public List<Review> findByProduct(Product product) {
+        // if you used the OrderBy method:
+        return repo.findByProductOrderByCreatedAtDesc(product);
+
+        // or, if you used the simple one:
+        // return reviewRepository.findByProduct(product);
+    }
+
 }
+

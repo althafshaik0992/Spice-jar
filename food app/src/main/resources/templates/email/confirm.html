@@ -1,0 +1,40 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Confirm subscription</title>
+    <style>
+        body{margin:0;background:#f6fbf6;font-family:Segoe UI,Roboto,Arial,sans-serif;color:#222}
+        .outer{width:100%;padding:24px 0}
+        .card{max-width:620px;margin:0 auto;background:#fff;border-radius:12px;
+            box-shadow:0 8px 24px rgba(0,0,0,.06);overflow:hidden}
+        .hero{background:#218838;color:#fff;padding:22px}
+        .content{padding:24px}
+        .btn{display:inline-block;background:#218838;color:#fff;text-decoration:none;
+            padding:12px 18px;border-radius:8px;font-weight:700}
+        .note{color:#666;font-size:13px;margin-top:12px}
+        .footer{padding:16px;color:#777;font-size:12px;text-align:center}
+        a.unsub{color:#888}
+    </style>
+</head>
+<body>
+<div class="outer">
+    <div class="card">
+        <div class="hero">
+            <h2 style="margin:0">Confirm your SpiceJar subscription</h2>
+        </div>
+        <div class="content">
+            <p>Tap the button below to start receiving recipes, tips, and exclusive coupons.</p>
+            <p style="margin:20px 0">
+                <a class="btn" th:href="${confirmLink}">Confirm subscription</a>
+            </p>
+            <p class="note">If you didn’t request this, you can safely ignore this email.</p>
+        </div>
+        <div class="footer">
+            SpiceJar • Fresh Spices Online<br>
+            <a class="unsub" th:href="${unsubLink}">Unsubscribe</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

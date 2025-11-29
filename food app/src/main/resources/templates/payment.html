@@ -12,8 +12,6 @@
           href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
         :root {
             --green: #218838;
@@ -22,7 +20,12 @@
             --line: #e6ece7;
             --text-dark: #1f2937;
         }
-        body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;background:#f6fbf6;margin:0;color:var(--text-dark)}
+        body{
+            font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+            background:#f6fbf6;
+            margin:0;
+            color:var(--text-dark)
+        }
 
         main{max-width:1100px;margin:32px auto;padding:0 6%}
         h1{margin:0 0 8px;color:var(--green)}
@@ -35,7 +38,11 @@
             display:flex; justify-content:space-between; align-items:center;
             position:sticky; top:0; z-index:1000; height:60px;
         }
-        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
+        .brand-logo{
+            display:flex; align-items:center; gap:8px;
+            text-decoration:none; color:var(--green);
+            font-weight:700; font-size:20px
+        }
         .brand-logo video{width:36px; height:auto; border-radius:4px}
         .nav-links{display:flex; align-items:center; gap:18px}
         .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
@@ -65,11 +72,26 @@
             font-size: 11px; font-weight: bold; line-height: 1;
         }
 
-        .card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.06);padding:24px; margin-bottom: 24px;}
+        .card{
+            background:#fff;
+            border:1px solid var(--line);
+            border-radius:14px;
+            box-shadow:0 10px 30px rgba(0,0,0,.06);
+            padding:24px;
+            margin-bottom:24px;
+        }
         .payment-area .card { margin-bottom: 0; }
 
-        .section-title { font-size: 24px; font-weight: 900; color: var(--text-dark); margin-bottom: 16px; }
-        .badge-secure { display: inline-block; padding: 6px 12px; background: #f0fdf4; color: #065f46; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 16px; }
+        .section-title {
+            font-size: 24px; font-weight: 900;
+            color: var(--text-dark); margin-bottom: 16px;
+        }
+        .badge-secure {
+            display: inline-block; padding: 6px 12px;
+            background: #f0fdf4; color: #065f46;
+            border-radius: 8px; font-size: 13px; font-weight: 500;
+            margin-bottom: 16px;
+        }
 
         .option{
             display:flex;align-items:center;justify-content:space-between;
@@ -79,20 +101,36 @@
         .option:first-of-type { margin-top: 0; }
         .option:hover{border-color: var(--green); box-shadow: 0 4px 8px rgba(0,0,0,.05);}
         .left{display:flex;gap:12px;align-items:center}
-        .icon{width:48px;height:48px;display:grid;place-items:center;border-radius:12px;background:var(--light-green);color:var(--green);font-size:22px}
-        .btn{border:none;cursor:pointer;border-radius:10px;padding:10px 16px;font-weight:700; transition: background 0.2s ease, box-shadow 0.2s ease}
+        .icon{
+            width:48px;height:48px;display:grid;place-items:center;
+            border-radius:12px;background:var(--light-green);color:var(--green);font-size:22px
+        }
+        .btn{
+            border:none;cursor:pointer;border-radius:10px;
+            padding:10px 16px;font-weight:700;
+            transition: background 0.2s ease, box-shadow 0.2s ease
+        }
         .btn.primary{background:var(--green);color:#fff}
         .btn.primary:hover{background:#1a6f30}
         .btn.ghost{background:#fff;border:1px solid #dcdcdc; color: var(--text-dark);}
         .btn.ghost:hover{background:#f4f4f4}
 
-        .wallets{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 20px;}
-        .wallet{flex:1 1 180px;display:flex;gap:10px;align-items:center;justify-content:center;border:1px dashed #d7eadb;padding:10px;border-radius:12px;background:#fafdfb;cursor:pointer}
+        .wallets{
+            display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 20px;
+        }
+        .wallet{
+            flex:1 1 180px;display:flex;gap:10px;align-items:center;justify-content:center;
+            border:1px dashed #d7eadb;padding:10px;border-radius:12px;background:#fafdfb;
+            cursor:pointer
+        }
         .wallet img{height:20px}
         .wallet:hover{background:#f3fbf6}
 
         .hr{height:1px;background:var(--line);margin:16px 0}
-        .row{display:flex;justify-content:space-between;margin:8px 0; font-size:15px;}
+        .row{
+            display:flex;justify-content:space-between;margin:8px 0;
+            font-size:15px;
+        }
         .address-details .row{margin:6px 0;}
 
         .btn-edit {
@@ -103,9 +141,56 @@
         }
         .btn-edit:hover { background: #d7eadb; }
 
-        .row.total { font-size: 18px; font-weight: 900; padding-top: 8px; color: #065f46; }
+        .row.total {
+            font-size: 18px; font-weight: 900; padding-top: 8px; color: #065f46;
+        }
 
-        .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#1a6f30;color:#fff;padding:12px 18px;border-radius:10px;z-index:9999; box-shadow: 0 4px 12px rgba(0,0,0,.15);}
+        .toast{
+            position:fixed;left:50%;transform:translateX(-50%);
+            bottom:24px;background:#1a6f30;color:#fff;
+            padding:12px 18px;border-radius:10px;z-index:9999;
+            box-shadow: 0 4px 12px rgba(0,0,0,.15);
+        }
+
+        /* Gift card section */
+        .gift-card-box{
+            border:1px dashed #d7eadb;
+            border-radius:12px;
+            padding:12px 10px;
+            margin:12px 0 16px;
+            background:#f9fdf9;
+        }
+        .gift-card-header{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:8px;
+        }
+        .gift-card-header span{
+            font-size:14px;
+            color:var(--muted);
+        }
+        .gift-row{
+            display:flex;
+            gap:8px;
+            align-items:stretch;
+            margin-top:6px;
+        }
+        .gift-row input{
+            flex:1;
+            padding:9px 10px;
+            border-radius:8px;
+            border:1px solid #d1d5db;
+            font-size:14px;
+        }
+        .gift-row button{
+            white-space:nowrap;
+        }
+        .gift-hint{
+            font-size:12px;
+            color:var(--muted);
+            margin-top:4px;
+        }
     </style>
 </head>
 <body>
@@ -128,8 +213,6 @@
         </a>
         <a th:href="@{/contact}">Contact Us</a>
 
-
-
         <!-- Account -->
         <div class="dropdown">
             <button class="dropdown-toggle">
@@ -140,8 +223,9 @@
                 <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
 
-                <span th:if="${session.USER != null}" style="display:block; padding:10px 16px; font-weight:600; border-bottom:1px solid var(--line);">
-                  Welcome, <strong th:text="${session.USER.firstName}">User</strong>
+                <span th:if="${session.USER != null}"
+                      style="display:block; padding:10px 16px; font-weight:600; border-bottom:1px solid var(--line);">
+                    Welcome, <strong th:text="${session.USER.firstName}">User</strong>
                 </span>
                 <a th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
                 <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
@@ -160,17 +244,19 @@
         <div class="card payment-area">
             <h2 class="section-title" style="margin-top:0;">Payment Selection</h2>
             <div class="badge-secure">
-                <i class="fa-solid fa-lock"></i> All payments are encrypted & processed securely.
+                <i class="fa-solid fa-lock"></i> All payments are encrypted &amp; processed securely.
             </div>
 
             <!-- Express wallets row -->
             <div class="wallets" role="group" aria-label="Express wallets">
                 <button class="wallet" id="btn-apple">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple Pay Logo" aria-hidden="true">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"
+                         alt="Apple Pay Logo" aria-hidden="true">
                     <strong>Pay with Apple&nbsp;Pay</strong>
                 </button>
                 <button class="wallet" id="btn-google">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google Pay Logo" aria-hidden="true">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg"
+                         alt="Google Pay Logo" aria-hidden="true">
                     <strong>Pay with Google&nbsp;Pay</strong>
                 </button>
             </div>
@@ -192,7 +278,9 @@
             <!-- PayPal -->
             <div class="option" id="option-paypal" style="margin-top:12px;">
                 <div class="left">
-                    <div class="icon" style="background:#e8f4fd; color:#003087;"><i class="fa-brands fa-paypal"></i></div>
+                    <div class="icon" style="background:#e8f4fd; color:#003087;">
+                        <i class="fa-brands fa-paypal"></i>
+                    </div>
                     <div>
                         <div style="font-weight:800">PayPal</div>
                         <div style="color:var(--muted);font-size:14px">You’ll be redirected to PayPal to approve.</div>
@@ -202,9 +290,11 @@
             </div>
         </div>
 
-        <!-- right: Order Summary -->
+        <!-- RIGHT: Order Summary + Gift Cards -->
         <aside class="card">
-            <h3 style="margin:0 0 16px; border-bottom:1px solid var(--line); padding-bottom:8px; font-size:20px;">Order Summary</h3>
+            <h3 style="margin:0 0 16px; border-bottom:1px solid var(--line); padding-bottom:8px; font-size:20px;">
+                Order Summary
+            </h3>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <h4 style="margin:0; font-size:16px;">Shipping Address</h4>
@@ -214,25 +304,113 @@
             </div>
 
             <div class="address-details">
-                <div class="row"><span style="color:var(--muted)">Name</span><span th:text="${order.customerName}">—</span></div>
-                <div class="row"><span style="color:var(--muted)">Street</span><span th:text="${order.street}">—</span></div>
-                <div class="row"><span style="color:var(--muted)">City, State</span><span th:text="${order.city} + ', ' + ${order.state}">—</span></div>
-                <div class="row"><span style="color:var(--muted)">ZIP, Country</span><span th:text="${order.zip} + ', ' + ${order.country}">—</span></div>
-                <div class="row"><span style="color:var(--muted)">Phone</span><span th:text="${order.phone}">—</span></div>
-                <div class="row"><span style="color:var(--muted)">Email</span><span th:text="${order.email}">—</span></div>
+                <div class="row">
+                    <span style="color:var(--muted)">Name</span>
+                    <span th:text="${order.customerName}">—</span>
+                </div>
+                <div class="row">
+                    <span style="color:var(--muted)">Street</span>
+                    <span th:text="${order.street}">—</span>
+                </div>
+                <div class="row">
+                    <span style="color:var(--muted)">City, State</span>
+                    <span th:text="${order.city} + ', ' + ${order.state}">—</span>
+                </div>
+                <div class="row">
+                    <span style="color:var(--muted)">ZIP, Country</span>
+                    <span th:text="${order.zip} + ', ' + ${order.country}">—</span>
+                </div>
+                <div class="row">
+                    <span style="color:var(--muted)">Phone</span>
+                    <span th:text="${order.phone}">—</span>
+                </div>
+                <div class="row">
+                    <span style="color:var(--muted)">Email</span>
+                    <span th:text="${order.email}">—</span>
+                </div>
             </div>
 
             <hr class="hr">
 
-            <h4 style="margin:0 0 8px; font-size:16px;">Price Details</h4>
+            <!-- Gift card section -->
+            <div class="gift-card-box">
+                <div class="gift-card-header">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <i class="fa-solid fa-gift" style="color:#b56a00;"></i>
+                        <strong>Use your SpiceJar gift balance</strong>
+                    </div>
+                    <span>
+                        Balance:
+                        $<span id="gc-balance"
+                               th:text="${#numbers.formatDecimal(giftBalance != null ? giftBalance : 0,1,'COMMA',2,'POINT')}">
+                            0.00
+                        </span>
+                    </span>
+                </div>
+
+                <div class="gift-row">
+                    <input id="gc-amount" type="number" step="0.01" min="0"
+                           placeholder="Enter amount to apply">
+                    <button id="gc-apply" type="button" class="btn primary">
+                        Apply
+                    </button>
+                </div>
+                <div class="gift-hint" id="gc-msg">
+                    You can use any amount up to your gift balance and order total.
+                </div>
+            </div>
+
+            <h4 style="margin:8px 0 8px; font-size:16px;">Price Details</h4>
             <div class="price-details">
-                <div class="row"><span>Subtotal</span><span th:text="${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">$0.00</span></div>
-                <div class="row"><span>Tax (8%)</span><span th:text="${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">$0.00</span></div>
+                    <div class="row">
+                        <span>Subtotal</span>
+                        <span th:text="${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">$0.00</span>
+                    </div>
+                    <div class="row">
+                        <span>Discount</span>
+                        <span>− $<span th:text="${#numbers.formatDecimal(order.discount,1,'COMMA',2,'POINT')}">0.00</span></span>
+                    </div>
+                    <div class="row">
+                        <span>Tax (8%)</span>
+                        <span th:text="${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">$0.00</span>
+                    </div>
+
+
+                <hr class="hr">
+
+                <div class="row total">
+                    <span>Order Total</span>
+                    <span th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">$0.00</span>
+                </div>
+
+
+                <div class="row">
+                    <span>Gift card applied</span>
+                    <span>
+                        − $
+                        <span id="gc-applied"
+                              th:text="${#numbers.formatDecimal(order.giftApplied != null ? order.giftApplied : 0,1,'COMMA',2,'POINT')}">
+                            0.00
+                        </span>
+                    </span>
+                </div>
             </div>
 
             <hr class="hr">
 
-            <div class="row total"><span>Order Total</span><span th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">$0.00</span></div>
+            <div class="row total">
+                <span>Amount to pay online</span>
+                <span>
+                    $<span id="order-total"
+                           th:text="${#numbers.formatDecimal( (order.remainingToPay != null ? order.remainingToPay : order.grandTotal),1,'COMMA',2,'POINT')}">
+                        0.00
+                    </span>
+                </span>
+            </div>
+
+            <p style="font-size:12px;color:#6b7280;margin-top:6px;">
+                We’ll first use your gift card balance. Any remaining amount will be charged via the payment method you choose above.
+            </p>
         </aside>
     </section>
 </main>
@@ -257,11 +435,104 @@
         setTimeout(()=>t.remove(), 2500);
     }
 
+    // ---------- Gift card apply ----------
+    const gcInput    = document.getElementById('gc-amount');
+    const gcApply    = document.getElementById('gc-apply');
+    const gcMsg      = document.getElementById('gc-msg');
+    const gcBalance  = document.getElementById('gc-balance');
+    const gcApplied  = document.getElementById('gc-applied');
+    const orderTotal = document.getElementById('order-total');
+
+    async function applyGift(){
+        if (!gcInput) return;
+        let raw = (gcInput.value || '').trim();
+        let amount = parseFloat(raw);
+        if (isNaN(amount) || amount <= 0){
+            gcMsg.textContent = 'Please enter a valid amount.';
+            gcMsg.style.color = '#b91c1c';
+            return;
+        }
+
+        gcApply.disabled = true;
+        const oldText = gcApply.textContent;
+        gcApply.textContent = 'Applying…';
+
+        try{
+            // UPDATED: hit /payment/gift/apply with CSRF header + JSON body
+            const res = await fetch('/payment/gift/apply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [CSRF_HEADER]: CSRF
+                },
+                body: JSON.stringify({
+                    orderId: ORDER_ID,
+                    amount: Number(gcInput.value || 0)
+                })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || data.status !== 'success'){
+                gcMsg.textContent = data.message || 'Unable to apply gift balance.';
+                gcMsg.style.color = '#b91c1c';
+                toast('Gift card not applied', false);
+            } else {
+                const applied   = parseFloat(data.applied ?? 0);
+                const remaining = parseFloat(data.remainingToPay ?? 0);
+                const left      = parseFloat(data.giftBalanceLeft ?? 0);
+
+                // update applied on UI
+                if (gcApplied && !isNaN(applied)) {
+                    gcApplied.textContent = applied.toFixed(2);
+                }
+
+                // update order total
+                if (orderTotal && !isNaN(remaining)) {
+                    orderTotal.textContent = remaining.toFixed(2);
+                }
+
+                // update shown gift balance from server
+                if (gcBalance && !isNaN(left)) {
+                    gcBalance.textContent = left.toFixed(2);
+                }
+
+                gcMsg.textContent = data.message
+                    || ('Gift balance applied. Remaining to pay online: $' + remaining.toFixed(2));
+                gcMsg.style.color = '#166534';
+                toast('Gift card applied', true);
+
+                gcInput.value = '';
+            }
+
+        } catch(e){
+            console.error(e);
+            gcMsg.textContent = 'Something went wrong. Please try again.';
+            gcMsg.style.color = '#b91c1c';
+            toast('Error applying gift card', false);
+        } finally {
+            gcApply.disabled = false;
+            gcApply.textContent = oldText;
+        }
+    }
+
+    gcApply?.addEventListener('click', applyGift);
+    gcInput?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            applyGift();
+        }
+    });
+
     // ---------- Existing PayPal ----------
-    document.getElementById('btn-paypal').addEventListener('click', async () => {
+    document.getElementById('btn-paypal')?.addEventListener('click', async () => {
         try{
             toast('Redirecting to PayPal...', true);
-            const r = await fetch('/payment/paypal/start', {method:'POST', headers:withCsrf(), body: JSON.stringify({orderId: ORDER_ID})});
+            const r = await fetch('/payment/paypal/start', {
+                method:'POST',
+                headers:withCsrf(),
+                body: JSON.stringify({orderId: ORDER_ID})
+            });
             if(!r.ok) throw new Error();
             const data = await r.json();
             if(!data || !data.approvalUrl){ throw new Error(); }
@@ -273,10 +544,14 @@
     });
 
     // ---------- Existing Stripe Checkout (card) ----------
-    document.getElementById('btn-card').addEventListener('click', async () => {
+    document.getElementById('btn-card')?.addEventListener('click', async () => {
         try{
             toast('Redirecting to secure card checkout...', true);
-            const r = await fetch('/payment/stripe/start', {method:'POST', headers:withCsrf(), body: JSON.stringify({orderId: ORDER_ID})});
+            const r = await fetch('/payment/stripe/start', {
+                method:'POST',
+                headers:withCsrf(),
+                body: JSON.stringify({orderId: ORDER_ID})
+            });
             if(!r.ok) throw new Error();
             const data = await r.json();
             if(!data || !data.checkoutUrl){ throw new Error(); }
@@ -316,7 +591,7 @@
             if (!capability) {
                 // fallback to Checkout (which will also show wallets if supported)
                 toast(kind + ' Pay not available on this device. Using secure checkout…', true);
-                document.getElementById('btn-card').click();
+                document.getElementById('btn-card')?.click();
                 return;
             }
 

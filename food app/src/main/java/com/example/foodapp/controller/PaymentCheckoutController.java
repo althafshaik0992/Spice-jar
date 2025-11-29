@@ -2,20 +2,20 @@ package com.example.foodapp.controller;
 
 import com.example.foodapp.model.Order;
 import com.example.foodapp.model.User;
-import com.example.foodapp.service.OrderService;
-import com.example.foodapp.service.PaymentService;
-import com.example.foodapp.service.PaypalService;
-import com.example.foodapp.service.StripeService;
+import com.example.foodapp.service.*;
 import com.example.foodapp.util.GlobalData;
 import com.example.foodapp.util.SessionCart;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.net.URI;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static com.example.foodapp.util.GlobalData.cart;
@@ -29,35 +29,160 @@ public class PaymentCheckoutController extends BaseController {
     private final PaypalService paypalService;
     private final StripeService stripeService;
     private final SessionCart cart;
+    private final GiftCardService giftCardService;
 
 
 
     public PaymentCheckoutController(OrderService orderService,
                                      PaymentService paymentService,
                                      PaypalService paypalService,
-                                     StripeService stripeService, SessionCart cart) {
+                                     StripeService stripeService, SessionCart cart, GiftCardService giftCardService) {
         this.orderService = orderService;
         this.paymentService = paymentService;
         this.paypalService = paypalService;
         this.stripeService = stripeService;
         this.cart = cart;
+        this.giftCardService = giftCardService;
     }
 
     @Value("${app.paypal.currency:USD}")
     private String paypalCurrency;
 
     @GetMapping("/checkout")
-    public String page(@RequestParam Long orderId, HttpSession session, Model m){
+    public String checkout(@RequestParam("orderId") Long orderId,
+                           HttpSession session,
+                           Model model) {
 
         User user = currentUser(session);
-        if (user == null) return "redirect:/login";
-        Order order = orderService.findById(orderId);
-        if (order == null) return "redirect:/orders";
-        // optional: ensure belongs to current user
+        if (user == null) {
+            return "redirect:/login";
+        }
 
-        m.addAttribute("order", order);
-        return "payment"; // the HTML above
+        Order order = orderService.findById(orderId);
+        if (order == null) {
+            return "redirect:/cart/view";
+        }
+
+        // 1) Gift card balance for this user
+        BigDecimal giftBalance = giftCardService.usableBalanceForUser(user.getId());
+
+        // 2) How much has already been applied on this order
+        BigDecimal alreadyApplied = order.getGiftAppliedSafe();
+
+        // 3) Remaining amount to pay AFTER gift cards
+        BigDecimal remainingToPay = order.getRemainingToPay();
+
+        model.addAttribute("order", order);
+        model.addAttribute("cartCount", 0); // or your real cart badge count
+
+        // gift-card–related attributes used by the HTML/JS
+        model.addAttribute("giftBalance", giftBalance);
+        model.addAttribute("giftApplied", alreadyApplied);
+        model.addAttribute("remainingToPay", remainingToPay);
+
+        return "payment";
     }
+
+    @PostMapping(
+            path = "/gift/apply",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ResponseBody
+    public Map<String, Object> applyGiftBalance(@RequestBody Map<String, Object> body,
+                                                HttpSession session) {
+
+        User user = currentUser(session);
+        if (user == null) {
+            return Map.of(
+                    "status", "error",
+                    "message", "Please login to use gift cards."
+            );
+        }
+
+        Long orderId;
+        BigDecimal requested;
+
+        try {
+            orderId = Long.valueOf(String.valueOf(body.get("orderId")));
+            requested = new BigDecimal(String.valueOf(body.get("amount")));
+        } catch (Exception e) {
+            return Map.of(
+                    "status", "error",
+                    "message", "Invalid request."
+            );
+        }
+
+        Order order = orderService.findById(orderId);
+        if (order == null) {
+            return Map.of(
+                    "status", "error",
+                    "message", "Order not found."
+            );
+        }
+
+        // available gift credit for this user
+        BigDecimal available = giftCardService.usableBalanceForUser(user.getId());
+        if (available.signum() <= 0) {
+            return Map.of(
+                    "status", "error",
+                    "message", "No gift card balance available."
+            );
+        }
+
+        if (requested.signum() <= 0) {
+            return Map.of(
+                    "status", "error",
+                    "message", "Amount must be greater than zero."
+            );
+        }
+
+        // You can't apply more than available or more than remaining to pay
+        BigDecimal maxAllowed = available.min(order.getRemainingToPay());
+        BigDecimal desired = requested.min(maxAllowed);
+
+        if (desired.signum() <= 0) {
+            return Map.of(
+                    "status", "error",
+                    "message", "Nothing to apply for this order."
+            );
+        }
+
+        // Actually consume from the user's gift cards
+        BigDecimal used = giftCardService.consumeBalanceForUser(
+                user.getId(),
+                desired,
+                "Order payment",
+                order.getId()
+        );
+
+        if (used.signum() <= 0) {
+            return Map.of(
+                    "status", "error",
+                    "message", "Unable to apply gift balance."
+            );
+        }
+
+        // Increase giftApplied on this order
+        BigDecimal newApplied = order.getGiftAppliedSafe().add(used);
+        order.setGiftApplied(newApplied);
+        orderService.save(order);
+
+        // Compute updated remaining amounts
+        BigDecimal newRemainingToPay = order.getRemainingToPay();
+        BigDecimal newAvailable = available.subtract(used);
+        if (newAvailable.signum() < 0) newAvailable = BigDecimal.ZERO;
+
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("status", "success");
+        resp.put("message", "Applied $" + used + " from your gift balance.");
+        resp.put("applied", newApplied);
+        resp.put("giftBalanceLeft", newAvailable);
+        resp.put("remainingToPay", newRemainingToPay);
+
+        return resp;
+    }
+
 
     /** COD: mark pending and return 200 */
     @PostMapping("/cod")

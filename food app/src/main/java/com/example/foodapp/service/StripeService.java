@@ -15,6 +15,8 @@ import com.stripe.param.checkout.SessionCreateParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,7 +38,9 @@ public class StripeService {
     @Value("${stripe.webhook.secret:}")
     private String webhookSecret;
 
-    public StripeService(OrderService orderService, PaymentService paymentService, OrderRepository orderRepository) {
+    public StripeService(OrderService orderService,
+                         PaymentService paymentService,
+                         OrderRepository orderRepository) {
         this.orderService = orderService;
         this.paymentService = paymentService;
         this.orderRepository = orderRepository;
@@ -49,9 +53,21 @@ public class StripeService {
             Order order = orderService.findById(orderId);
             if (order == null) return new StartOut(false, null, null);
 
-            long amountCents = order.getGrandTotal().movePointRight(2).longValueExact();
+            // -------- IMPORTANT: use remainingToPay (after discount + gift card) --------
+            BigDecimal amountToCharge = order.getRemainingToPay();
+            if (amountToCharge == null || amountToCharge.compareTo(BigDecimal.ZERO) <= 0) {
+                // fallback if no gift card or something weird
+                amountToCharge = order.getGrandTotal();
+            }
+            if (amountToCharge == null) {
+                amountToCharge = BigDecimal.ZERO;
+            }
+            amountToCharge = amountToCharge.setScale(2, RoundingMode.HALF_UP);
+            long amountCents = amountToCharge.movePointRight(2).longValueExact();
+            // ---------------------------------------------------------------------------
 
-            var payment = paymentService.start(orderId, order.getGrandTotal(), "USD", "STRIPE");
+            // internal Payment row uses the same final amount
+            var payment = paymentService.start(orderId, amountToCharge, "USD", "STRIPE");
 
             SessionCreateParams params =
                     SessionCreateParams.builder()
@@ -99,7 +115,17 @@ public class StripeService {
         Order o = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
 
-        long amountInCents = o.getGrandTotal().movePointRight(2).longValueExact();
+        // -------- again: use remainingToPay here --------
+        BigDecimal amountToCharge = o.getRemainingToPay();
+        if (amountToCharge == null || amountToCharge.compareTo(BigDecimal.ZERO) <= 0) {
+            amountToCharge = o.getGrandTotal();
+        }
+        if (amountToCharge == null) {
+            amountToCharge = BigDecimal.ZERO;
+        }
+        amountToCharge = amountToCharge.setScale(2, RoundingMode.HALF_UP);
+        long amountInCents = amountToCharge.movePointRight(2).longValueExact();
+        // ------------------------------------------------
 
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                 .setAmount(amountInCents)

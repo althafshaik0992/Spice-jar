@@ -273,60 +273,69 @@
             <aside class="card summary">
                 <h2>Order summary</h2>
 
-                <!-- Coupon code input -->
-                <div class="coupon-box">
-                    <div class="coupon-row">
-                        <input id="coupon-input" type="text" placeholder="Discount code"
-                               th:value="${cart.appliedCouponCode}"
-                               style="flex:1;padding:11px;border:1px solid #ddd;border-radius:8px">
-                        <button id="coupon-apply" type="button"
-                                style="border:none;border-radius:8px;background:#218838;color:#fff;padding:10px 14px;font-weight:800;cursor:pointer">
-                            <i class="fa-solid fa-badge-percent"></i>&nbsp;Apply
-                        </button>
-                        <button id="coupon-remove" type="button"
-                                th:style="${cart.appliedCouponCode}!=null? 'display:inline-block' : 'display:none'"
-                                style="border:1px solid #d7eadf;background:#eef6f0;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer">
-                            Remove
-                        </button>
-                    </div>
-                    <div id="coupon-msg" class="muted"
-                         th:text="${cart.appliedCouponCode!=null ? 'Code ' + cart.appliedCouponCode + ' applied' : ''}"></div>
+                <!-- If the cart DOES contain a gift card: show info and block coupons -->
+                <div th:if="${cartHasGiftCard}" class="coupon-box" style="background:#fff8e1;border-color:#facc15;margin-bottom:16px">
+                    <strong><i class="fa-solid fa-gift"></i> Gift card order</strong><br/>
+                    Gift card purchases are <strong>not eligible</strong> for discount codes or coupons.
                 </div>
 
-                <!-- Available coupons list (from admin) -->
-                <div th:if="${availableCoupons != null and !#lists.isEmpty(availableCoupons)}"
-                     class="coupon-box" style="margin-top:10px">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                        <h3 style="margin:0;font-size:15px;color:#333">Available coupons</h3>
-                        <span class="muted" th:text="${availableCoupons.size()} + ' available'">0 available</span>
+                <!-- When cart does NOT contain gift cards: normal coupon UI -->
+                <div th:if="${!cartHasGiftCard}">
+                    <!-- Coupon code input -->
+                    <div class="coupon-box">
+                        <div class="coupon-row">
+                            <input id="coupon-input" type="text" placeholder="Discount code"
+                                   th:value="${cart.appliedCouponCode}"
+                                   style="flex:1;padding:11px;border:1px solid #ddd;border-radius:8px">
+                            <button id="coupon-apply" type="button"
+                                    style="border:none;border-radius:8px;background:#218838;color:#fff;padding:10px 14px;font-weight:800;cursor:pointer">
+                                <i class="fa-solid fa-badge-percent"></i>&nbsp;Apply
+                            </button>
+                            <button id="coupon-remove" type="button"
+                                    th:style="${cart.appliedCouponCode}!=null? 'display:inline-block' : 'display:none'"
+                                    style="border:1px solid #d7eadf;background:#eef6f0;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer">
+                                Remove
+                            </button>
+                        </div>
+                        <div id="coupon-msg" class="muted"
+                             th:text="${cart.appliedCouponCode!=null ? 'Code ' + cart.appliedCouponCode + ' applied' : ''}"></div>
                     </div>
 
-                    <div style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow:auto;padding-right:4px">
-                        <div th:each="c : ${availableCoupons}"
-                             style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px dashed #e0e6df;border-radius:10px;padding:10px">
-                            <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
-                                <div>
-                  <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#eef6f0;border:1px solid #d7eadf;color:#1e7e34;font-weight:800;letter-spacing:.3px"
-                        th:text="${c.code}">SAVE10</span>
-                                    <span class="muted" style="margin-left:6px"
-                                          th:text="${c.type.name()=='PERCENT' ? (c.value + '% off') : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT') + ' off')}">
-                    10% off
-                  </span>
-                                </div>
-                                <div class="muted" style="font-size:12px;line-height:1.3">
-                  <span th:if="${c.minSubtotal != null and c.minSubtotal > 0}"
-                        th:text="${'Min subtotal $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">Min subtotal $0.00</span>
-                                    <span th:if="${c.minSubtotal == null or c.minSubtotal == 0}">No minimum</span>
-                                    <span> • </span>
-                                    <span th:text="${c.expiresOn != null ? 'Expires ' + c.expiresOn : 'No expiry'}">No expiry</span>
-                                </div>
-                            </div>
+                    <!-- Available coupons list (from admin) -->
+                    <div th:if="${availableCoupons != null and !#lists.isEmpty(availableCoupons)}"
+                         class="coupon-box" style="margin-top:10px">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                            <h3 style="margin:0;font-size:15px;color:#333">Available coupons</h3>
+                            <span class="muted" th:text="${availableCoupons.size()} + ' available'">0 available</span>
+                        </div>
 
-                            <button type="button"
-                                    class="btn-ghost coupon-quick-apply"
-                                    th:attr="data-code=${c.code}">
-                                Apply
-                            </button>
+                        <div style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow:auto;padding-right:4px">
+                            <div th:each="c : ${availableCoupons}"
+                                 style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px dashed #e0e6df;border-radius:10px;padding:10px">
+                                <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+                                    <div>
+                      <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#eef6f0;border:1px solid #d7eadf;color:#1e7e34;font-weight:800;letter-spacing:.3px"
+                            th:text="${c.code}">SAVE10</span>
+                                        <span class="muted" style="margin-left:6px"
+                                              th:text="${c.type.name()=='PERCENT' ? (c.value + '% off') : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT') + ' off')}">
+                        10% off
+                      </span>
+                                    </div>
+                                    <div class="muted" style="font-size:12px;line-height:1.3">
+                      <span th:if="${c.minSubtotal != null and c.minSubtotal > 0}"
+                            th:text="${'Min subtotal $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">Min subtotal $0.00</span>
+                                        <span th:if="${c.minSubtotal == null or c.minSubtotal == 0}">No minimum</span>
+                                        <span> • </span>
+                                        <span th:text="${c.expiresOn != null ? 'Expires ' + c.expiresOn : 'No expiry'}">No expiry</span>
+                                    </div>
+                                </div>
+
+                                <button type="button"
+                                        class="btn-ghost coupon-quick-apply"
+                                        th:attr="data-code=${c.code}">
+                                    Apply
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

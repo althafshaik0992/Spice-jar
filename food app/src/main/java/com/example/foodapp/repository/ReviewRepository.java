@@ -3,6 +3,7 @@ package com.example.foodapp.repository;
 
 import com.example.foodapp.model.Product;
 import com.example.foodapp.model.Review;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -18,4 +19,19 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     long countApproved(Product product);
 
     boolean existsByProductIdAndUserId(Long productId, Long userId); // “one per user” guard (optional)
+
+
+    // --- new: latest site-wide approved reviews (limit via Pageable) ---
+    @Query("""
+
+            select r
+           from Review r
+           where r.approved = true
+           order by coalesce(r.createdAt, CURRENT_TIMESTAMP) desc, r.id desc
+           """)
+List<Review> findLatestApproved(Pageable pageable);
+
+    List<Review> findByProductOrderByCreatedAtDesc(Product product);
+
+
 }

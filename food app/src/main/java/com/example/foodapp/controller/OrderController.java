@@ -1,13 +1,11 @@
 // src/main/java/com/example/foodapp/controller/OrderController.java
 package com.example.foodapp.controller;
 
-import com.example.foodapp.Ai.CartService;
 import com.example.foodapp.model.*;
+import com.example.foodapp.util.Cart;
 import com.example.foodapp.repository.CouponRepository;
 import com.example.foodapp.service.*;
-import com.example.foodapp.util.Cart;
 import com.example.foodapp.util.CartItem;
-import com.example.foodapp.util.GlobalData;
 import com.example.foodapp.util.SessionCart;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -16,7 +14,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
@@ -34,13 +36,16 @@ public class OrderController extends BaseController {
 
     private final CouponRepository couponRepository;
 
-    public OrderController(OrderService orderService, AddressService addressService, InventoryService inventoryService, EmailService emailService, SessionCart sessionCart,  CouponRepository couponRepository) {
+    private final GiftCardService giftCardService;
+
+    public OrderController(OrderService orderService, AddressService addressService, InventoryService inventoryService, EmailService emailService, SessionCart sessionCart, CouponRepository couponRepository, GiftCardService giftCardService) {
         this.orderService = orderService;
         this.addressService = addressService;
         this.inventoryService = inventoryService;
         this.emailService = emailService;
         this.sessionCart = sessionCart;
         this.couponRepository = couponRepository;
+        this.giftCardService = giftCardService;
     }
 
 //    @GetMapping("/checkout")
@@ -103,9 +108,12 @@ public class OrderController extends BaseController {
     public String checkout(@RequestParam(value = "orderId", required = false) Long orderId,
                            HttpSession session,
                            Model m) {
+
         // 1) Must be logged in
         User user = currentUser(session);
-        if (user == null) return "redirect:/login";
+        if (user == null) {
+            return "redirect:/login";
+        }
 
         // 2) Hydrate SessionCart from the best available source
         boolean hydrated = false;
@@ -113,14 +121,15 @@ public class OrderController extends BaseController {
         if (orderId != null) {
             // From an existing order (has real qty & unitPrice)
             Order order = orderService.findById(orderId);
-            if (order == null) return "redirect:/orders";
+            if (order == null) {
+                return "redirect:/orders";
+            }
             sessionCart.syncFromOrderItems(order.getItems());
             hydrated = true;
         } else {
             // Try session "CART" (legacy Cart with List<CartItem>)
             Object obj = session.getAttribute("CART");
-            if (obj instanceof com.example.foodapp.util.Cart sc
-                    && sc.getItems() != null && !sc.getItems().isEmpty()) {
+            if (obj instanceof Cart sc && sc.getItems() != null && !sc.getItems().isEmpty()) {
                 sessionCart.syncFromCartItems(sc.getItems());
                 hydrated = true;
             } else if (com.example.foodapp.util.GlobalData.cart != null
@@ -139,35 +148,40 @@ public class OrderController extends BaseController {
         // Recompute totals now that items exist
         sessionCart.recalc();
 
-        // (Optional debug)
-        // sessionCart.debugPrint();
+        // 3) Detect if cart contains any gift card line
+        boolean cartHasGiftCard = sessionCart.containsGiftCard();
 
-        // 3) Load active coupons (robust fallback if you don't have a typed finder)
-        java.util.List<Coupon> availableCoupons;
-        try {
-            // If you have this method in CouponRepository, prefer it:
-            // List<Coupon> findByActiveTrueOrderByStartsOnAscCodeAsc();
-            availableCoupons = couponRepository.findByActiveTrueOrderByStartsOnAscCodeAsc();
-        } catch (Exception ignore) {
-            availableCoupons = couponRepository.findAll().stream()
-                    .filter(c -> Boolean.TRUE.equals(c.getActive()))
-                    .sorted(
-                            java.util.Comparator.comparing(
-                                    (Coupon c) -> c.getStartsOn() == null ? java.time.LocalDate.MIN : c.getStartsOn()
-                            ).thenComparing(Coupon::getCode, String.CASE_INSENSITIVE_ORDER)
-                    )
-                    .toList();
+        // 4) Load active coupons ONLY if there is NO gift card in the cart
+        List<Coupon> availableCoupons = Collections.emptyList();
+        if (!cartHasGiftCard) {
+            try {
+                availableCoupons = couponRepository.findByActiveTrueOrderByStartsOnAscCodeAsc();
+            } catch (Exception ignore) {
+                availableCoupons = couponRepository.findAll().stream()
+                        .filter(c -> Boolean.TRUE.equals(c.getActive()))
+                        .sorted(
+                                Comparator.comparing(
+                                                (Coupon c) -> c.getStartsOn() == null
+                                                        ? LocalDate.MIN
+                                                        : c.getStartsOn()
+                                        )
+                                        .thenComparing(Coupon::getCode, String.CASE_INSENSITIVE_ORDER)
+                        )
+                        .toList();
+            }
         }
 
-        // 4) Model attrs for the view
+        // 5) Model attrs for the view
         m.addAttribute("currentUser", user);
         m.addAttribute("addresses", addressService.listForUser(user));
-        m.addAttribute("cart", sessionCart);                // IMPORTANT: use SessionCart here
+        m.addAttribute("cart", sessionCart);                 // use SessionCart
         m.addAttribute("cartCount", sessionCart.getCount());
         m.addAttribute("availableCoupons", availableCoupons);
+        m.addAttribute("cartHasGiftCard", cartHasGiftCard);  // for Thymeleaf / JS
 
         return "checkout";
     }
+
 
 
 
@@ -181,14 +195,39 @@ public class OrderController extends BaseController {
                         @RequestParam String state,
                         @RequestParam String zip,
                         @RequestParam String country,
-                        HttpSession session) {
+                        HttpSession session,
+                        Model m) {
+
         User user = currentUser(session);
         if (user == null) return "redirect:/login";
 
         Cart cart = (Cart) session.getAttribute("CART");
         if (cart == null || cart.isEmpty()) return "redirect:/cart/view";
 
+        // --- hydrate SessionCart if it's currently empty (by count) ---
+        if (sessionCart.getCount() <= 0
+                && cart.getItems() != null
+                && !cart.getItems().isEmpty()) {
 
+            sessionCart.syncFromCartItems(cart.getItems());
+            sessionCart.recalc();
+        }
+
+        // Prefer discount from SessionCart (what checkout used)
+        BigDecimal discountFromSession = sessionCart.getDiscount() != null
+                ? sessionCart.getDiscount()
+                : BigDecimal.ZERO;
+
+        // Fallback to legacy Cart discount if needed
+        BigDecimal discountFromCart = cart.getDiscount() != null
+                ? cart.getDiscount()
+                : BigDecimal.ZERO;
+
+        BigDecimal effectiveDiscount =
+                discountFromSession.compareTo(BigDecimal.ZERO) > 0
+                        ? discountFromSession
+                        : discountFromCart;
+        // -------------------------------------------------------------
 
         // override with saved address (defensive check)
         if (addressId != null) {
@@ -218,6 +257,7 @@ public class OrderController extends BaseController {
         o.setZip(zip);
         o.setCountry(country);
         o.setConfirmationNumber(orderService.generateUniqueConfirmationNumber());
+
         o.setItems(cart.getItems().stream().map(ci -> {
             OrderItem it = new OrderItem();
             it.setProductId(ci.getProductId());
@@ -225,37 +265,46 @@ public class OrderController extends BaseController {
             it.setQuantity(ci.getQty());
             it.setPrice(ci.getPrice());
             it.setImageUrl(ci.getImageUrl());
-            it.setLineTotal(ci.getPrice()
-                    .multiply(BigDecimal.valueOf(ci.getQty()))
-                    .setScale(2, RoundingMode.HALF_UP));
+            it.setLineTotal(
+                    ci.getPrice()
+                            .multiply(BigDecimal.valueOf(ci.getQty()))
+                            .setScale(2, RoundingMode.HALF_UP)
+            );
             return it;
         }).collect(Collectors.toList()));
 
+        // 👉 discount now comes from SessionCart (checkout) whenever possible
+        o.setDiscount(effectiveDiscount);
 
-        // sessionCart.syncFromProducts(GlobalData.cart);
-        BigDecimal subtotal = nz(cart.getSubtotal());
-        if (subtotal.signum() == 0) {
-            subtotal = cart.getItems().stream().map(CartItem::getSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
-        }
-        BigDecimal tax = subtotal.multiply(new BigDecimal("0.08")).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal grand = subtotal.add(tax).setScale(2, RoundingMode.HALF_UP);
-
+        // uses Order#getGrandTotal(), which already subtracts discount + adds tax
+        o.setTotal(o.getGrandTotal());
 
         o.setStatus("PENDING_PAYMENT");
 
-
         orderService.save(o);
+
+        // Issue gift cards + emails
+        for (CartItem ci : cart.getItems()) {
+            if (ci.getProductId() != null && ci.getProductId() < 0) {
+                for (int i = 0; i < ci.getQty(); i++) {
+                    GiftCard gc = giftCardService.issuePurchasedCard(
+                            ci.getPrice(), user.getId()
+                    );
+                    emailService.sendGiftCardEmail(email, customerName, gc);
+                }
+            }
+        }
+
         cart.clear();
-
         emailService.sendOrderConfirmation(o.getId());
-
-
-        // ⬇️ decrement inventory immediately (or after payment success if you prefer)
         inventoryService.applyOrder(o);
+        emailService.sendOrderSurveyEmail(o);
+        m.addAttribute("cart", sessionCart);
 
 
         return "redirect:/payment/checkout?orderId=" + o.getId();
     }
+
 
     private static BigDecimal nz(BigDecimal v) {
         return v == null ? BigDecimal.ZERO : v;

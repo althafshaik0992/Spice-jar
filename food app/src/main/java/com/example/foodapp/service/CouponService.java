@@ -72,7 +72,7 @@ public class CouponService {
                 if (c.getValue().compareTo(BigDecimal.ZERO) <= 0)
                     return new Validation(null, "Coupon percent must be > 0.");
             }
-            case FLAT -> {
+            case AMOUNT -> {
                 if (c.getValue().compareTo(BigDecimal.ZERO) <= 0)
                     return new Validation(null, "Coupon amount must be > 0.");
             }

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${subject}">Tell us about your SpiceJar order</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        .wrapper {
+            width: 100%;
+            padding: 24px 0;
+            background-color: #f3f4f6;
+        }
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+        }
+
+        /* HEADER */
+        .header {
+            background: radial-gradient(circle at top left, #22c55e, #16a34a, #14532d);
+            padding: 20px 24px;
+            color: #ecfdf5;
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            overflow: hidden;
+            border: 2px solid rgba(209, 250, 229, 0.7);
+        }
+        .logo img {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .header-subtitle {
+            font-size: 13px;
+            opacity: 0.92;
+        }
+        .order-pill {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            background: rgba(6, 95, 70, 0.65);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+        }
+
+        /* BODY */
+        .body {
+            padding: 24px 26px 20px;
+            background-color: #f9fafb;
+            color: #111827;
+        }
+        .greeting {
+            font-size: 15px;
+            margin: 0 0 8px;
+        }
+        .intro {
+            font-size: 14px;
+            margin: 0 0 14px;
+            color: #4b5563;
+        }
+        .highlight {
+            font-weight: 600;
+            color: #065f46;
+        }
+
+        /* PRODUCTS BOX */
+        .products-box {
+            margin-top: 12px;
+            margin-bottom: 14px;
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+            padding: 12px 14px;
+        }
+        .products-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin: 0 0 8px;
+            color: #111827;
+        }
+        .product-item {
+            display: table;
+            width: 100%;
+            border-radius: 10px;
+            padding: 8px 4px;
+        }
+        .product-item + .product-item {
+            border-top: 1px solid #f3f4f6;
+        }
+        .product-img-cell {
+            display: table-cell;
+            width: 56px;
+            vertical-align: top;
+            padding-right: 8px;
+        }
+        .product-img {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid #e5e7eb;
+        }
+        .product-main {
+            display: table-cell;
+            vertical-align: top;
+            padding-left: 4px;
+        }
+        .product-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 2px;
+            color: #111827;
+        }
+        .product-meta {
+            font-size: 12px;
+            color: #6b7280;
+            margin: 0 0 6px;
+        }
+        .product-qty {
+            font-size: 12px;
+            color: #4b5563;
+            margin: 0 0 8px;
+        }
+
+        /* BUTTONS */
+        .btn-primary {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background-color: #16a34a;
+            color: #ecfdf5 !important;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            background-color: #22c55e;
+        }
+        .btn-outline {
+            display: inline-block;
+            padding: 7px 13px;
+            border-radius: 999px;
+            border: 1px solid #d1d5db;
+            background-color: #ffffff;
+            color: #374151 !important;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .stars-row {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .stars-row span {
+            color: #f97316;
+        }
+
+        /* OVERALL BOX */
+        .overall-box {
+            margin-top: 18px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px dashed #d1fae5;
+            background: linear-gradient(135deg, #ecfdf5, #ffffff);
+            font-size: 13px;
+            color: #064e3b;
+        }
+
+        /* FOOTER */
+        .footer {
+            padding: 14px 24px 20px;
+            background-color: #111827;
+            color: #9ca3af;
+            font-size: 11px;
+            text-align: center;
+        }
+        .footer a {
+            color: #a7f3d0;
+            text-decoration: none;
+        }
+        .footer-links {
+            margin-top: 4px;
+        }
+        .footer-links span {
+            margin: 0 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-top">
+                <div class="logo">
+                    <img th:src="${brandLogoUrl}" alt="SpiceJar logo">
+                </div>
+                <div>
+                    <div class="header-title">How did we do?</div>
+                    <div class="header-subtitle">
+                        We’d love your quick feedback on your recent order.
+                    </div>
+                </div>
+            </div>
+            <div class="order-pill">
+                ORDER&nbsp;
+                <span th:text="${order.confirmationNumber}">SJ-12345</span>
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="body">
+            <p class="greeting"
+               th:text="'Hi ' + (${customerName} ?: 'there') + ','">
+                Hi there,
+            </p>
+
+            <p class="intro">
+                Thank you for choosing <span class="highlight">SpiceJar</span>!
+                Your feedback helps us keep every spice fresh, aromatic and worth reordering.
+            </p>
+
+            <!-- PRODUCTS LIST (only if we actually have surveyItems) -->
+            <div class="products-box"
+                 th:if="${surveyItems != null and !#lists.isEmpty(surveyItems)}">
+                <p class="products-title">Rate the items from this order</p>
+
+                <div class="product-item" th:each="it : ${surveyItems}">
+                    <div class="product-img-cell">
+                        <img th:if="${it.imageUrl != null}"
+                             th:src="${it.imageUrl}"
+                             alt="Product image"
+                             class="product-img"/>
+                        <div th:if="${it.imageUrl == null}"
+                             class="product-img"
+                             style="display:flex;align-items:center;justify-content:center;
+                                    font-size:11px;color:#9ca3af;background:#f3f4f6;">
+                            SJ
+                        </div>
+                    </div>
+                    <div class="product-main">
+                        <p class="product-name" th:text="${it.productName}">Turmeric Powder</p>
+                        <p class="product-meta">
+                            Qty:
+                            <span th:text="${it.quantity}">1</span>
+                        </p>
+                        <p class="product-qty">
+                            How did this spice taste? Was the aroma and freshness up to your expectation?
+                        </p>
+
+                        <a class="btn-primary"
+                           th:href="${reviewBaseUrl + it.productId}"
+                           target="_blank">
+                            ⭐ Rate this product
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- If no survey-able products (e.g. only gift cards) -->
+            <p class="intro"
+               th:if="${surveyItems == null or #lists.isEmpty(surveyItems)}">
+                This order mostly contains items like gift cards or non-reviewable products.
+                You can still share your overall experience with us:
+            </p>
+
+            <!-- Overall feedback block -->
+            <div class="overall-box">
+                Prefer to give overall feedback instead?
+                <br/>
+                <a class="btn-outline"
+                   th:href="${siteUrl} + 'feedback'"
+                   target="_blank">
+                    Share overall experience
+                </a>
+            </div>
+
+            <p class="stars-row"
+               th:if="${surveyItems != null and !#lists.isEmpty(surveyItems)}">
+                Even a quick <span>★ ★ ★ ★ ★</span> rating or a one-line comment helps other
+                SpiceJar foodies discover their next favourite.
+            </p>
+
+            <p class="intro" style="margin-top:18px;">
+                Thank you again for supporting small-batch spices.
+                <br/>
+                Warm regards,<br/>
+                <strong>The SpiceJar Team</strong>
+            </p>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <div>
+                © <span th:text="${year}">2025</span> SpiceJar. All rights reserved.
+            </div>
+            <div class="footer-links">
+                <a th:href="${siteUrl}" target="_blank">Visit website</a>
+                <span>•</span>
+                <a th:href="${siteUrl} + 'contact'" target="_blank">Contact support</a>
+                <span>•</span>
+                <a th:href="${siteUrl} + 'account/preferences'" target="_blank">Email preferences</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

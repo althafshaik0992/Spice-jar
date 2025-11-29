@@ -39,24 +39,47 @@ public class UserauthController {
         return "login";
     }
 
+//    @PostMapping("/login")
+//    public String login(@RequestParam String username,
+//                        @RequestParam String password,
+//                        @RequestParam(name = "return", required = false) String returnUrl,
+//                        HttpSession session,
+//                        Model m) {
+//        var opt = userService.findByUsername(username);
+//        if (opt.isPresent() && userService.checkPassword(password, opt.get().getPassword())) {
+//            session.setAttribute("USER", opt.get());
+//            // ✅ if a return target exists, go there; else go home
+//            if (returnUrl != null && !returnUrl.isBlank()) {
+//                return "redirect:" + returnUrl;
+//            }
+//            return "redirect:/";
+//        }
+//        m.addAttribute("error", "Invalid username or password");
+//        m.addAttribute("returnUrl", returnUrl); // preserve intended target on error
+//        return "login";
+//    }
+
+
     @PostMapping("/login")
-    public String login(@RequestParam String username,
-                        @RequestParam String password,
-                        @RequestParam(name = "return", required = false) String returnUrl,
-                        HttpSession session,
-                        Model m) {
-        var opt = userService.findByUsername(username);
-        if (opt.isPresent() && userService.checkPassword(password, opt.get().getPassword())) {
-            session.setAttribute("USER", opt.get());
-            // ✅ if a return target exists, go there; else go home
-            if (returnUrl != null && !returnUrl.isBlank()) {
-                return "redirect:" + returnUrl;
-            }
-            return "redirect:/";
+    public String doLogin(@RequestParam String email,
+                          @RequestParam String password,
+                          HttpSession session,
+                          RedirectAttributes ra) {
+
+        User user = userService.authenticate(email, password);
+
+        if (user == null) {
+            ra.addFlashAttribute("error", "Invalid email or password");
+            return "redirect:/login";
         }
-        m.addAttribute("error", "Invalid username or password");
-        m.addAttribute("returnUrl", returnUrl); // preserve intended target on error
-        return "login";
+
+        // Clear admin session to avoid conflicts
+        session.removeAttribute("ADMIN_USER");
+
+        session.setAttribute("USER", user);
+
+
+        return "redirect:/";
     }
 
     // ---- REGISTER (USER) ----
@@ -89,6 +112,8 @@ public class UserauthController {
     // ---- LOGOUT ----
     @GetMapping("/logout")
     public String logout(HttpSession session) {
+        session.removeAttribute("USER");        // clear user
+        session.removeAttribute("ADMIN_USER");  // also clear admin if present
         session.invalidate();
         return "redirect:/";
     }

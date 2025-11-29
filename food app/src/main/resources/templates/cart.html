@@ -53,6 +53,30 @@
         .cart-header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #eee;padding-bottom:10px}
         .cart-header h1{font-size:28px;margin:0;color:var(--dark)}
         .cart-header a{font-size:14px;color:var(--green);text-decoration:none}
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: 200px 0; }
+        }
+
+        .giftcard-img {
+            width:150px; height:150px; object-fit:contain; border-radius:12px;
+            border:1px solid #f5c07a;
+            padding:6px;
+            box-shadow:0 3px 10px rgba(0,0,0,0.15);
+            background: #fff linear-gradient(
+                    110deg,
+                    #fff8e1 25%,
+                    #fff3cd 37%,
+                    #fff8e1 63%
+            );
+            background-size: 400% 100%;
+            animation: shimmer 2s infinite linear;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .giftcard-img:hover {
+            transform: scale(1.04);
+            box-shadow: 0 6px 16px rgba(183, 65, 14, 0.3);
+        }
 
         .cart-item-card{display:flex;gap:16px;padding:20px 0;border-bottom:1px solid #eee}
         .cart-item-card:last-child{border-bottom:none}
@@ -193,42 +217,60 @@
                         <a href="#">Deselect all items</a>
                     </div>
 
-                    <!-- each item -->
+
                     <div th:each="it : ${cart.items}" class="cart-item-card">
                         <div class="item-image">
                             <input type="checkbox" checked/>
-                            <img th:src="${#strings.isEmpty(it.imageUrl) ? '/images/chilli%20powder.jpeg' : it.imageUrl}" alt="Product Image"/>
+
+                            <!-- 🎁 Gift card image -->
+                            <img th:if="${it.name == 'SpiceJar email gift card' and it.description == 'Gift card for Althaf'}"
+                                 src="/images/spicejar-giftcard.png"
+                                 alt="Spice Jar Gift Card"
+                                 class="giftcard-img"/>
+
+                            <!-- 🧂 Default product image -->
+                            <img th:if="${!(it.name == 'SpiceJar email gift card' and it.description == 'Gift card for Althaf')}"
+                                 th:src="${#strings.isEmpty(it.imageUrl) ? '/images/chilli%20powder.jpeg' : it.imageUrl}"
+                                 alt="Product Image"
+                                 style="width:150px;height:150px;object-fit:contain;border-radius:10px;
+                box-shadow:0 2px 8px rgba(0,0,0,0.05);"/>
                         </div>
 
                         <div class="item-details">
+                            <div th:if="${it.name == 'SpiceJar email gift card' and it.description == 'Gift card for Althaf'}"
+                                 class="giftcard-badge"
+                                 style="background:#fff8e1;color:#b7410e;font-weight:700;
+                border-radius:8px;padding:4px 10px;display:inline-block;
+                margin-bottom:8px;">
+                                🎁 Spice Jar Gift Card
+                            </div>
+
                             <h3 th:text="${it.name}">Product name</h3>
 
-                            <!-- description -->
                             <div class="small-muted" th:if="${it.description != null}" th:text="${it.description}">
                                 Product short description.
                             </div>
 
-                            <!-- weight badge -->
                             <span class="weight-pill" th:if="${it.weightGrams != null}"
                                   th:text="${it.weightGrams} + ' g'">500 g</span>
 
                             <div class="item-stock">In Stock</div>
 
                             <div class="item-actions-toolbar">
-                                <!-- qty form -->
-                                <form th:action="@{/cart/update}" method="post" class="quantity-form" style="display:inline-flex;align-items:center;gap:10px">
+                                <form th:action="@{/cart/update}" method="post"
+                                      class="quantity-form" style="display:inline-flex;align-items:center;gap:10px">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                     <input type="hidden" name="productId" th:value="${it.productId}"/>
                                     <div class="quantity-selector">
                                         <button type="button" class="qty-btn-minus" th:attr="data-product-id=${it.productId}">-</button>
-                                        <input type="number" name="qty" th:value="${it.qty}" min="1" class="qty-input" th:id="'qty-input-' + ${it.productId}"/>
+                                        <input type="number" name="qty" th:value="${it.qty}" min="1" class="qty-input"
+                                               th:id="'qty-input-' + ${it.productId}"/>
                                         <button type="button" class="qty-btn-plus" th:attr="data-product-id=${it.productId}">+</button>
                                     </div>
                                 </form>
 
                                 <span class="separator">|</span>
 
-                                <!-- delete -->
                                 <form th:action="@{/cart/update}" method="post" style="display:inline">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                     <input type="hidden" name="productId" th:value="${it.productId}"/>
@@ -238,7 +280,6 @@
 
                                 <span class="separator">|</span>
 
-                                <!-- save for later -->
                                 <form th:action="@{/cart/saveForLater}" method="post" style="display:inline">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                     <input type="hidden" name="productId" th:value="${it.productId}"/>
@@ -250,8 +291,12 @@
                             </div>
                         </div>
 
-                        <div class="item-price">
+                        <!-- 💰 Safe price rendering -->
+                        <div class="item-price" th:if="${it != null and it.price != null}">
                             $ <span th:text="${#numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">0.00</span>
+                        </div>
+                        <div class="item-price" th:if="${it == null or it.price == null}">
+                            $ 0.00
                         </div>
                     </div>
 

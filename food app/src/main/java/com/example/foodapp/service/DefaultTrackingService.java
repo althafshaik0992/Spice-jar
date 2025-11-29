@@ -26,8 +26,8 @@ public class DefaultTrackingService implements TrackingService {
 
         // Base milestones
         List<TrackingEvent> defaults = new ArrayList<>(List.of(
-                new TrackingEvent("Order placed", t0, "We received your order."),
-                new TrackingEvent("Processing", t0.plusHours(2), "Your items are being prepared.")
+                new TrackingEvent("Order placed", t0, "We received your order.")
+               // new TrackingEvent("Processing", t0.plusHours(2), "Your items are being prepared.")
         ));
 
         // Only add later steps if the status suggests we’ve progressed

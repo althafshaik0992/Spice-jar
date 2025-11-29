@@ -117,7 +117,7 @@
     </div>
 </nav>
 
-<div class="wrap">
+<<div class="wrap">
     <div class="cover"></div>
 
     <section class="card">
@@ -125,25 +125,20 @@
         <div th:if="${error}" class="alert error" th:text="${error}"></div>
 
         <div class="profile-row">
-            <!-- Left: avatar -->
+            <!-- Avatar -->
             <div class="avatar-wrap">
-                <!-- Placeholder if no avatar set -->
-                <div id="ph-edit"
-                     th:if="${user.avatarUrl == null or #strings.isEmpty(user.avatarUrl)}"
-                     class="placeholder">
-                    <span class="initials"
-                          th:text="${(user.firstName != null ? user.firstName.substring(0,1) : '')
-                                   + (user.lastName  != null ? user.lastName.substring(0,1)  : '')}">U</span>
+                <div id="ph-edit" th:if="${user.avatarUrl == null or #strings.isEmpty(user.avatarUrl)}" class="placeholder">
+          <span class="initials"
+                th:text="${(user.firstName != null ? user.firstName.substring(0,1) : '') +
+                          (user.lastName != null ? user.lastName.substring(0,1) : '')}">U</span>
                 </div>
 
-                <!-- Image (shows placeholder if it fails to load) -->
                 <img th:if="${user.avatarUrl != null and !#strings.isEmpty(user.avatarUrl)}"
                      th:src="@{${user.avatarUrl}}"
-                     alt=""
+                     alt="Avatar"
                      class="avatar"
-                     onerror="this.style.display='none';var ph=document.getElementById('ph-edit'); if(ph){ph.style.display='grid';}"/>
+                     onerror="this.style.display='none';document.getElementById('ph-edit').style.display='grid';"/>
 
-                <!-- Upload form -->
                 <form th:action="@{/profile/avatar}" method="post" enctype="multipart/form-data">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <input type="file" name="avatar" accept="image/*" required/>
@@ -152,62 +147,25 @@
                     </button>
                 </form>
 
-                <div class="pill">JPG/PNG • up to ~3–5MB</div>
+                <div class="pill">JPG/PNG • up to ~5MB</div>
             </div>
 
-            <!-- Right: edit form -->
+            <!-- Edit Form -->
             <div>
                 <form th:action="@{/profile}" th:object="${user}" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
                     <div class="grid">
-                        <div>
-                            <label>First name</label>
-                            <input th:field="*{firstName}" required/>
-                        </div>
-                        <div>
-                            <label>Last name</label>
-                            <input th:field="*{lastName}" required/>
-                        </div>
-
-                        <div>
-                            <label>Email</label>
-                            <input th:field="*{email}" type="email" required/>
-                        </div>
-                        <div>
-                            <label>Phone</label>
-                            <input th:field="*{phone}" type="tel"/>
-                        </div>
-
-                        <div class="full" style="grid-column:1 / -1">
-                            <label>Address</label>
-                            <input th:field="*{address}"/>
-                        </div>
-
-                        <div class="full" style="grid-column:1 / -1">
-                            <label>City</label>
-                            <input th:field="*{city}" required/>
-                        </div>
-
-                        <div class="full" style="grid-column:1 / -1">
-                            <label>State</label>
-                            <input th:field="*{state}" required/>
-                        </div>
-
-                        <div class="full" style="grid-column:1 / -1">
-                            <label>Country</label>
-                            <input th:field="*{country}" required/>
-                        </div>
-
-                        <div class="full" style="grid-column:1 / -1">
-                            <label>Zip</label>
-                            <input th:field="*{zip}" required/>
-                        </div>
-
-                        <div>
-                            <label>Username</label>
-                            <input th:value="${user.username}" readonly/>
-                        </div>
+                        <div><label>First name</label><input th:field="*{firstName}" required/></div>
+                        <div><label>Last name</label><input th:field="*{lastName}" required/></div>
+                        <div><label>Email</label><input th:field="*{email}" type="email" required/></div>
+                        <div><label>Phone</label><input th:field="*{phone}" type="tel"/></div>
+                        <div><label>Address</label><input th:field="*{address}"/></div>
+                        <div><label>City</label><input th:field="*{city}" required/></div>
+                        <div><label>State</label><input th:field="*{state}" required/></div>
+                        <div><label>Country</label><input th:field="*{country}" required/></div>
+                        <div><label>Zip</label><input th:field="*{zip}" required/></div>
+                        <div><label>Username</label><input th:value="${user.username}" readonly/></div>
                     </div>
 
                     <button type="submit" class="btn btn-primary">

@@ -5,6 +5,7 @@ import com.example.foodapp.model.Coupon;
 import com.example.foodapp.model.OrderItem;
 import com.example.foodapp.model.Product;
 import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -20,7 +21,14 @@ import java.util.*;
 @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class SessionCart {
 
-    public static final BigDecimal TAX_RATE = new BigDecimal("0.08"); // 8%
+    public static final BigDecimal TAX_RATE = new BigDecimal("0.08");
+
+    public boolean containsGiftCard() {
+        if (items == null) return false;
+        return items.stream()
+                .anyMatch(i -> i.getType() == CartItem.Type.GIFT_CARD);
+    }
+// 8%
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionCart.class);
     /** Flip to true when you want verbose traces */
@@ -29,7 +37,8 @@ public class SessionCart {
         if (!DEBUG) return;
         try { LOGGER.info(msg); } catch (Throwable t) { System.out.println(msg); }
     }
-
+     @Getter
+     @Setter
     public static class Item {
         public Long productId;
         public String name;
@@ -38,6 +47,10 @@ public class SessionCart {
         public BigDecimal lineTotal() {
             return unitPrice.multiply(BigDecimal.valueOf(qty));
         }
+        @Setter
+        @Getter
+        private CartItem.Type type;   // NEW
+
     }
 
     @Getter
@@ -215,7 +228,7 @@ public class SessionCart {
             switch (appliedCoupon.getType()) {
                 case PERCENT -> d = subtotal.multiply(
                         val.divide(new BigDecimal("100"), 6, RoundingMode.HALF_UP));
-                case FLAT, AMOUNT -> d = val;
+                case  AMOUNT -> d = val;
             }
         }
 
@@ -255,10 +268,10 @@ public class SessionCart {
 
 
     // SessionCart.java
-    public void syncFromCartItems(java.util.List<com.example.foodapp.util.CartItem> cartItems) {
+    public void syncFromCartItems(java.util.List<CartItem> cartItems) {
         items.clear();
         if (cartItems != null) {
-            for (com.example.foodapp.util.CartItem c : cartItems) {
+            for (CartItem c : cartItems) {
 
                 int qty = (c.getQty() <= 0) ? 1 : c.getQty();
 

@@ -43,4 +43,9 @@ public class AddressService {
             repo.save(x);
         });
     }
+
+    /** Return all addresses belonging to the user, default first if available. */
+    public List<Address> addressesForUser(Long userId) {
+        return repo.findByUserIdOrderByDefaultAddressDescIdDesc(userId);
+    }
 }

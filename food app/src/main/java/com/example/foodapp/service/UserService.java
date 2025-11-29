@@ -249,6 +249,29 @@ public class UserService {
     }
 
 
+    public User authenticate(String email, String password) {
+        if (email == null || password == null) return null;
+
+        User u = repo.findByEmailIgnoreCase(email.trim())
+                .orElse(null);
+
+        if (u == null) return null;
+
+        // 🔥 If you use plain text passwords
+        if (u.getPassword().equals(password)) {
+            return u;
+        }
+
+        // 🔥 If your passwords are hashed (BCrypt)
+        // if (passwordEncoder.matches(password, u.getPassword())) {
+        //     return u;
+        // }
+
+        return null;
+    }
+
+
+
 
 
 

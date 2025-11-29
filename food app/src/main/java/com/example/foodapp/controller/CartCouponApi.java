@@ -83,8 +83,28 @@ public class CartCouponApi {
             @RequestBody(required = false) Map<String, Object> json,
             HttpServletRequest req
     ) {
-        ensureCartHydrated(req); // <-- fills sessionCart items when empty
+        // Make sure sessionCart has the current items
+        ensureCartHydrated(req);
 
+        // 🔎 1) Block coupons when cart contains gift card items
+        boolean cartHasGiftCard = sessionCart.getItems() != null &&
+                sessionCart.getItems().stream().anyMatch(i ->
+                        // you’re using negative productId for gift cards
+                        (i.getProductId() != null && i.getProductId() < 0L) ||
+                                // extra safety: name contains "gift card"
+                                (i.getName() != null && i.getName().toLowerCase().contains("gift card"))
+                );
+
+        if (cartHasGiftCard) {
+            // Clear any coupon just in case and recalc
+            sessionCart.setAppliedCoupon(null);
+            sessionCart.recalc();
+            return ResponseEntity.ok(
+                    payload("error", "Coupons can’t be applied to gift card purchases.")
+            );
+        }
+
+        // 2) Normal coupon flow
         String code = (formCode != null && !formCode.isBlank()) ? formCode : null;
         if (code == null && json != null && json.get("code") != null) {
             code = String.valueOf(json.get("code"));
@@ -118,6 +138,7 @@ public class CartCouponApi {
         sessionCart.recalc();
         return ResponseEntity.ok(payload("success", "Removed discount."));
     }
+
 
     // ---- helpers ----
 

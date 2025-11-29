@@ -1,20 +1,10 @@
 package com.example.foodapp.controller;
 
-import com.example.foodapp.model.ChatProductDTO;
-import com.example.foodapp.model.Coupon;
-import com.example.foodapp.model.Product;
-import com.example.foodapp.model.ProductVariant;
+import com.example.foodapp.model.*;
 import com.example.foodapp.repository.CouponRepository;
-import com.example.foodapp.service.CategoryService;
-import com.example.foodapp.service.CouponService;
-import com.example.foodapp.service.ProductService;
-import com.example.foodapp.service.ReviewService;
+import com.example.foodapp.service.*;
 import com.example.foodapp.util.Cart;
-import com.example.foodapp.util.CartUtils;
-import com.example.foodapp.util.GlobalData;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +15,6 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @Controller
 
@@ -47,13 +35,18 @@ public class HomeController {
 
     private final CouponRepository couponRepository;
 
+    private final AnalyticsService analyticsService;
+    private final InventoryService inventoryService;
 
 
-    public HomeController(ProductService productService, ReviewService reviewService, CategoryService categoryService,  CouponRepository couponRepository) {
+
+    public HomeController(ProductService productService, ReviewService reviewService, CategoryService categoryService, CouponRepository couponRepository, AnalyticsService analyticsService, InventoryService inventoryService) {
         this.productService = productService;
         this.reviewService = reviewService;
         this.categoryService = categoryService;
         this.couponRepository = couponRepository;
+        this.analyticsService = analyticsService;
+        this.inventoryService = inventoryService;
     }
 
 
@@ -87,14 +80,18 @@ public class HomeController {
                 .toList();
 
         System.out.println(">>> availableCoupons size = " + coupons.size()); // DEBUG
+        var bestSellers = analyticsService.topSellers(4, 90); // 4 items, last 90 days
 
         m.addAttribute("availableCoupons", coupons);
         m.addAttribute("couponCount", coupons.size()); // DEBUG helper
 
-        m.addAttribute("products", productService.findAll());
-        var cart = session.getAttribute("CART");
+       // m.addAttribute("products", productService.findAll());
+        m.addAttribute("bestSellers", bestSellers);
+        m.addAttribute("latestReviews", reviewService.latestApproved(3));
+       //.addAttribute("products", analyticsService.topSellers(10, 30));
+       var cart = session.getAttribute("CART");
         m.addAttribute("cartCount", cart != null
-                ? com.example.foodapp.util.CartUtils.getCartTotalQuantity((com.example.foodapp.util.Cart) cart)
+                ? com.example.foodapp.util.CartUtils.getCartTotalQuantity((Cart) cart)
                 : 0);
         return "index";
     }
@@ -222,6 +219,8 @@ public class HomeController {
         List<Product> products = productService.filter(q, min, max, categoryId, sort);
         m.addAttribute("products", products);
 
+
+
         // 2) compute maps using the SAME list
         Map<Long, Double> avgMap = products.stream()
                 .collect(Collectors.toMap(Product::getId, p -> reviewService.avg(p)));
@@ -240,6 +239,9 @@ public class HomeController {
         m.addAttribute("categoryId", categoryId);
         m.addAttribute("sort", sort);
         m.addAttribute("cartCount", cartCount);
+        Map<Long,Integer> stockByProduct = inventoryService.getStocksForProductIds(
+                products.stream().map(Product::getId).toList());
+        m.addAttribute("stockByProduct", stockByProduct);
 
         return "menu";
     }

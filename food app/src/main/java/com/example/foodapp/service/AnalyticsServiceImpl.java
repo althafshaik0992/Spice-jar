@@ -8,11 +8,15 @@ import com.example.foodapp.repository.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import jakarta.persistence.Cacheable;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -25,12 +29,13 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
+
     @Override
     public DashboardMetrics getDashboardMetrics() {
-        long totalOrders    = orderRepository.count();
-        BigDecimal revenue  = orderRepository.totalRevenue();
-        long totalMenu      = productRepository.count();
-        long totalCategories= categoryRepository.count();
+        long totalOrders = orderRepository.count();
+        BigDecimal revenue = orderRepository.totalRevenue();
+        long totalMenu = productRepository.count();
+        long totalCategories = categoryRepository.count();
 
         return new DashboardMetrics(totalOrders,
                 revenue == null ? BigDecimal.ZERO : revenue,
@@ -61,7 +66,6 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         }
         return out;
     }
-
 
 
     @Override
@@ -99,20 +103,20 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     @Override
     public Map<String, Object> kpis() {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime last7  = now.minusDays(7);
+        LocalDateTime last7 = now.minusDays(7);
         LocalDateTime last30 = now.minusDays(30);
 
         BigDecimal aov = repo.avgOrderValueSince(last7);
         if (aov == null) aov = BigDecimal.ZERO;
 
         long distinct = safeLong(repo.distinctCustomersSince(last30));
-        long repeat   = safeLong(repo.repeatCustomersSince(Timestamp.valueOf(last30)));
+        long repeat = safeLong(repo.repeatCustomersSince(Timestamp.valueOf(last30)));
 
         double repeatRate = distinct == 0 ? 0d :
                 (repeat * 100.0) / distinct;
 
         long refunded = safeLong(repo.refundedOrdersSince(last30));
-        long total30  = safeLong(repo.totalOrdersSince(last30));
+        long total30 = safeLong(repo.totalOrdersSince(last30));
         double refundRate = total30 == 0 ? 0d :
                 (refunded * 100.0) / total30;
 
@@ -123,13 +127,18 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
         return Map.of(
                 "avgOrderValue7d", aovRounded,
-                "repeatRate30d",  repeatPctRounded,
-                "refundRate30d",  refundPctRounded
+                "repeatRate30d", repeatPctRounded,
+                "refundRate30d", refundPctRounded
         );
     }
 
-    private long safeLong(Long v) { return v == null ? 0L : v; }
-    private double round2(double v) { return Math.round(v * 100.0) / 100.0; }
+    private long safeLong(Long v) {
+        return v == null ? 0L : v;
+    }
+
+    private double round2(double v) {
+        return Math.round(v * 100.0) / 100.0;
+    }
 
     @Override
     public Series revenueSeries(LocalDate from, LocalDate to) {
@@ -170,7 +179,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         for (int i = lastNDays - 1; i >= 0; i--) {
             var day = today.minusDays(i);
             var start = day.atStartOfDay();
-            var end   = day.plusDays(1).atStartOfDay();
+            var end = day.plusDays(1).atStartOfDay();
 
             BigDecimal revenue = orderRepository.sumGrandTotalBetween(start, end)
                     .orElse(java.math.BigDecimal.ZERO);
@@ -181,4 +190,98 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
 
+  //  @Override
+//    public List<Product> topSellers(int limit, int daysBack) {
+//        Instant since = daysBack > 0 ? Instant.now().minus(Duration.ofDays(daysBack)) : null;
+//
+//        var paidStatuses = EnumSet.of(
+//                OrderStatus.PAID, OrderStatus.FULFILLED, OrderStatus.SHIPPED, OrderStatus.COMPLETED
+//        );
+//
+//        List<ProductSales> agg = orderRepository.findTopSellingProducts(
+//                paidStatuses, since, PageRequest.of(0, limit)
+//        );
+//
+//        List<Product> top = agg.stream()
+//                .map(ProductSales::getProduct)
+//                .limit(limit)
+//                .collect(Collectors.toList());
+//
+//        if (top.size() < limit) {
+//            int remaining = limit - top.size();
+//            var existingIds = top.stream().map(Product::getId).collect(Collectors.toSet());
+//
+//            // ---- fallback using findAll(Pageable) ----
+//            List<Product> fallback;
+//            try {
+//                // Try newest by createdAt if that field exists
+//                fallback = productRepository.findAll(
+//                        PageRequest.of(0, remaining, Sort.by(Sort.Direction.DESC, "createdAt"))
+//                ).getContent();
+//            } catch (PropertyReferenceException e) {
+//                // If createdAt doesn't exist, fall back to id DESC
+//                fallback = productRepository.findAll(
+//                        PageRequest.of(0, remaining, Sort.by(Sort.Direction.DESC, "id"))
+//                ).getContent();
+//            }
+//
+//            fallback.stream()
+//                    .filter(p -> !existingIds.contains(p.getId()))
+//                    .limit(remaining)
+//                    .forEach(top::add);
+//        }
+//
+//        return top;
+//
+//    }
+
+    @Override
+    public List<Product> topSellers(int limit, int daysBack) {
+        // LocalDateTime (matches your o.createdAt type)
+        LocalDateTime since = null;
+        if (daysBack > 0) {
+            since = LocalDateTime.ofInstant(
+                    Instant.now().minus(Duration.ofDays(daysBack)),
+                    ZoneOffset.UTC
+            );
+        }
+
+        // Because Order.status is STRING in DB
+        Set<String> statusNames = Set.of("PAID", "FULFILLED", "SHIPPED", "COMPLETED","PENDING_PAYMENT");
+
+        List<ProductSales> agg = orderRepository.findTopSellingProductsNative(
+                statusNames, since, PageRequest.of(0, limit)
+        );
+
+// Instead of mapping to Product objects, find matching products by name
+        List<Product> top = agg.stream()
+                .map(ps -> productRepository.findByNameIgnoreCase(ps.getProductName()).orElse(null))
+                .filter(Objects::nonNull)
+                .limit(limit)
+                .collect(Collectors.toList());
+
+        // Fallback (fill with newest products) using findAll()
+        if (top.size() < limit) {
+            int remaining = limit - top.size();
+            var existingIds = top.stream()
+                    .map(Product::getId)
+                    .collect(java.util.stream.Collectors.toSet());
+
+            // use id desc instead of createdAt
+            var page = productRepository.findAll(
+                    org.springframework.data.domain.PageRequest.of(
+                            0, remaining,
+                            org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "id")
+                    )
+            );
+
+            page.getContent().stream()
+                    .filter(p -> !existingIds.contains(p.getId()))
+                    .limit(remaining)
+                    .forEach(top::add);
+        }
+
+
+        return top;
+    }
 }

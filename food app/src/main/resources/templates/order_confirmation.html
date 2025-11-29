@@ -4,201 +4,436 @@
     <meta charset="utf-8">
     <title th:text="${subject}">Your order is confirmed</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <style>
-        /* keep email styles simple + inline-safe */
-        .box{background:#ffffff;border-radius:12px;overflow:hidden}
-        .h{background:#22c55e;color:#fff;padding:18px 20px;font-weight:bold}
-        .p{padding:20px}
-        .btn{background:#22c55e;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;display:inline-block}
-        .muted{color:#64748b}
-        table{border-collapse:collapse;width:100%}
-        th,td{padding:6px 0}
-        th{color:#334155;text-align:left}
-        td.right{text-align:right}
-        hr{border:none;border-top:1px solid #eee;margin:16px 0}
-        /* Shipping + Code section */
-        .ship-qr-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:18px}
-        @media(max-width:900px){.ship-qr-bar{grid-template-columns:1fr}}
-        .card-lite{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
-        .title-small{font-weight:800;margin:0 0 10px;color:#333;display:flex;align-items:center;gap:8px}
-
-        .code-box{
-            border:1px dashed #e6e6e6;
-            background:#fff;
-            border-radius:12px;
-            height:260px;              /* equal height for both */
-            display:flex;
-            align-items:center;        /* vertical center */
-            justify-content:center;    /* horizontal center */
-            padding:10px;
+        /* Overall */
+        body {
+            margin: 0;
+            background-color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            color: #111827;
         }
-        .code-box canvas, .code-box svg, .code-box img{
-            max-width:100%;
-            max-height:100%;
-            display:block;
-        }
-        .downloads{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap}
-        .dl{border:1px solid #cce6cc;background:#eaf9ea;color:#14532d;padding:8px 12px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;display:inline-flex;gap:8px;align-items:center}
-        .dl:hover{filter:brightness(0.98)}
+        table { border-collapse: collapse; }
+        img { border: 0; outline: 0; }
 
-        /* Product image cell */
-        .it-img{width:60px;height:60px;border-radius:6px;object-fit:cover}
+        /* Card */
+        .wrapper {
+            padding: 24px 12px;
+        }
+        .card {
+            max-width: 640px;
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+        }
+
+        /* Header */
+        .header {
+            padding: 18px 24px;
+            background: radial-gradient(circle at top left, #22c55e, #16a34a, #14532d);
+            color: #ecfdf5;
+        }
+        .header-inner {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            background-color: #ecfdf5;
+            overflow: hidden;
+        }
+        .logo img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+        }
+        .brand-title {
+            font-size: 20px;
+            font-weight: 800;
+        }
+        .brand-sub {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Body */
+        .body {
+            padding: 22px 24px 24px;
+        }
+        .greeting {
+            font-size: 15px;
+            margin: 0 0 4px;
+        }
+        .intro {
+            font-size: 14px;
+            margin: 0 0 14px;
+            color: #4b5563;
+        }
+
+        /* Highlight / summary */
+        .summary-box {
+            border-radius: 14px;
+            background: linear-gradient(135deg, #ecfdf5, #ffffff);
+            border: 1px solid #bbf7d0;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+        }
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        .summary-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .13em;
+            color: #16a34a;
+            font-weight: 700;
+        }
+        .summary-order {
+            font-size: 14px;
+            color: #065f46;
+            margin-top: 4px;
+        }
+        .summary-total {
+            font-size: 20px;
+            font-weight: 800;
+            color: #022c22;
+        }
+
+        .btn-row {
+            margin: 10px 0 6px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #16a34a;
+            color: #ecfdf5;
+            text-decoration: none;
+            padding: 9px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-right: 6px;
+        }
+        .btn-secondary {
+            background-color: #111827;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+            margin: 18px 0;
+        }
+
+        /* Items */
+        .items-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin: 0 0 6px;
+        }
+        .item-row {
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .item-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .item-img {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            object-fit: cover;
+            background-color: #f9fafb;
+        }
+        .item-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+        }
+        .item-note {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .item-meta {
+            font-size: 13px;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .totals-table {
+            width: 100%;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        .totals-table td {
+            padding: 3px 0;
+        }
+        .totals-label {
+            color: #6b7280;
+        }
+        .totals-value {
+            text-align: right;
+        }
+        .totals-grand {
+            font-weight: 800;
+            font-size: 14px;
+            padding-top: 5px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Two-column bottom: shipping + meta */
+        .bottom-grid {
+            margin-top: 16px;
+        }
+        @media (min-width: 640px) {
+            .bottom-grid {
+                display: table;
+                width: 100%;
+            }
+            .bottom-col {
+                display: table-cell;
+                width: 50%;
+                vertical-align: top;
+                padding-right: 12px;
+            }
+            .bottom-col:last-child {
+                padding-right: 0;
+                padding-left: 12px;
+            }
+        }
+        @media (max-width: 639px) {
+            .bottom-col {
+                margin-bottom: 10px;
+            }
+        }
+        .card-lite {
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 12px 12px 10px;
+            background-color: #f9fafb;
+        }
+        .card-lite-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin: 0 0 6px;
+            color: #111827;
+        }
+        .card-lite-body {
+            font-size: 13px;
+            color: #374151;
+            line-height: 1.4;
+            white-space: pre-line;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 14px 24px 18px;
+            font-size: 11px;
+            color: #9ca3af;
+            text-align: center;
+            background-color: #0f172a;
+        }
+        .footer a {
+            color: #a7f3d0;
+            text-decoration: none;
+        }
     </style>
 </head>
-<body style="margin:0;background:#f7faf7;font-family:Arial,Helvetica,sans-serif;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7faf7;">
+<body>
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
     <tr>
-        <td align="center" style="padding:24px;">
-            <table role="presentation" width="600" cellpadding="0" cellspacing="0" class="box">
-                <tr><td class="h">The Spice Jar — Order Confirmation</td></tr>
+        <td align="center" class="wrapper">
+            <table class="card" role="presentation" cellpadding="0" cellspacing="0">
+                <!-- HEADER -->
                 <tr>
-                    <td class="p">
-                        <h1 style="margin:0 0 6px;font-size:20px;color:#111">Thanks for your order!</h1>
-                        <p style="margin:0 0 12px;color:#444">
-                            Order No # <span th:text="${order.confirmationNumber}">123</span>
+                    <td class="header">
+                        <div class="header-inner">
+                            <div class="logo">
+                                <img th:if="${logoUrl != null}" th:src="${logoUrl}" alt="SpiceJar logo">
+                            </div>
+                            <div>
+                                <div class="brand-title">The Spice Jar</div>
+                                <div class="brand-sub" th:text="${subject}">
+                                    Your order is confirmed
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- BODY -->
+                <tr>
+                    <td class="body">
+                        <p class="greeting">
+                            Hi <span th:text="${order.customerName}">Customer</span>,
+                        </p>
+                        <p class="intro">
+                            Thanks for shopping with us! Your order has been received and we’ll send another update
+                            when it’s on the way.
                         </p>
 
-                        <p style="margin:0 0 14px;">
-                            <!-- Use absolute URLs coming from the service -->
-                            <a th:href="${orderUrl}" class="btn">View your order</a>
-                            &nbsp;
-                            <a th:href="${invoiceUrl}" class="btn" style="background:#111">Download invoice</a>
-                        </p>
+                        <!-- SUMMARY HIGHLIGHT -->
+                        <div class="summary-box">
+                            <div class="summary-line">
+                                <div>
+                                    <div class="summary-label">Order summary</div>
+                                    <div class="summary-order">
+                                        Order #<span th:text="${order.confirmationNumber}">123456</span>
+                                    </div>
+                                </div>
+                                <div class="summary-total">
+                                    $<span th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">
+                                        0.00
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="btn-row">
+                                <a th:href="${orderUrl}" class="btn">View order</a>
+                                <a th:href="${invoiceUrl}" class="btn btn-secondary">Download invoice</a>
+                            </div>
+                        </div>
 
-                        <hr>
+                        <div class="divider"></div>
 
-                        <table role="presentation">
-                            <tr>
-                                <th>Item</th>
-                                <th class="right">Qty</th>
-                                <th class="right">Price</th>
+                        <!-- LINE ITEMS -->
+                        <h3 class="items-title">Items in your order</h3>
+
+                        <table role="presentation" width="100%">
+                            <tr th:each="it : ${order.items}" class="item-row">
+                                <td>
+                                    <div class="item-main">
+                                        <img class="item-img"
+                                             th:if="${it.imageUrl != null}"
+                                             th:src="${it.imageUrl}"
+                                             alt="Item image">
+                                        <div>
+                                            <div class="item-name" th:text="${it.productName}">Product name</div>
+                                            <div class="item-note"
+                                                 th:if="${it.quantity != null}">
+                                                Qty: <span th:text="${it.quantity}">1</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="item-meta" valign="top">
+                                    <div th:text="${'$' + #numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">
+                                        $0.00
+                                    </div>
+                                    <div style="font-size:12px;color:#6b7280;">
+                                        Total:
+                                        <span th:text="${'$' + #numbers.formatDecimal(it.price.multiply(new java.math.BigDecimal(it.quantity)),1,'COMMA',2,'POINT')}">
+                                            $0.00
+                                        </span>
+                                    </div>
+                                </td>
                             </tr>
-                            <tr th:each="it : ${order.items}">
-                                <td th:text="${it.productName}">Product</td>
-                                <td class="right" th:text="${it.quantity}">1</td>
-                                <td class="right"
-                                    th:text="${#numbers.formatDecimal(it.price.multiply(new java.math.BigDecimal(it.quantity)),1,'COMMA',2,'POINT')}">
+                        </table>
+
+                        <!-- TOTALS -->
+                        <table class="totals-table" role="presentation">
+                            <tr>
+                                <td class="totals-label">Subtotal</td>
+                                <td class="totals-value"
+                                    th:text="${'$' + #numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">
+                                    $0.00
+                                </td>
+                            </tr>
+                            <tr th:if="${order.discount != null and order.discount > 0}">
+                                <td class="totals-label">Discount</td>
+                                <td class="totals-value"
+                                    th:text="${'- $' + #numbers.formatDecimal(order.discount,1,'COMMA',2,'POINT')}">
+                                    -$0.00
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="totals-label">Tax</td>
+                                <td class="totals-value"
+                                    th:text="${'$' + #numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">
+                                    $0.00
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="totals-grand">Total</td>
+                                <td class="totals-grand totals-value"
+                                    th:text="${'$' + #numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">
                                     $0.00
                                 </td>
                             </tr>
                         </table>
 
-                        <table role="presentation" style="margin-top:10px;">
-                            <tr>
-                                <td class="muted">Subtotal</td>
-                                <td class="right" th:text="${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td class="muted">Tax</td>
-                                <td class="right" th:text="${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td style="font-weight:bold;">Total</td>
-                                <td class="right" style="font-weight:bold;"
-                                    th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">
-                                    $0.00
-                                </td>
-                            </tr>
-                        </table>
-
-                        <div class="ship-qr-bar">
-                            <!-- Shipping address -->
-                            <div class="card-lite">
-                                <h3 class="title-small"><i class="fa-solid fa-location-dot"></i> Shipping address</h3>
-                                <div style="white-space:pre-line;line-height:1.5">
-                                    <div th:text="${order.customerName}">Customer Name</div>
-                                    <div th:text="${order.phone}">5551234567</div>
-                                    <div th:text="${order.street}">123 Main St, Apt 206</div>
-                                    <div>
+                        <!-- SHIPPING & ORDER INFO -->
+                        <div class="bottom-grid">
+                            <!-- Shipping -->
+                            <div class="bottom-col">
+                                <div class="card-lite">
+                                    <div class="card-lite-title">Shipping address</div>
+                                    <div class="card-lite-body">
+                                        <span th:text="${order.customerName}">Customer Name</span><br>
+                                        <span th:text="${order.phone}">555-123-4567</span><br>
+                                        <span th:text="${order.street}">123 Main St, Apt 206</span><br>
                                         <span th:text="${order.city}">Glen Allen</span>,
                                         <span th:text="${order.state}">VA</span>
-                                        <span th:text="${order.zip}">23059</span>
+                                        <span th:text="${order.zip}">23059</span><br>
+                                        <span th:text="${order.country}">United States</span>
                                     </div>
-                                    <div th:text="${order.country}">United States</div>
                                 </div>
                             </div>
 
+                            <!-- Order meta -->
+                            <div class="bottom-col">
+                                <div class="card-lite">
+                                    <div class="card-lite-title">Order details</div>
+                                    <div class="card-lite-body">
+                                        <div>
+                                            Order #: <strong th:text="${order.confirmationNumber}">123456</strong>
+                                        </div>
+                                        <div th:if="${order.createdAt != null}">
+                                            Placed on:
+                                            <span th:text="${#temporals.format(order.createdAt, 'MMM d, yyyy')}">
+                                                Jan 1, 2025
+                                            </span>
+                                        </div>
+                                        <div th:if="${order.email != null}">
+                                            Email: <span th:text="${order.email}">customer@example.com</span>
+                                        </div>
+                                        <div style="margin-top:6px;">
+                                            If anything looks incorrect, reply to this email and
+                                            our team will be happy to help.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-
-                        <p style="margin:16px 0 0" class="muted">
-                            © <span th:text="${year}">2025</span> The Spice Jar
+                        <p style="font-size:12px;color:#6b7280;margin:18px 0 0;">
+                            Thank you for choosing <strong>The Spice Jar</strong> to bring more flavour to your kitchen.
                         </p>
+                    </td>
+                </tr>
+
+                <!-- FOOTER -->
+                <tr>
+                    <td class="footer">
+                        <div>
+                            © <span th:text="${year}">2025</span> The Spice Jar. All rights reserved.
+                        </div>
+                        <div style="margin-top:4px;">
+                            <a th:href="${orderUrl}">View order</a>
+                            <span>&nbsp;•&nbsp;</span>
+                            <a th:href="${supportUrl}" th:if="${supportUrl != null}">Contact support</a>
+                        </div>
                     </td>
                 </tr>
             </table>
         </td>
     </tr>
 </table>
-
-
-<!-- QR & Barcode libraries -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js" defer></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // ==== 1) Build the shipping text for QR ====
-        // These come from your model; keep the fallbacks to avoid "undefined"
-        const name    = /*[[${order.customerName}]]*/ '' || '';
-        const phone   = /*[[${order.phone}]]*/ '' || '';
-        const street  = /*[[${order.street}]]*/ '' || '';
-        const city    = /*[[${order.city}]]*/ '' || '';
-        const state   = /*[[${order.state}]]*/ '' || '';
-        const zip     = /*[[${order.zip}]]*/ '' || '';
-        const country = /*[[${order.country}]]*/ '' || '';
-
-        const qrText = [
-            name,
-            phone,
-            street,
-            `${city}, ${state} ${zip}`.trim(),
-            country
-        ].filter(Boolean).join('\n');
-
-        // ==== 2) Render QR ====
-        const qrBox = document.getElementById('qrBox');
-        if (qrBox && window.QRCode) {
-            // Clear previous if any (reloads etc)
-            qrBox.innerHTML = '';
-            const qr = new QRCode(qrBox, {
-                text: qrText || 'No address',
-                width: 260,
-                height: 260,
-                correctLevel: QRCode.CorrectLevel.M
-            });
-        } else {
-            console.warn('QR code container or library not ready');
-        }
-
-        // ==== 3) Download QR as PNG ====
-        const dlQrBtn = document.getElementById('btnDownloadQr');
-        if (dlQrBtn) {
-            dlQrBtn.addEventListener('click', function () {
-                const canvas = qrBox?.querySelector('canvas');
-                if (!canvas) return;
-                const url = canvas.toDataURL('image/png');
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `shipping-qr-order-${/*[[${order.id}]]*/ 'order'}.png`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-            });
-        }
-
-        // ==== 4) Render barcode (Code-128) — you already see this working, kept for completeness ====
-        const barcodeEl = document.getElementById('barcodeSvg');
-        const codeText = `${/*[[${order.confirmationNumber}]]*/ ''}`.trim() || `ORD-${/*[[${order.id}]]*/ '0'}`;
-        if (barcodeEl && window.JsBarcode) {
-            JsBarcode(barcodeEl, codeText, {
-                format: 'CODE128',
-                width: 2,
-                height: 70,
-                displayValue: false,
-                margin: 10
-            });
-        }
-    });
-</script>
 </body>
 </html>

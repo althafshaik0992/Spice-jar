@@ -2,6 +2,7 @@ package com.example.foodapp.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -33,6 +34,27 @@ public class Product {
 
     @Column(nullable = false)
     private  Integer stock;
+
+    @Getter
+    @Setter
+    private Integer stockQty = 0;
+
+
+    @Getter
+    @Setter
+    // optional: custom low-stock threshold per product
+    private Integer lowStockThreshold;
+
+
+
+    public boolean isOutOfStock() {
+        return stockQty == null || stockQty <= 0;
+    }
+    public boolean isLowStock(int defaultThreshold) {
+        if (isOutOfStock()) return false;
+        int th = (lowStockThreshold == null ? defaultThreshold : lowStockThreshold);
+        return stockQty <= th;
+    }
 
     @Getter
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -100,5 +122,9 @@ public class Product {
         for (ProductVariant v : this.variants) v.setProduct(this);
     }
 
-
+    public void addVariant(ProductVariant v) {
+        if (v == null) return;
+        v.setProduct(this);
+        this.variants.add(v);
+    }
 }
