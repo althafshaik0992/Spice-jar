@@ -1,7 +1,6 @@
 package com.example.foodapp.controller;
 
 import com.example.foodapp.model.*;
-import com.example.foodapp.repository.CouponRedemptionRepository;
 import com.example.foodapp.repository.CouponRepository;
 import com.example.foodapp.service.*;
 import com.example.foodapp.util.Cart;
@@ -32,9 +31,7 @@ public class HomeController {
 
     private final CategoryService categoryService;
 
-    private final CouponRedemptionRepository couponRedemptionRepository;
 
-private final UserService userService;
 
     private final CouponRepository couponRepository;
 
@@ -43,12 +40,10 @@ private final UserService userService;
 
 
 
-    public HomeController(ProductService productService, ReviewService reviewService, CategoryService categoryService, CouponRedemptionRepository couponRedemptionRepository, UserService userService, CouponRepository couponRepository, AnalyticsService analyticsService, InventoryService inventoryService) {
+    public HomeController(ProductService productService, ReviewService reviewService, CategoryService categoryService, CouponRepository couponRepository, AnalyticsService analyticsService, InventoryService inventoryService) {
         this.productService = productService;
         this.reviewService = reviewService;
         this.categoryService = categoryService;
-        this.couponRedemptionRepository = couponRedemptionRepository;
-        this.userService = userService;
         this.couponRepository = couponRepository;
         this.analyticsService = analyticsService;
         this.inventoryService = inventoryService;
@@ -64,69 +59,42 @@ private final UserService userService;
 
     @GetMapping("/")
     public String index(Model m, HttpSession session) {
-
         var today = java.time.LocalDate.now();
-        User user = currentUser(session);   // from BaseController
 
-        // 1) Base set: active + date-valid coupons
-        java.util.List<com.example.foodapp.model.Coupon> base;
-        try {
-            // if you have this query, use it (already in CouponRepository)
-            base = couponRepository.findActiveCurrentlyValid(today);
-        } catch (Exception e) {
-            // fallback: manual filtering from findAll()
-            base = couponRepository.findAll().stream()
-                    .filter(c -> java.lang.Boolean.TRUE.equals(c.getActive()))
-                    .filter(c -> c.getStartsOn() == null || !today.isBefore(c.getStartsOn()))
-                    .filter(c -> c.getExpiresOn() == null || !today.isAfter(c.getExpiresOn()))
-                    .sorted(java.util.Comparator
-                            .comparing((com.example.foodapp.model.Coupon c) ->
-                                    c.getStartsOn() == null
-                                            ? java.time.LocalDate.MIN
-                                            : c.getStartsOn())
-                            .thenComparing(com.example.foodapp.model.Coupon::getCode,
-                                    String.CASE_INSENSITIVE_ORDER))
-                    .toList();
-        }
-
-        // 2) Filter by user: remove coupons already redeemed by this user
         java.util.List<com.example.foodapp.model.Coupon> coupons;
-
-        if (user != null) {
-            java.util.Set<Long> redeemedIds = couponRedemptionRepository.findByUser(user)
-                    .stream()
-                    .map(cr -> cr.getCoupon() != null ? cr.getCoupon().getId() : null)
-                    .filter(java.util.Objects::nonNull)
-                    .collect(java.util.stream.Collectors.toSet());
-
-            coupons = base.stream()
-                    .filter(c -> c.getId() != null && !redeemedIds.contains(c.getId()))
-                    .toList();
-        } else {
-            // guest: show all active/date-valid coupons
-            coupons = base;
+        try {
+            coupons = couponRepository.findAll(); // or your typed finder
+        } catch (Exception e) {
+            coupons = java.util.Collections.emptyList();
         }
+
+        coupons = coupons.stream()
+                .filter(c -> Boolean.TRUE.equals(c.getActive()))
+                .filter(c -> c.getStartsOn() == null || !today.isBefore(c.getStartsOn()))
+                .filter(c -> c.getExpiresOn() == null || !today.isAfter(c.getExpiresOn()))
+                .sorted(java.util.Comparator
+                        .comparing((com.example.foodapp.model.Coupon c) ->
+                                c.getStartsOn() == null ? java.time.LocalDate.MIN : c.getStartsOn())
+                        .thenComparing(com.example.foodapp.model.Coupon::getCode,
+                                String.CASE_INSENSITIVE_ORDER))
+                .toList();
 
         System.out.println(">>> availableCoupons size = " + coupons.size()); // DEBUG
-
-        // 3) Best sellers (variants are handled in your index.html)
         var bestSellers = analyticsService.topSellers(4, 90); // 4 items, last 90 days
 
-        // 4) Model attributes
         m.addAttribute("availableCoupons", coupons);
-        m.addAttribute("couponCount", coupons.size());
+        m.addAttribute("couponCount", coupons.size()); // DEBUG helper
+
+       // m.addAttribute("products", productService.findAll());
         m.addAttribute("bestSellers", bestSellers);
         m.addAttribute("latestReviews", reviewService.latestApproved(3));
-
-        // Your existing cartCount logic (still fine)
-        var cart = session.getAttribute("CART");
+       //.addAttribute("products", analyticsService.topSellers(10, 30));
+       var cart = session.getAttribute("CART");
         m.addAttribute("cartCount", cart != null
                 ? com.example.foodapp.util.CartUtils.getCartTotalQuantity((Cart) cart)
                 : 0);
-
         return "index";
     }
-
 
 
 
@@ -326,17 +294,6 @@ private final UserService userService;
                             .thenComparing(Coupon::getCode, String.CASE_INSENSITIVE_ORDER))
                     .toList();
         }
-    }
-
-
-    protected User currentUser(HttpSession session) {
-        try {
-            User u = userService.getCurrentUser(session); // ok if null / not implemented
-            if (u != null) return u;
-        } catch (Throwable ignored) { /* fallback */ }
-
-        Object s = (session != null) ? session.getAttribute("USER") : null;
-        return (s instanceof User) ? (User) s : null;
     }
 
 

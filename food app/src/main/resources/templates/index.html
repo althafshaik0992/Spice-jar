@@ -300,9 +300,9 @@
                     <span class="pill">Bestseller</span>
                 </div>
 
-                <!-- ⭐ Rating (same as before) -->
+                <!-- ⭐ Rating (reusing avgMap / cntMap like menu) -->
                 <div class="rating"
-                     th:if="${avgMap != null && avgMap[p.id] != null && avgMap[p.id] > 0}">
+                     th:if="${avgMap != null and avgMap[p.id] != null and avgMap[p.id] > 0}">
                     <div class="rating-stars">
                         <span th:each="i : ${#numbers.sequence(1,5)}">
                             <i class="fa-star"
@@ -318,60 +318,24 @@
                         4.5
                     </span>
                     <span class="rating-count"
-                          th:if="${cntMap != null && cntMap[p.id] != null && cntMap[p.id] > 0}"
+                          th:if="${cntMap != null and cntMap[p.id] != null and cntMap[p.id] > 0}"
                           th:text="'(' + ${cntMap[p.id]} + ' reviews)'">
                         (12 reviews)
                     </span>
                 </div>
 
+                <!-- Optional: no reviews -->
                 <div class="rating"
-                     th:if="${avgMap == null || avgMap[p.id] == null || avgMap[p.id] == 0}">
+                     th:if="${avgMap == null or avgMap[p.id] == null or avgMap[p.id] == 0}">
                     <span class="rating-count">No reviews yet</span>
                 </div>
 
                 <h5 th:text="${p.name}">Product Name</h5>
 
-                <!-- Base / from price -->
-                <h4>
-                    <span th:text="${p.variants != null && !#lists.isEmpty(p.variants) ?
-                                    'From $' + #numbers.formatDecimal(p.variants[0].price,1,'COMMA',2,'POINT')
-                                    : '$ ' + #numbers.formatDecimal(p.price,1,'COMMA',2,'POINT')}">
-                        $ 0.00
-                    </span>
-                </h4>
+                <h4>$ <span th:text="${#numbers.formatDecimal(p.price,1,'COMMA',2,'POINT')}">0.00</span></h4>
 
-                <!-- Variant list (variant-wise best sellers view) -->
-                <div class="meta"
-                     th:if="${p.variants != null && !#lists.isEmpty(p.variants)}"
-                     style="flex-direction:column;align-items:center">
-                    <div style="font-size:13px;color:#374151;margin-bottom:4px">
-                        Popular sizes:
-                    </div>
-                    <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
-                        <div th:each="v,vi : ${p.variants}"
-                             th:if="${vi.index < 3}"
-                             style="display:flex;gap:8px;font-size:13px;color:#4b5563">
-                            <span class="pill"
-                                  th:text="${
-                                       v.label != null && !#strings.isEmpty(v.label) ? v.label :
-                                       (v.weight != null ? v.weight + ' g' : 'Variant ' + (vi.index + 1))
-                                  }">
-                                250 g
-                            </span>
-                            <span th:text="${'$' + #numbers.formatDecimal(v.price,1,'COMMA',2,'POINT')}">
-                                $3.99
-                            </span>
-                        </div>
-                        <small th:if="${#lists.size(p.variants) > 3}"
-                               style="color:#6b7280;font-size:12px">
-                            + more sizes available
-                        </small>
-                    </div>
-                </div>
-
-                <!-- If no variants, fall back to product weight pill -->
-                <div class="meta"
-                     th:if="${(p.variants == null || #lists.isEmpty(p.variants)) && p.weight != null}">
+                <!-- Weight pill -->
+                <div class="meta" th:if="${p.weight != null}">
                     <span class="pill"
                           th:text="${#numbers.formatInteger(p.weight, 1, 'COMMA') + ' g'}">250 g</span>
                 </div>
@@ -380,7 +344,7 @@
                     Premium spice blend.
                 </p>
 
-                <!-- Add to cart (still product-level; variants handled on product page) -->
+                <!-- Add to cart uses existing JS (add-to-cart-btn) -->
                 <button class="btn-order add-to-cart-btn"
                         th:data-product-id="${p.id}"
                         th:data-product-name="${p.name}"
@@ -389,6 +353,7 @@
                     <i class="fas fa-shopping-cart"></i> Add to Cart
                 </button>
 
+                <!-- View product -->
                 <a class="btn-view"
                    th:href="@{/product/{id}(id=${p.id})}">
                     <i class="fa-regular fa-eye"></i>
@@ -416,7 +381,6 @@
         </a>
     </div>
 </section>
-
 
 <section class="section">
     <h2>What our customers say</h2>

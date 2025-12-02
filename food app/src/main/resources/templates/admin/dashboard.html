@@ -71,8 +71,8 @@
                 <button class="inline-flex items-center gap-2 px-3 h-10 rounded-xl bg-emerald-600/15 text-emerald-300 hover:bg-emerald-600/25">
                     <i class="fa-solid fa-circle-user"></i>
                     <span>
-                        <span th:text="${session.ADMIN_USER != null ? session.ADMIN_USER.username : 'Admin'}">Admin</span>
-                    </span>
+            <span th:text="${session.ADMIN_USER != null ? session.ADMIN_USER.username : 'Admin'}">Admin</span>
+        </span>
                     <i class="fa-solid fa-chevron-down text-[11px] opacity-70"></i>
                 </button>
                 <div class="absolute right-0 mt-2 hidden group-hover:block w-56 rounded-xl border border-[#1f2637] bg-[#0c1528] shadow-2xl">
@@ -97,6 +97,8 @@
                     </form>
                 </div>
             </div>
+
+
         </div>
     </div>
 
@@ -267,15 +269,19 @@
             <ul class="space-y-2" th:if="${lowStock != null and !lowStock.isEmpty()}">
                 <li th:each="it : ${lowStock}" class="flex items-center justify-between">
                     <span th:text="${it.name}">Turmeric</span>
-                    <!-- simplified: avoid Collections / aggregates -->
                     <span class="text-xs text-yellow-300"
-                          th:text="${it.minVariantStock != null
-                   ? 'Min variant qty: ' + it.minVariantStock
-                   : 'Qty: ' + #numbers.formatInteger(it.totalStock, 1, 'COMMA')}">
-    Qty
-</span>
-
-
+                          th:text="${!#lists.isEmpty(it.variants)
+                   ? 'Min variant qty: ' + (
+                         #lists.isEmpty(it.variants.?[stock != null])
+                         ? '0'
+                         : #numbers.formatInteger(
+                               T(java.util.Collections).min(it.variants.?[stock != null].![stock]),
+                               1, 'COMMA'
+                           )
+                     )
+                   : 'Qty: ' + #numbers.formatInteger(it.stock == null ? 0 : it.stock, 1, 'COMMA')}">
+      Qty
+    </span>
                 </li>
             </ul>
             <p class="text-slate-400 text-sm" th:if="${lowStock == null or lowStock.isEmpty()}">
