@@ -147,6 +147,15 @@
             border-color:#166534;
             color:#fff;
         }
+        /* Out-of-stock variant chip */
+        .variant-chip.is-out{
+            background:#fee2e2;
+            border-color:#fecaca;
+            color:#991b1b;
+            text-decoration:line-through;
+            cursor:not-allowed;
+            opacity:.85;
+        }
 
         /* Footer */
         .site-footer{ background:#222; color:#ccc; padding:40px 6%; margin-top:40px; }
@@ -280,8 +289,9 @@
 
                     <h4 th:if="${hasVariants}">
                         From
+                        <!-- base product price is set from variants in admin controller -->
                         $ <span data-price-display
-                                th:text="${#numbers.formatDecimal(p.variants[0].price,1,'COMMA',2,'POINT')}">
+                                th:text="${#numbers.formatDecimal(p.price,1,'COMMA',2,'POINT')}">
                             0.00
                         </span>
                     </h4>
@@ -293,10 +303,11 @@
                                     class="variant-chip"
                                     th:each="v,vi : ${p.variants}"
                                     th:text="${v.weight} + ' g'"
-                                    th:classappend="${vi.index == 0} ? ' is-active' : ''"
+                                    th:classappend="${(v.stock != null and v.stock <= 0) ? ' is-out' : ''}"
                                     th:attr="data-variant-id=${v.id},
                                              data-price=${v.price},
-                                             data-weight=${v.weight}">
+                                             data-weight=${v.weight},
+                                             data-stock=${v.stock != null ? v.stock : 0}">
                                 100 g
                             </button>
                         </div>
@@ -397,25 +408,46 @@
 
         // ----- variant chips on menu cards -----
         document.querySelectorAll('.card').forEach(card => {
-            const chips = card.querySelectorAll('.variant-chip');
+            const chips = Array.from(card.querySelectorAll('.variant-chip'));
             if (!chips.length) return;
 
-            const hidden = card.querySelector('input[data-variant-hidden]');
+            const hidden    = card.querySelector('input[data-variant-hidden]');
             const priceSpan = card.querySelector('[data-price-display]');
 
+            // pick first in-stock chip (stock > 0). If all 0, just use first.
+            let defaultChip = chips.find(c => Number(c.dataset.stock || '0') > 0) || chips[0];
+
+            if (defaultChip) {
+                chips.forEach(c => c.classList.remove('is-active'));
+                defaultChip.classList.add('is-active');
+
+                if (hidden) hidden.value = defaultChip.dataset.variantId || '';
+                if (priceSpan && defaultChip.dataset.price) {
+                    const v = Number(defaultChip.dataset.price);
+                    priceSpan.textContent = Number.isFinite(v) ? v.toFixed(2) : defaultChip.dataset.price;
+                }
+            }
+
             chips.forEach(chip => {
+                const stock = Number(chip.dataset.stock || '0');
+
+                if (stock <= 0) {
+                    chip.classList.add('is-out');
+                }
+
                 chip.addEventListener('click', () => {
-                    // visual selection
+                    if (stock <= 0) {
+                        toast('That size is out of stock');
+                        return;
+                    }
+
                     chips.forEach(c => c.classList.remove('is-active'));
                     chip.classList.add('is-active');
 
-                    // update hidden variantId
                     if (hidden) hidden.value = chip.dataset.variantId || '';
-
-                    // update price text
                     if (priceSpan && chip.dataset.price) {
                         const v = Number(chip.dataset.price);
-                        priceSpan.textContent = isFinite(v) ? v.toFixed(2) : chip.dataset.price;
+                        priceSpan.textContent = Number.isFinite(v) ? v.toFixed(2) : chip.dataset.price;
                     }
                 });
             });

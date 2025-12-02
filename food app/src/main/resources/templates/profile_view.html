@@ -4,163 +4,511 @@
     <meta charset="UTF-8"/>
     <title>My Profile • The Spice Jar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
     <style>
         :root {
-            --green:#218838;
-            --accent:#b7410e;
-            --bg:#f6fbf6;
-            --card:#ffffffd9;
-            --muted:#6b7280;
-            --shadow:0 10px 25px rgba(0,0,0,.06);
-        }
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{
-            font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;
-            background:linear-gradient(160deg,#f6fbf6,#fff8f5);
-            color:#111;
-            line-height:1.6;
+            --green: #218838;
+            --accent: #b7410e;
+            --bg: #f6fbf6;
+            --card: #ffffffd9;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 12px 30px rgba(15, 23, 42, .08);
         }
 
-        /* Navbar */
-        .navbar{
-            background:#fff;
-            padding:10px 6%;
-            box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex;justify-content:space-between;align-items:center;
-            position:sticky;top:0;z-index:1000;height:60px;
-        }
-        .brand-logo{
-            display:flex;align-items:center;gap:8px;
-            text-decoration:none;color:var(--green);
-            font-weight:700;font-size:20px;
-        }
-        .brand-logo video{width:36px;border-radius:4px}
-        .nav-links{display:flex;align-items:center;gap:18px}
-        .nav-links a{
-            text-decoration:none;color:#333;font-weight:500;font-size:15px;
-            transition:color .2s;
-        }
-        .nav-links a:hover{color:var(--green)}
-        .cart-icon-container{position:relative}
-        .cart-count-badge{
-            position:absolute;top:-8px;right:-8px;
-            background:var(--accent);color:white;border-radius:50%;
-            min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;
-            font-size:12px;font-weight:700;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        /* Cover */
-        .cover{
-            background:linear-gradient(135deg,#22c55e33,#b7410e33),url('/images/spices-about.jpeg') center/cover;
-            height:220px;
-            border-radius:0 0 40px 40px;
-            position:relative;
-            overflow:hidden;
-        }
-        .cover::after{
-            content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.1),rgba(0,0,0,.2));
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial, sans-serif;
+            background: radial-gradient(circle at top left, #f0fdf4 0, #fff 40%, #fff8f5 100%);
+            color: #0f172a;
+            line-height: 1.6;
         }
 
-        /* Profile Card */
-        .wrap{max-width:940px;margin:-80px auto 0;padding:0 6%;}
-        .card{
-            background:var(--card);
-            backdrop-filter:blur(10px);
-            border-radius:20px;
-            box-shadow:var(--shadow);
-            padding:24px;
-            animation:fadeIn .6s ease-in-out;
-        }
-        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-        .top{display:flex;gap:20px;align-items:center;flex-wrap:wrap;}
-        .avatar,.placeholder{
-            width:120px;height:120px;border-radius:50%;
-            border:3px solid #fff;box-shadow:0 6px 16px rgba(0,0,0,.12);
-            display:grid;place-items:center;background:#f4f4f4;overflow:hidden;
-        }
-        .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-        .placeholder i{font-size:42px;color:#888;}
-        .top h2{margin:0;font-size:26px;color:#222;}
-        .top small{color:#555;font-size:15px;}
-
-        /* Info Grid */
-        .grid{
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-            gap:14px;margin-top:22px;
-        }
-        .field{
-            background:#fafafa;
-            border:1px solid #e8e8e8;
-            border-radius:12px;
-            padding:14px;
-            transition:all .25s;
-        }
-        .field:hover{background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.05);}
-        .label{font-weight:700;color:#444;font-size:14px;margin-bottom:3px;}
-        .value{color:#111;font-size:15px;}
-
-        /* Edit Button */
-        .actions{margin-top:20px;text-align:right;}
-        .btn{
-            display:inline-flex;align-items:center;gap:8px;
-            border:none;border-radius:10px;padding:10px 16px;
-            font-weight:700;cursor:pointer;text-decoration:none;
-            transition:all .25s;
+        a {
+            text-decoration: none;
         }
 
-        /* Dropdowns */
-        .dropdown{ position:relative }
-        .dropdown-toggle{ background:none; border:none; cursor:pointer; font-size:15px; color:#333; display:flex; align-items:center; gap:6px }
-        .dropdown-menu{ display:none; position:absolute; right:0; top:100%; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1); border-radius:6px; overflow:hidden; min-width:180px }
-        .dropdown:hover .dropdown-menu{ display:block }
-        .dropdown-menu a, .dropdown-menu span{ display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap }
-        .dropdown-menu a:hover{ background:#f4f4f4 }
-        .btn-primary{
-            background:var(--green);color:#fff;
-            box-shadow:0 4px 10px rgba(33,136,56,.25);
-        }
-        .btn-primary:hover{background:var(--accent);transform:translateY(-2px);}
-
-        /* Footer */
-        footer{
-            background:#0d1410;
-            color:#ccc;
-            padding:50px 6% 20px;
-            margin-top:60px;
-        }
-        .footer-container{
-            display:flex;flex-wrap:wrap;justify-content:space-between;gap:40px;margin-bottom:30px;
-        }
-        .footer-column{flex:1;min-width:240px;}
-        .footer-column h3{
-            color:#fff;font-weight:600;margin-bottom:16px;position:relative;padding-bottom:6px;
-        }
-        .footer-column h3::after{
-            content:"";position:absolute;left:0;bottom:0;width:40px;height:3px;background:var(--green);
-        }
-        .footer-column p{line-height:1.6;font-size:14px;}
-        .footer-column ul{list-style:none;padding:0;margin:0;}
-        .footer-column ul li a{
-            text-decoration:none;color:#bbb;font-size:14px;display:block;padding:5px 0;
-            transition:color .25s;
-        }
-        .footer-column ul li a:hover{color:var(--green);}
-        .social-links a{
-            color:#bbb;font-size:20px;margin-right:15px;text-decoration:none;transition:color .25s;
-        }
-        .social-links a:hover{color:var(--accent);}
-        .footer-bottom{
-            text-align:center;border-top:1px solid #333;padding-top:20px;font-size:14px;color:#888;
+        /* NAVBAR */
+        .navbar {
+            background: #fff;
+            padding: 10px 6%;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, .08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            height: 60px;
         }
 
-        @media (max-width:760px){
-            .top{justify-content:center;text-align:center;}
-            .actions{text-align:center;}
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--green);
+            font-weight: 700;
+            font-size: 20px;
         }
-    </style>
-</head>
+
+        .brand-logo video {
+            width: 36px;
+            border-radius: 4px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #334155;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color .2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--green);
+        }
+
+        .cart-icon-container {
+            position: relative;
+        }
+
+        .cart-count-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 999px;
+            min-width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* DROPDOWN */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dropdown-toggle i {
+            font-size: 16px;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 6px;
+            background: #fff;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, .16);
+            border-radius: 8px;
+            overflow: hidden;
+            min-width: 190px;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-menu a,
+        .dropdown-menu span {
+            display: block;
+            padding: 10px 16px;
+            text-decoration: none;
+            color: #111827;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        .dropdown-menu a:hover {
+            background: #f3f4f6;
+        }
+
+        /* COVER / HEADER */
+        .cover {
+            background:
+                    linear-gradient(135deg, rgba(34, 197, 94, .28), rgba(183, 65, 14, .3)),
+                    url('/images/spices-about.jpeg') center/cover no-repeat;
+            height: 220px;
+            border-radius: 0 0 40px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(15, 23, 42, .25), rgba(15, 23, 42, .35));
+        }
+
+        .cover-inner {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            padding: 0 6%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            color: #e5e7eb;
+        }
+
+        .cover-title-block {
+            padding-bottom: 20px;
+        }
+
+        .cover-title-block h1 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: .02em;
+            margin-bottom: 4px;
+        }
+
+        .cover-title-block p {
+            font-size: 14px;
+            color: #d1d5db;
+        }
+
+        /* MAIN WRAP */
+        .wrap {
+            max-width: 960px;
+            margin: -60px auto 0;
+            padding: 0 6% 40px;
+        }
+
+        /* PROFILE CARD */
+        .card {
+            background: var(--card);
+            backdrop-filter: blur(14px);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            padding: 22px 22px 24px;
+        }
+
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .top {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .avatar,
+        .placeholder {
+            width: 96px;
+            height: 96px;
+            border-radius: 999px;
+            border: 3px solid #fff;
+            box-shadow: 0 8px 22px rgba(15, 23, 42, .16);
+            display: grid;
+            place-items: center;
+            background: #f9fafb;
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 999px;
+        }
+
+        .placeholder i {
+            font-size: 40px;
+            color: #9ca3af;
+        }
+
+        .identity {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .identity h2 {
+            margin: 0;
+            font-size: 22px;
+            color: #111827;
+        }
+
+        .identity small {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .identity-tagline {
+            margin-top: 2px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+        .card {
+            /* old: margin-top: -46px; */
+            margin-top: -30px;
+        }
+        .cover-inner {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            padding: 0 20px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            color: #f9fafb; /* ensure light text */
+        }
+
+        .cover-title-block {
+            padding: 16px 18px;
+            margin-bottom: 18px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.6); /* dark glass behind text */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .cover-title-block h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 4px;
+            color: #fefce8; /* warm off-white, very visible */
+        }
+
+        .cover-title-block p {
+            font-size: 14px;
+            margin: 0;
+            color: #e5e7eb;
+        }
+
+
+        /* TAG / STATUS PILL */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #ecfdf3;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* GRID */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        .field {
+            background: #f9fafb;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            transition: all .18s ease-out;
+        }
+
+        .field:hover {
+            background: #ffffff;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, .06);
+            border-color: #d1d5db;
+        }
+
+        .label {
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 13px;
+            margin-bottom: 2px;
+        }
+
+        .value {
+            color: #111827;
+            font-size: 14px;
+        }
+
+        .value.muted {
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* ACTIONS */
+        .actions {
+            margin-top: 18px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+            transition: all .2s;
+        }
+
+        .btn-primary {
+            background: var(--green);
+            color: #fff;
+            border-color: var(--green);
+            box-shadow: 0 8px 18px rgba(34, 197, 94, .35);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(180, 83, 9, .35);
+        }
+
+        .btn-primary i {
+            font-size: 13px;
+        }
+
+        /* FOOTER */
+        footer {
+            background: #0b1120;
+            color: #cbd5f5;
+            padding: 50px 6% 20px;
+            margin-top: 60px;
+        }
+
+        .footer-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .footer-column h3 {
+            color: #e5e7eb;
+            font-weight: 600;
+            margin-bottom: 16px;
+            position: relative;
+            padding-bottom: 6px;
+            font-size: 16px;
+        }
+
+        .footer-column h3::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--green);
+        }
+
+        .footer-column p {
+            line-height: 1.6;
+            font-size: 14px;
+            color: #9ca3af;
+        }
+
+        .footer-column ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-column ul li a {
+            text-decoration: none;
+            color: #9ca3af;
+            font-size: 14px;
+            display: block;
+            padding: 5px 0;
+            transition: color .2s;
+        }
+
+        .footer-column ul li a:hover {
+            color: #e5e7eb;
+        }
+
+        .social-links a {
+            color: #9ca3af;
+            font-size: 20px;
+            margin-right: 15px;
+            text-decoration: none;
+            transition: color .2s;
+        }
+
+        .social-links a:hover {
+            color: var(--accent);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            border-top: 1px solid #1e293b;
+            padding-top: 18px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        @media (max-width: 760px) {
+            .cover-inner {
+                align-items: flex-end;
+            }
+
+            .top {
+                justify-content: flex-start;
+            }
+
+            .card {
+                padding: 18px 16px 20px;
+            }
+
+            .actions {
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -183,11 +531,9 @@
         </a>
         <a th:href="@{/contact}">Contact Us</a>
 
-
-
         <!-- Account -->
         <div class="dropdown">
-            <button class="dropdown-toggle">
+            <button class="dropdown-toggle" type="button">
                 <i class="fas fa-user"></i>
                 <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">Account</span>
             </button>
@@ -196,8 +542,8 @@
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
 
                 <span th:if="${session.USER != null}">
-          Welcome, <strong th:text="${session.USER.firstName}">User</strong>
-        </span>
+                    Welcome, <strong th:text="${session.USER.firstName}">User</strong>
+                </span>
                 <a th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
                 <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
                 <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
@@ -206,38 +552,115 @@
     </div>
 </nav>
 
-
-<div class="cover"></div>
+<!-- Cover -->
+<div class="cover">
+    <div class="cover-inner">
+        <div class="cover-title-block">
+            <h1>Account overview</h1>
+            <p>Manage your profile, contact details and delivery info.</p>
+        </div>
+    </div>
+</div>
 
 <!-- Profile Section -->
 <div class="wrap">
     <section class="card">
-        <div class="top">
-            <div class="avatar" th:if="${user.avatarUrl != null and !#strings.isEmpty(user.avatarUrl)}">
-                <img th:src="@{${user.avatarUrl}}" alt="Avatar"/>
+        <div class="card-header-row">
+            <div class="top">
+                <div class="avatar"
+                     th:if="${user.avatarUrl != null and !#strings.isEmpty(user.avatarUrl)}">
+                    <img th:src="@{${user.avatarUrl}}" alt="Profile avatar"/>
+                </div>
+                <div class="placeholder"
+                     th:if="${user.avatarUrl == null or #strings.isEmpty(user.avatarUrl)}">
+                    <i class="fa-regular fa-user"></i>
+                </div>
+
+                <div class="identity">
+                    <h2 th:text="${user.firstName + ' ' + user.lastName}">Your Name</h2>
+                    <small th:text="${user.email}">you@example.com</small>
+                    <div class="identity-tagline">
+                        <span class="status-pill">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>Spice Jar member</span>
+                        </span>
+                    </div>
+                </div>
             </div>
-            <div class="placeholder" th:if="${user.avatarUrl == null or #strings.isEmpty(user.avatarUrl)}">
-                <i class="fa-regular fa-user"></i>
-            </div>
-            <div>
-                <h2 th:text="${user.firstName + ' ' + user.lastName}">Your Name</h2>
-                <small th:text="${user.email}">you@example.com</small>
-            </div>
+
+            <!-- extra space in header if you later want "Change password" etc -->
         </div>
 
+        <!-- Info grid -->
         <div class="grid">
-            <div class="field"><div class="label">Phone</div><div class="value" th:text="${user.phone}">—</div></div>
-            <div class="field"><div class="label">Username</div><div class="value" th:text="${user.username}">—</div></div>
-            <div class="field"><div class="label">Address</div><div class="value" th:text="${user.address}">—</div></div>
-            <div class="field"><div class="label">City</div><div class="value" th:text="${user.city}">—</div></div>
-            <div class="field"><div class="label">State</div><div class="value" th:text="${user.state}">—</div></div>
-            <div class="field"><div class="label">Country</div><div class="value" th:text="${user.country}">—</div></div>
-            <div class="field"><div class="label">Zip</div><div class="value" th:text="${user.zip}">—</div></div>
+            <div class="field">
+                <div class="label">Phone</div>
+                <div class="value"
+                     th:classappend="${user.phone == null or #strings.isEmpty(user.phone)} ? ' muted' : ''"
+                     th:text="${user.phone != null && !#strings.isEmpty(user.phone) ? user.phone : 'Not added yet'}">
+                    —
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="label">Username</div>
+                <div class="value"
+                     th:classappend="${user.username == null or #strings.isEmpty(user.username)} ? ' muted' : ''"
+                     th:text="${user.username != null && !#strings.isEmpty(user.username) ? user.username : 'Not set'}">
+                    —
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="label">Address</div>
+                <div class="value"
+                     th:classappend="${user.address == null or #strings.isEmpty(user.address)} ? ' muted' : ''"
+                     th:text="${user.address != null && !#strings.isEmpty(user.address) ? user.address : 'No default address saved'}">
+                    —
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="label">City</div>
+                <div class="value"
+                     th:classappend="${user.city == null or #strings.isEmpty(user.city)} ? ' muted' : ''"
+                     th:text="${user.city != null && !#strings.isEmpty(user.city) ? user.city : '—'}">
+                    —
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="label">State</div>
+                <div class="value"
+                     th:classappend="${user.state == null or #strings.isEmpty(user.state)} ? ' muted' : ''"
+                     th:text="${user.state != null && !#strings.isEmpty(user.state) ? user.state : '—'}">
+                    —
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="label">Country</div>
+                <div class="value"
+                     th:classappend="${user.country == null or #strings.isEmpty(user.country)} ? ' muted' : ''"
+                     th:text="${user.country != null && !#strings.isEmpty(user.country) ? user.country : '—'}">
+                    —
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="label">Zip</div>
+                <div class="value"
+                     th:classappend="${user.zip == null or #strings.isEmpty(user.zip)} ? ' muted' : ''"
+                     th:text="${user.zip != null && !#strings.isEmpty(user.zip) ? user.zip : '—'}">
+                    —
+                </div>
+            </div>
         </div>
 
         <div class="actions">
             <a class="btn btn-primary" th:href="@{/profile}">
-                <i class="fa-solid fa-pen"></i> Edit Profile
+                <i class="fa-solid fa-pen"></i>
+                <span>Edit profile</span>
             </a>
         </div>
     </section>
@@ -248,7 +671,10 @@
     <div class="footer-container">
         <div class="footer-column">
             <h3>About Spice Jar</h3>
-            <p>Bringing the world's finest spices to your kitchen — freshness, aroma, and authenticity sealed in every jar.</p>
+            <p>
+                Bringing the world's finest spices to your kitchen — freshness, aroma,
+                and authenticity sealed in every jar.
+            </p>
         </div>
         <div class="footer-column">
             <h3>Quick Links</h3>
@@ -269,7 +695,9 @@
             </div>
         </div>
     </div>
-    <div class="footer-bottom">© 2025 The Spice Jar • All rights reserved.</div>
+    <div class="footer-bottom">
+        © 2025 The Spice Jar • All rights reserved.
+    </div>
 </footer>
 </body>
 </html>

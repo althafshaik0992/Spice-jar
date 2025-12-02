@@ -47,4 +47,18 @@ public class ProductVariant {
         this.price = price;
         this.stock  = stock;
     }
+
+
+    @Transient
+    public String getLabel() {
+        // If you have a "weight" field in grams:
+        if (weight != null) {
+            return weight + " g";
+        }
+        // Or if you have a "name" or "size" field:
+        // if (name != null && !name.isBlank()) return name;
+
+        return id != null ? "Option #" + id : "Option";
+    }
+
 }
