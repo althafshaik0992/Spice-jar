@@ -65,6 +65,11 @@ public class SessionCart {
     @Getter private BigDecimal tax        = BigDecimal.ZERO;
     @Getter private BigDecimal grandTotal = BigDecimal.ZERO;
 
+
+
+
+
+
     /** Total item count across lines */
     public int getCount() {
         return items.stream().mapToInt(i -> i.qty).sum();
@@ -76,6 +81,10 @@ public class SessionCart {
         this.appliedCouponCode = (coupon == null ? null : coupon.getCode());
         log("[CART] coupon -> " + (coupon == null ? "null"
                 : coupon.getCode() + " (" + coupon.getType() + " " + coupon.getValue() + ")"));
+    }
+    /** Actual Coupon object, used when saving CouponRedemption. */
+    public Coupon getAppliedCoupon() {
+        return appliedCoupon;
     }
 
     /* =========================
