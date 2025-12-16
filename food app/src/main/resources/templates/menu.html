@@ -7,99 +7,328 @@
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
-        :root { --green:#218838; --accent:#b7410e; --dark:#111; --ok:#1e7e34; --low:#a16207; --out:#b91c1c; }
-        * { box-sizing: border-box; }
-        body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; background:#f0f8f0; color:#222; }
+        :root {
+            --green:#218838;
+            --accent:#b7410e;
+            --dark:#111;
+            --ok:#1e7e34;
+            --low:#a16207;
+            --out:#b91c1c;
+        }
+        *{box-sizing:border-box;}
+        body{
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin:0;
+            background:radial-gradient(circle at top left,#e0f5e5 0,#f6fbf6 40%,#f0f8f0 100%);
+            color:#222;
+        }
 
-        .navbar{ background:#fff; padding:6px 6%; box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:1000; height:60px; }
-        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
-        .brand-logo video{width:36px; height:auto; border-radius:4px}
-        .nav-links{display:flex; align-items:center; gap:18px}
-        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
-        .nav-links a:hover{color:var(--green)}
-        .dropdown{position:relative}
-        .dropdown-toggle{background:none; border:none; cursor:pointer; font-size:15px; color:#333; display:flex; align-items:center; gap:6px}
-        .dropdown-menu{display:none; position:absolute; right:0; top:100%; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1); border-radius:6px; overflow:hidden; min-width:180px}
-        .dropdown:hover .dropdown-menu{display:block}
-        .dropdown-menu a, .dropdown-menu span{display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap}
-        .dropdown-menu a:hover{background:#f4f4f4}
+        /* Navbar */
+        .navbar{
+            background:#fff;
+            padding:6px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            position:sticky;
+            top:0;
+            z-index:1000;
+            height:60px;
+        }
+        .brand-logo{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            text-decoration:none;
+            color:var(--green);
+            font-weight:700;
+            font-size:20px;
+        }
+        .brand-logo video{
+            width:36px;
+            height:auto;
+            border-radius:4px;
+        }
+        .nav-links{
+            display:flex;
+            align-items:center;
+            gap:18px;
+        }
+        .nav-links a{
+            text-decoration:none;
+            color:#333;
+            font-weight:500;
+            font-size:15px;
+        }
+        .nav-links a:hover{color:var(--green);}
+        .dropdown{position:relative;}
+        .dropdown-toggle{
+            background:none;
+            border:none;
+            cursor:pointer;
+            font-size:15px;
+            color:#333;
+            display:flex;
+            align-items:center;
+            gap:6px;
+        }
+        .dropdown-menu{
+            display:none;
+            position:absolute;
+            right:0;
+            top:100%;
+            background:#fff;
+            box-shadow:0 4px 10px rgba(0,0,0,.1);
+            border-radius:6px;
+            overflow:hidden;
+            min-width:180px;
+        }
+        .dropdown:hover .dropdown-menu{display:block;}
+        .dropdown-menu a,
+        .dropdown-menu span{
+            display:block;
+            padding:10px 16px;
+            text-decoration:none;
+            color:#333;
+            white-space:nowrap;
+        }
+        .dropdown-menu a:hover{background:#f4f4f4;}
 
         /* Cart */
-        .cart-icon-container { position: relative; display: inline-block; color: #333; }
-        .cart-count-badge {
-            position: absolute; top: -8px; right: -8px;
-            background-color: var(--accent); color: #fff;
-            font-size: 11px; font-weight: 700;
-            border-radius: 50%; width: 20px; height: 20px;
-            display: flex; justify-content: center; align-items: center;
+        .cart-icon-container{
+            position:relative;
+            display:inline-block;
+            color:#333;
+        }
+        .cart-count-badge{
+            position:absolute;
+            top:-8px;
+            right:-8px;
+            background-color:var(--accent);
+            color:#fff;
+            font-size:11px;
+            font-weight:700;
+            border-radius:50%;
+            width:20px;
+            height:20px;
+            display:flex;
+            justify-content:center;
+            align-items:center;
         }
 
-        .container{padding:28px 6%; max-width:1200px; margin:0 auto;}
-        h1{margin:0 0 12px; color:var(--green);}
+        /* Page layout */
+        .container{
+            padding:28px 6% 40px;
+            max-width:1200px;
+            margin:0 auto;
+        }
+        h1{
+            margin:0 0 6px;
+            color:var(--green);
+            font-size:26px;
+        }
+        .subtitle{
+            margin:0 0 16px;
+            font-size:13px;
+            color:#6b7280;
+        }
 
-        .filters{ background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.06); padding:14px; display:grid; gap:10px; grid-template-columns: 1.1fr .7fr .7fr .8fr .8fr auto; }
-        @media (max-width: 980px){ .filters{ grid-template-columns: 1fr 1fr; } }
-        .filters input, .filters select { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px; background:#fff; }
-        .filters .actions { display:flex; gap:10px; align-items:center; }
-        .btn { border:none; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; }
-        .btn-primary { background:var(--green); color:#fff; }
-        .btn-primary:hover { background:var(--accent); }
-        .btn-ghost { background:#f3f6f3; color:#333; }
+        /* Filters */
+        .filters-shell{
+            margin-bottom:18px;
+        }
+        .filters-label{
+            font-size:12px;
+            text-transform:uppercase;
+            letter-spacing:.08em;
+            color:#6b7280;
+            margin-bottom:6px;
+            font-weight:600;
+        }
+        .filters{
+            background:#fff;
+            border-radius:12px;
+            box-shadow:0 4px 16px rgba(0,0,0,.06);
+            padding:14px;
+            display:grid;
+            gap:10px;
+            grid-template-columns: 1.1fr .7fr .7fr .8fr .8fr auto;
+            align-items:center;
+        }
+        @media (max-width:980px){
+            .filters{
+                grid-template-columns:1fr 1fr;
+            }
+        }
+        @media (max-width:640px){
+            .filters{
+                grid-template-columns:1fr;
+            }
+        }
+        .filters input,
+        .filters select{
+            width:100%;
+            padding:10px;
+            border:1px solid #ddd;
+            border-radius:8px;
+            font-size:14px;
+            background:#fff;
+        }
+        .filters input:focus,
+        .filters select:focus{
+            outline:none;
+            border-color:var(--green);
+            box-shadow:0 0 0 2px rgba(33,136,56,.14);
+        }
+        .filters .actions{
+            display:flex;
+            gap:10px;
+            align-items:center;
+            justify-content:flex-end;
+        }
+        .btn{
+            border:none;
+            padding:10px 14px;
+            border-radius:10px;
+            font-weight:700;
+            cursor:pointer;
+            font-size:14px;
+        }
+        .btn-primary{
+            background:var(--green);
+            color:#fff;
+            box-shadow:0 4px 14px rgba(0,0,0,.12);
+        }
+        .btn-primary:hover{background:var(--accent);}
+        .btn-ghost{
+            background:#f3f6f3;
+            color:#333;
+        }
 
-        .cards{display:flex; flex-wrap:wrap; gap:24px; margin-top:20px;}
-        .card{width:280px; border-radius:12px; overflow:hidden; background:#fff; box-shadow:0 6px 20px rgba(0,0,0,.08); display:flex; flex-direction:column}
-        .card img{width:100%; height:200px; object-fit:cover}
-        .card-body{padding:16px; text-align:center}
+        /* Cards grid */
+        .cards{
+            display:flex;
+            flex-wrap:wrap;
+            gap:24px;
+            margin-top:20px;
+        }
+        .card{
+            width:280px;
+            border-radius:14px;
+            overflow:hidden;
+            background:#fff;
+            box-shadow:0 8px 24px rgba(0,0,0,.10);
+            display:flex;
+            flex-direction:column;
+        }
+        .card img{
+            width:100%;
+            height:200px;
+            object-fit:cover;
+        }
+        .card-body{
+            padding:16px;
+            text-align:center;
+        }
+        .card-body h3{
+            margin:0 0 4px;
+            font-size:18px;
+            color:#111827;
+        }
+        .card-body p{
+            margin:0 0 8px;
+            font-size:13px;
+            color:#6b7280;
+        }
 
-        .btn-order{background:var(--green); color:#fff; padding:10px 16px; border-radius:30px; border:none; cursor:pointer}
-        .btn-order:hover{background:var(--accent)}
-        .btn-order.disabled{background:#adb5bd; cursor:not-allowed; opacity:.85}
+        .btn-order{
+            background:var(--green);
+            color:#fff;
+            padding:10px 16px;
+            border-radius:30px;
+            border:none;
+            cursor:pointer;
+            font-weight:700;
+            font-size:14px;
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+        }
+        .btn-order:hover{background:var(--accent);}
+        .btn-order.disabled{
+            background:#adb5bd;
+            cursor:not-allowed;
+            opacity:.85;
+        }
 
-        .empty{margin:18px 0; text-align:center; color:#666;}
+        .empty{
+            margin:18px 0;
+            text-align:center;
+            color:#666;
+            font-size:14px;
+        }
 
         /* Weight badge / meta */
-        .meta { margin-top: 8px; display: flex; justify-content: center; gap: 10px; color: #555; font-size: 14px; }
-        .pill { background: #eef6f0; border: 1px solid #d7eadf; color: #1e7e34; padding: 4px 10px; border-radius: 999px; font-weight: 600; }
+        .meta{
+            margin-top:8px;
+            display:flex;
+            justify-content:center;
+            gap:10px;
+            color:#555;
+            font-size:14px;
+        }
+        .pill{
+            background:#eef6f0;
+            border:1px solid #d7eadf;
+            color:#1e7e34;
+            padding:4px 10px;
+            border-radius:999px;
+            font-weight:600;
+        }
 
         /* Stock line (Amazon-like) */
-        .stock { margin:10px 0 14px; font-weight:700; }
-        .stock-ok  { color: var(--ok); }
-        .stock-low { color: var(--low); }
-        .stock-out { color: var(--out); }
+        .stock{
+            margin:10px 0 14px;
+            font-weight:700;
+            font-size:13px;
+        }
+        .stock-ok{color:var(--ok);}
+        .stock-low{color:var(--low);}
+        .stock-out{color:var(--out);}
 
         /* Rating stars */
-        .rating {
-            margin-top: 6px;
-            margin-bottom: 4px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
+        .rating{
+            margin-top:6px;
+            margin-bottom:4px;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:6px;
+            font-size:13px;
         }
-        .rating-stars {
-            display: inline-flex;
-            gap: 2px;
+        .rating-stars{
+            display:inline-flex;
+            gap:2px;
         }
         .rating-stars .fa-star,
-        .rating-stars .fa-star-half-stroke {
-            color: #facc15; /* yellow */
+        .rating-stars .fa-star-half-stroke{
+            color:#facc15; /* yellow */
         }
-        .rating-stars .fa-regular {
-            color: #e5e7eb;
+        .rating-stars .fa-regular{
+            color:#e5e7eb;
         }
-        .rating-value {
-            font-weight: 600;
-            color: #374151;
+        .rating-value{
+            font-weight:600;
+            color:#374151;
         }
-        .rating-count {
-            color: #6b7280;
-            font-size: 12px;
+        .rating-count{
+            color:#6b7280;
+            font-size:12px;
         }
 
         /* 👁️ View button */
-        .btn-view {
+        .btn-view{
             display:inline-flex;
             align-items:center;
             gap:6px;
@@ -147,7 +376,6 @@
             border-color:#166534;
             color:#fff;
         }
-        /* Out-of-stock variant chip */
         .variant-chip.is-out{
             background:#fee2e2;
             border-color:#fecaca;
@@ -158,18 +386,70 @@
         }
 
         /* Footer */
-        .site-footer{ background:#222; color:#ccc; padding:40px 6%; margin-top:40px; }
-        .footer-container { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px; margin-bottom: 30px; }
-        .footer-column { flex: 1; min-width: 220px; }
-        .footer-column h3 { color: #fff; margin-bottom: 15px; font-weight: 600; border-bottom: 2px solid var(--green); padding-bottom: 8px; display: inline-block; }
-        .footer-column p { line-height: 1.6; font-size: 14px; }
-        .footer-column ul { list-style: none; padding: 0; margin: 0; }
-        .footer-column ul li a { text-decoration: none; color: #ccc; display: block; padding: 5px 0; font-size: 14px; transition: color 0.3s; }
-        .footer-column ul li a:hover { color: #fff; }
-        .social-links a { color: #ccc; text-decoration: none; font-size: 20px; margin-right: 15px; transition: color 0.3s; }
-        .social-links a:hover { color: var(--green); }
-        .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid #444; font-size: 14px; }
-        @media (max-width: 768px) { .footer-container { flex-direction: column; text-align: center; } .footer-column { margin-bottom: 20px; } }
+        .site-footer{
+            background:#222;
+            color:#ccc;
+            padding:40px 6%;
+            margin-top:40px;
+        }
+        .footer-container{
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:space-between;
+            gap:30px;
+            margin-bottom:30px;
+        }
+        .footer-column{
+            flex:1;
+            min-width:220px;
+        }
+        .footer-column h3{
+            color:#fff;
+            margin-bottom:15px;
+            font-weight:600;
+            border-bottom:2px solid var(--green);
+            padding-bottom:8px;
+            display:inline-block;
+        }
+        .footer-column p{
+            line-height:1.6;
+            font-size:14px;
+        }
+        .footer-column ul{
+            list-style:none;
+            padding:0;
+            margin:0;
+        }
+        .footer-column ul li a{
+            text-decoration:none;
+            color:#ccc;
+            display:block;
+            padding:5px 0;
+            font-size:14px;
+            transition:color .3s;
+        }
+        .footer-column ul li a:hover{color:#fff;}
+        .social-links a{
+            color:#ccc;
+            text-decoration:none;
+            font-size:20px;
+            margin-right:15px;
+            transition:color .3s;
+        }
+        .social-links a:hover{color:var(--green);}
+        .footer-bottom{
+            text-align:center;
+            padding-top:20px;
+            border-top:1px solid #444;
+            font-size:14px;
+        }
+        @media (max-width:768px){
+            .footer-container{
+                flex-direction:column;
+                text-align:center;
+            }
+            .footer-column{margin-bottom:20px;}
+        }
     </style>
 </head>
 <body>
@@ -194,7 +474,7 @@
 
         <!-- Account -->
         <div class="dropdown">
-            <button class="dropdown-toggle">
+            <button class="dropdown-toggle" type="button">
                 <i class="fas fa-user"></i>
                 <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">Account</span>
             </button>
@@ -214,37 +494,49 @@
 
 <main class="container">
     <h1>Menu</h1>
+    <p class="subtitle">Browse all our spices, blends and whole ingredients. Use filters to narrow down by price or category.</p>
 
     <!-- Filters -->
-    <form class="filters" th:action="@{/menu}" method="get">
-        <input type="text" name="q" placeholder="Search by name..." th:value="${q}"/>
-        <input type="number" step="0.01" min="0" name="min" placeholder="Min price" th:value="${min}"/>
-        <input type="number" step="0.01" min="0" name="max" placeholder="Max price" th:value="${max}"/>
-        <select name="categoryId">
-            <option value="" th:selected="${categoryId == null}">All categories</option>
-            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"
-                    th:selected="${categoryId != null and c.id == categoryId}"></option>
-        </select>
-        <select name="sort">
-            <option value="nameAsc"  th:selected="${sort=='nameAsc'}">Name ↑</option>
-            <option value="nameDesc" th:selected="${sort=='nameDesc'}">Name ↓</option>
-            <option value="priceAsc" th:selected="${sort=='priceAsc'}">Price ↑</option>
-            <option value="priceDesc" th:selected="${sort=='priceDesc'}">Price ↓</option>
-        </select>
-        <div class="actions">
-            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-filter"></i>&nbsp;Filter</button>
-            <a class="btn btn-ghost" th:href="@{/menu}">Reset</a>
+    <div class="filters-shell">
+        <div class="filters-label">
+            <i class="fa-solid fa-sliders"></i> Filters
         </div>
-    </form>
+        <form class="filters" th:action="@{/menu}" method="get">
+            <input type="text" name="q" placeholder="Search by name..." th:value="${q}"/>
+            <input type="number" step="0.01" min="0" name="min" placeholder="Min price" th:value="${min}"/>
+            <input type="number" step="0.01" min="0" name="max" placeholder="Max price" th:value="${max}"/>
+            <select name="categoryId">
+                <option value="" th:selected="${categoryId == null}">All categories</option>
+                <option th:each="c : ${categories}"
+                        th:value="${c.id}"
+                        th:text="${c.name}"
+                        th:selected="${categoryId != null and c.id == categoryId}">
+                </option>
+            </select>
+            <select name="sort">
+                <option value="nameAsc"  th:selected="${sort=='nameAsc'}">Name ↑</option>
+                <option value="nameDesc" th:selected="${sort=='nameDesc'}">Name ↓</option>
+                <option value="priceAsc" th:selected="${sort=='priceAsc'}">Price ↑</option>
+                <option value="priceDesc" th:selected="${sort=='priceDesc'}">Price ↓</option>
+            </select>
+            <div class="actions">
+                <button class="btn btn-primary" type="submit">
+                    <i class="fa-solid fa-filter"></i>&nbsp;Filter
+                </button>
+                <a class="btn btn-ghost" th:href="@{/menu}">Reset</a>
+            </div>
+        </form>
+    </div>
 
     <!-- Results -->
     <div th:if="${#lists.isEmpty(products)}" class="empty">
-        No menu match your filters.
+        No menu items match your filters.
     </div>
 
     <div class="cards" th:if="${!#lists.isEmpty(products)}">
         <div class="card" th:each="p : ${products}">
-            <img th:src="${#strings.isEmpty(p.imageUrl) ? '/images/chilli%20powder.jpeg' : p.imageUrl}" alt="Product image"/>
+            <img th:src="${#strings.isEmpty(p.imageUrl) ? '/images/chilli%20powder.jpeg' : p.imageUrl}"
+                 th:alt="${'Spice – ' + (p.name != null ? p.name : 'Product')}" />
             <div class="card-body">
                 <h3 th:text="${p.name}">Product name</h3>
                 <p th:text="${p.description}">Description</p>
@@ -268,12 +560,12 @@
                     </span>
                     <span class="rating-count"
                           th:if="${cntMap[p.id] != null and cntMap[p.id] > 0}"
-                          th:text="'(' + ${cntMap[p.id]} + ' reviews)'">
+                          th:text="|(${cntMap[p.id]} reviews)|">
                         (12 reviews)
                     </span>
                 </div>
 
-                <!-- Optional: show when no reviews -->
+                <!-- When no reviews -->
                 <div class="rating"
                      th:if="${cntMap[p.id] == null or cntMap[p.id] == 0}">
                     <span class="rating-count">No reviews yet</span>
@@ -324,8 +616,8 @@
                     <!-- Stock (uses stockByProduct if available) -->
                     <div class="stock"
                          th:with="totalStock=${stockByProduct != null ? stockByProduct[p.id] : p.stock}"
-                         th:classappend="${totalStock == null or totalStock == 0} ? ' stock-out' :
-                                         (${totalStock <= 5} ? ' stock-low' : ' stock-ok')">
+                         th:classappend="${(totalStock == null or totalStock == 0) ? ' stock-out' :
+                                          ((totalStock <= 5) ? ' stock-low' : ' stock-ok')}">
                         <span th:if="${totalStock == null or totalStock == 0}">Out of stock</span>
                         <span th:if="${totalStock > 0 and totalStock <= 5}"
                               th:text="'Only ' + ${totalStock} + ' left—order soon'">
@@ -465,13 +757,13 @@
 
                 try {
                     const res = await fetch(form.action, {
-                        method: 'POST',
-                        headers: {
+                        method:'POST',
+                        headers:{
                             'X-Requested-With':'XMLHttpRequest',
                             'Content-Type':'application/x-www-form-urlencoded',
                             ...(csrf ? {'X-CSRF-TOKEN': csrf} : {})
                         },
-                        body: data
+                        body:data
                     });
                     const out = await res.json();
                     if(out && out.status === 'success'){
@@ -490,12 +782,17 @@
         function toast(msg){
             const t=document.createElement('div');
             t.textContent=msg;
-            t.style.position='fixed';t.style.right='20px';t.style.bottom='20px';
-            t.style.background='#218838';t.style.color='#fff';
-            t.style.padding='10px 14px';t.style.borderRadius='12px';
-            t.style.boxShadow='0 6px 16px rgba(0,0,0,.2)';t.style.zIndex='2000';
+            t.style.position='fixed';
+            t.style.right='20px';
+            t.style.bottom='20px';
+            t.style.background='#111827';
+            t.style.color='#fff';
+            t.style.padding='10px 14px';
+            t.style.borderRadius='12px';
+            t.style.boxShadow='0 6px 16px rgba(0,0,0,.2)';
+            t.style.zIndex='2000';
             document.body.appendChild(t);
-            setTimeout(()=>t.remove(),1200);
+            setTimeout(()=>t.remove(),1400);
         }
     })();
 </script>

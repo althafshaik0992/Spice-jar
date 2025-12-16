@@ -1,109 +1,466 @@
 <!-- src/main/resources/templates/address_form.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<link rel="icon" type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 <head>
     <meta charset="UTF-8"/>
     <title>Address • The Spice Jar</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
+
+    <!-- Icons -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <!-- Optional: nicer font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        :root{--green:#218838;--bg:#f6fbf6}
-        body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:var(--bg)}
-        .wrap{max-width:720px;margin:24px auto;padding:0 6%}
-        .card{background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.06);padding:18px}
-        form .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-        @media (max-width:720px){form .grid{grid-template-columns:1fr}}
-        label{font-weight:700;margin:8px 0 6px;display:block}
-        input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px}
-        .btn{margin-top:14px;border:none;border-radius:10px;padding:12px 16px;font-weight:800;cursor:pointer}
-        .btn-primary{background:var(--green);color:#fff}
+        :root {
+            --green: #218838;
+            --green-soft: #e2f3e7;
+            --accent: #ffb347;
+            --bg: #f5faf6;
+            --text-main: #1f2933;
+            --text-muted: #6b7280;
+            --border-subtle: #e5e7eb;
+            --ring: rgba(33, 136, 56, 0.22);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial, sans-serif;
+            background: radial-gradient(circle at top left, #f1fdf3 0, #f5faf6 40%, #f9fafb 100%);
+            color: var(--text-main);
+        }
+
+        a {
+            color: inherit;
+        }
+
         /* Navbar */
-        .navbar{
-            background:#fff; padding:6px 6%;
-            box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex; justify-content:space-between; align-items:center;
-            position:sticky; top:0; z-index:1000; height:60px;
+        .navbar {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(8px);
+            padding: 10px 6%;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            height: 64px;
         }
-        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
-        .brand-logo video{width:36px; height:auto; border-radius:4px}
-        .nav-links{display:flex; align-items:center; gap:18px}
-        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
-        .nav-links a:hover{color:var(--green)}
-        /* Footer */
-        .site-footer{ background:#222; color:#ccc; padding:40px 6%; margin-top:40px; }
-        .footer-container { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px; margin-bottom: 30px; }
-        .footer-column { flex: 1; min-width: 220px; }
-        .footer-column h3 { color: #fff; margin-bottom: 15px; font-weight: 600; border-bottom: 2px solid var(--green); padding-bottom: 8px; display: inline-block; }
-        .footer-column p { line-height: 1.6; font-size: 14px; }
-        .footer-column ul { list-style: none; padding: 0; margin: 0; }
-        .footer-column ul li a { text-decoration: none; color: #ccc; display: block; padding: 5px 0; font-size: 14px; transition: color 0.3s; }
-        .footer-column ul li a:hover { color: #fff; }
-        .social-links a { color: #ccc; text-decoration: none; font-size: 20px; margin-right: 15px; transition: color 0.3s; }
-        .social-links a:hover { color: var(--green); }
-        .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid #444; font-size: 14px; }
-        @media (max-width: 768px) { .footer-container { flex-direction: column; text-align: center; } .footer-column { margin-bottom: 20px; } }
 
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--green);
+            font-weight: 700;
+            font-size: 22px;
+            letter-spacing: 0.03em;
+        }
 
-        /* Dropdowns */
-        .dropdown{position:relative}
-        .dropdown-toggle{
-            background:none; border:none; cursor:pointer; font-size:15px; color:#333;
-            display:flex; align-items:center; gap:6px
+        .brand-logo video {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-        .dropdown-menu{
-            display:none; position:absolute; right:0; top:100%;
-            background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
-            border-radius:6px; overflow:hidden; min-width:180px
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            font-size: 15px;
         }
-        .dropdown:hover .dropdown-menu{display:block}
-        .dropdown-menu a, .dropdown-menu span{
-            display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap
+
+        .nav-links a {
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            position: relative;
+            padding: 4px 0;
         }
-        .dropdown-menu a:hover{background:#f4f4f4}
-        /* Cart count badge style */
+
+        .nav-links a::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -4px;
+            width: 0;
+            height: 2px;
+            background: var(--green);
+            border-radius: 999px;
+            transition: width 0.2s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Cart */
         .cart-icon-container {
             position: relative;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
+
         .cart-count-badge {
             position: absolute;
-            top: -8px;
-            right: -8px;
+            top: -6px;
+            right: -10px;
             background-color: var(--accent);
             color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 12px;
-            font-weight: bold;
+            border-radius: 999px;
+            padding: 1px 7px;
+            font-size: 11px;
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
             min-width: 20px;
-            height: 20px;
-            text-align: center;
+            height: 18px;
+            line-height: 1;
+            box-shadow: 0 0 0 2px #fff;
         }
 
-        .dropdown{position:relative}
-        .dropdown-toggle{
-            display:flex; align-items:center; gap:8px; background:transparent; border:0; cursor:pointer;
-            font-weight:700; color:#2b2b2b; padding:8px 10px; border-radius:10px;
+        /* Dropdown */
+        .dropdown {
+            position: relative;
         }
-        .dropdown-toggle:hover{background:#f5f7f5}
-        .dropdown-menu{
-            position:absolute; right:0; top:calc(100% + 8px); min-width:200px;
-            background:#fff; border:1px solid #eef2ef; border-radius:12px; box-shadow:0 10px 28px var(--ring);
-            display:none; overflow:hidden;
+
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+            font-weight: 600;
+            color: #111827;
+            padding: 6px 10px;
+            border-radius: 999px;
+            transition: background 0.15s ease, box-shadow 0.15s ease;
         }
-        .dropdown:hover .dropdown-menu{display:block}
-        .dropdown-menu a, .dropdown-menu span{
-            display:block; padding:10px 14px; text-decoration:none; color:#2b2b2b; font-weight:600;
-            white-space:nowrap
+
+        .dropdown-toggle:hover {
+            background: #f3f4f6;
+            box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.2);
         }
-        .dropdown-menu a:hover{background:#f7faf7}
-        .divider{height:1px; background:#eef2ef; margin:6px 0}
+
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            min-width: 220px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+            display: none;
+            overflow: hidden;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-menu a,
+        .dropdown-menu span {
+            display: block;
+            padding: 10px 14px;
+            text-decoration: none;
+            color: #111827;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .dropdown-menu a:hover {
+            background: #f9fafb;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 6px 0;
+        }
+
+        /* Page layout */
+        .page-wrap {
+            max-width: 900px;
+            margin: 24px auto 40px;
+            padding: 0 6%;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-title h2 {
+            margin: 0;
+            font-size: 24px;
+            letter-spacing: 0.01em;
+        }
+
+        .page-subtitle {
+            margin: 4px 0 0;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .badge-soft {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--green-soft);
+            color: #065f46;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-soft i {
+            font-size: 10px;
+        }
+
+        /* Card */
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+            padding: 22px 22px 20px;
+            border: 1px solid rgba(209, 213, 219, 0.6);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .card-header-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .card-header-note {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Form */
+        form .grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 14px 16px;
+        }
+
+        @media (max-width: 720px) {
+            form .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        label {
+            font-weight: 600;
+            margin: 0 0 6px;
+            display: block;
+            font-size: 14px;
+            color: #111827;
+        }
+
+        .field-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: #9ca3af;
+        }
+
+        input:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 2px var(--ring);
+            background: #f9fffb;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Buttons */
+        .form-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .btn {
+            border-radius: 999px;
+            padding: 11px 18px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #218838, #1e7a32);
+            color: #ffffff;
+            box-shadow: 0 10px 22px rgba(22, 163, 74, 0.28);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 30px rgba(22, 163, 74, 0.35);
+        }
+
+        .btn-ghost {
+            background: #f9fafb;
+            color: #374151;
+            border-color: #d1d5db;
+        }
+
+        .btn-ghost:hover {
+            background: #f3f4f6;
+        }
+
+        /* Footer */
+        .site-footer {
+            background: #111827;
+            color: #9ca3af;
+            padding: 40px 6% 26px;
+            margin-top: 40px;
+        }
+
+        .footer-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .footer-column h3 {
+            color: #f9fafb;
+            margin-bottom: 14px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--green);
+            padding-bottom: 6px;
+            display: inline-block;
+            font-size: 15px;
+        }
+
+        .footer-column p {
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .footer-column ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-column ul li a {
+            text-decoration: none;
+            color: #9ca3af;
+            display: block;
+            padding: 5px 0;
+            font-size: 14px;
+            transition: color 0.2s ease, transform 0.1s ease;
+        }
+
+        .footer-column ul li a:hover {
+            color: #e5e7eb;
+            transform: translateX(2px);
+        }
+
+        .social-links a {
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 20px;
+            margin-right: 16px;
+            transition: color 0.2s ease, transform 0.1s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--green);
+            transform: translateY(-1px);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 18px;
+            border-top: 1px solid #1f2937;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        @media (max-width: 768px) {
+            .footer-container {
+                flex-direction: column;
+                text-align: left;
+            }
+
+            .footer-column {
+                margin-bottom: 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -117,19 +474,19 @@
     <div class="nav-links">
         <a th:href="@{/menu}">Menu</a>
         <a th:href="@{/about}">About Us</a>
+
         <a class="nav-link" th:href="@{/cart/view}">
             <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
-                <i class="fas fa-shopping-cart" style="font-size:24px"></i>
+                <i class="fas fa-shopping-cart" style="font-size:22px"></i>
                 <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
             </div>
         </a>
+
         <a th:href="@{/contact}">Contact Us</a>
-
-
 
         <!-- Account -->
         <div class="dropdown">
-            <button class="dropdown-toggle">
+            <button class="dropdown-toggle" type="button">
                 <i class="fas fa-user"></i>
                 <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">Account</span>
             </button>
@@ -138,70 +495,106 @@
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
 
                 <span th:if="${session.USER != null}">
-          Welcome, <strong th:text="${session.USER.firstName}">User</strong>
-        </span>
+                    Welcome, <strong th:text="${session.USER.firstName}">User</strong>
+                </span>
                 <a th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
                 <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
-                <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
+                <div class="divider" th:if="${session.USER != null}"></div>
+                <a th:if="${session.USER != null}" th:href="@{/logout}">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                </a>
             </div>
         </div>
     </div>
 </nav>
 
-<div class="wrap">
-    <h2><i class="fa-solid fa-location-dot"></i> Address</h2>
+<!-- Content -->
+<div class="page-wrap">
+    <header class="page-header">
+        <div>
+            <div class="page-title">
+                <i class="fa-solid fa-location-dot" style="color: var(--green); font-size: 22px;"></i>
+                <h2>Shipping Address</h2>
+            </div>
+            <p class="page-subtitle">
+                We’ll use this address for your orders and delivery updates.
+            </p>
+        </div>
+        <div class="badge-soft">
+            <i class="fa-solid fa-shield-heart"></i>
+            Your details are safe with us
+        </div>
+    </header>
+
     <section class="card">
+        <div class="card-header">
+            <div class="card-header-title">Address details</div>
+            <div class="card-header-note">All fields marked with * are required.</div>
+        </div>
+
         <form th:action="@{/addresses}" th:object="${address}" method="post">
             <input type="hidden" th:field="*{id}"/>
+
             <div class="grid">
                 <div>
-                    <label>Full name</label>
-                    <input th:field="*{fullName}" required/>
+                    <label for="fullName">Full name *</label>
+                    <input id="fullName" th:field="*{fullName}" required placeholder="Eg. Alex Johnson"/>
                 </div>
                 <div>
-                    <label>Phone</label>
-                    <input th:field="*{phone}" required/>
+                    <label for="phone">Phone *</label>
+                    <input id="phone" th:field="*{phone}" required placeholder="Eg. (555) 123-4567"/>
                 </div>
-                <div style="grid-column:1/-1">
-                    <label>Address line 1</label>
-                    <input th:field="*{line1}" required/>
+
+                <div class="full-width">
+                    <label for="line1">Address line 1 *</label>
+                    <input id="line1" th:field="*{line1}" required placeholder="Apartment, house no., street"/>
                 </div>
-                <div style="grid-column:1/-1">
-                    <label>Address line 2</label>
-                    <input th:field="*{line2}"/>
+
+                <div class="full-width">
+                    <label for="line2">Address line 2</label>
+                    <input id="line2" th:field="*{line2}" placeholder="Landmark, building name (optional)"/>
+                </div>
+
+                <div>
+                    <label for="city">City *</label>
+                    <input id="city" th:field="*{city}" required placeholder="City"/>
                 </div>
                 <div>
-                    <label>City</label>
-                    <input th:field="*{city}" required/>
+                    <label for="state">State *</label>
+                    <input id="state" th:field="*{state}" required placeholder="State"/>
                 </div>
                 <div>
-                    <label>State</label>
-                    <input th:field="*{state}" required/>
+                    <label for="country">Country *</label>
+                    <input id="country" th:field="*{country}" required placeholder="Country"/>
                 </div>
                 <div>
-                    <label>Country</label>
-                    <input th:field="*{country}" required/>
-                </div>
-                <div>
-                    <label>Zip</label>
-                    <input th:field="*{zip}" required/>
+                    <label for="zip">ZIP / Postal code *</label>
+                    <input id="zip" th:field="*{zip}" required placeholder="ZIP / Postal code"/>
                 </div>
             </div>
-            <button class="btn btn-primary" type="submit">
-                <i class="fa-solid fa-save"></i> Save
-            </button>
-            <a class="btn" href="/addresses">Cancel</a>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">
+                    <i class="fa-solid fa-save"></i>
+                    Save address
+                </button>
+                <a class="btn btn-ghost" href="/addresses">
+                    Cancel
+                </a>
+            </div>
         </form>
     </section>
 </div>
-
 
 <!-- Footer -->
 <footer class="site-footer">
     <div class="footer-container">
         <div class="footer-column">
             <h3>About Spice Jar</h3>
-            <p>Bringing the world's finest spices to your kitchen. Quality, aroma, and flavor guaranteed in every jar.</p>
+            <p>
+                Bringing the world's finest spices to your kitchen. Handpicked, freshly packed,
+                and delivered with love in every jar.
+            </p>
         </div>
         <div class="footer-column">
             <h3>Quick Links</h3>
@@ -222,7 +615,9 @@
             </div>
         </div>
     </div>
-    <div class="footer-bottom"><p>&copy; 2025 The Spice Jar. All rights reserved.</p></div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 The Spice Jar. All rights reserved.</p>
+    </div>
 </footer>
 </body>
 </html>

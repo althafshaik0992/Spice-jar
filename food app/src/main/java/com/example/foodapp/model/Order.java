@@ -62,6 +62,20 @@ public class Order {
     @Column(name = "discount", precision = 10, scale = 2)
     private BigDecimal discount = BigDecimal.ZERO;
 
+@Getter
+@Setter
+    private Boolean confirmationSent = false;
+
+
+    // Order.java
+    private BigDecimal refundTotal = BigDecimal.ZERO;
+
+    // OrderItem.java
+    private boolean returnRequested;
+    private boolean returned;
+
+
+
     public Order() {
     }
 

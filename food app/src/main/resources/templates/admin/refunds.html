@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Admin • Refunds</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <!-- Icons + Tailwind -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root { color-scheme: dark; }
+        body { background:#020617; color:#e2e8f0; }
+
+        .card {
+            background:#020617;
+            border:1px solid #1f2937;
+            border-radius:16px;
+        }
+
+        .soft { box-shadow:0 16px 40px rgba(0,0,0,.55); }
+
+        .ring-subtle { box-shadow:0 0 0 1px rgba(39,52,71,.7) inset; }
+
+        .dropdown-group:hover .dropdown-menu { display:block; }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+<!-- ========================================================= -->
+<!-- 🔝 ADMIN NAVBAR (SAME AS DASHBOARD) -->
+<!-- ========================================================= -->
+<header class="sticky top-0 z-40 border-b border-[#1f2937] bg-[#020617]/90 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+
+        <!-- Brand -->
+        <div class="flex items-center gap-4">
+            <a th:href="@{/admin}" class="flex items-center gap-2">
+                <div class="h-9 w-9 grid place-items-center rounded-xl bg-emerald-600 text-white font-black">
+                    SJ
+                </div>
+                <div>
+                    <div class="text-sm font-semibold">SpiceJar</div>
+                    <div class="text-xs text-slate-400">Admin Console</div>
+                </div>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-1 ml-4 text-sm">
+                <a th:href="@{/admin}" class="px-3 py-2 rounded-lg text-slate-300 hover:bg-white/5">Dashboard</a>
+                <a th:href="@{/admin/orders}" class="px-3 py-2 rounded-lg text-slate-300 hover:bg-white/5">Orders</a>
+                <a th:href="@{/admin/refunds}"
+                   class="px-3 py-2 rounded-lg bg-white/10 text-slate-200">
+                    Refunds
+                </a>
+                <a th:href="@{/admin/catalog}" class="px-3 py-2 rounded-lg text-slate-300 hover:bg-white/5">Menu</a>
+                <a th:href="@{/admin/categories}" class="px-3 py-2 rounded-lg text-slate-300 hover:bg-white/5">Categories</a>
+            </nav>
+        </div>
+
+        <!-- User -->
+        <div class="relative dropdown-group text-sm">
+            <button class="flex items-center gap-2 px-3 h-10 rounded-xl bg-emerald-600/15 text-emerald-300">
+                <i class="fa-solid fa-circle-user"></i>
+                <span th:text="${session.ADMIN_USER.username}">Admin</span>
+                <i class="fa-solid fa-chevron-down text-xs"></i>
+            </button>
+
+            <div class="dropdown-menu hidden absolute right-0 mt-2 w-52 bg-[#020617] border border-[#1f2937] rounded-xl">
+                <a th:href="@{/admin}" class="block px-4 py-2 hover:bg-white/5">Dashboard</a>
+                <a th:href="@{/admin/orders}" class="block px-4 py-2 hover:bg-white/5">Orders</a>
+                <form th:action="@{/admin/logout}" method="get">
+                    <button class="w-full text-left px-4 py-2 text-rose-300 hover:bg-rose-600/10">
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- ========================================================= -->
+<!-- 🧾 MAIN CONTENT -->
+<!-- ========================================================= -->
+<main class="max-w-7xl mx-auto px-5 py-8 space-y-8">
+
+    <!-- Page header -->
+    <div>
+        <h1 class="text-2xl font-bold text-slate-100">Refund History</h1>
+        <p class="text-sm text-slate-400 mt-1">
+            View original payments, refund attempts, and gateway references.
+        </p>
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- 💳 ORIGINAL PAYMENT -->
+    <!-- ===================================================== -->
+    <section class="card soft p-6">
+        <h2 class="text-lg font-semibold mb-4">Original Payment</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+            <div>
+                <div class="text-slate-400">Order ID</div>
+                <div class="font-semibold" th:text="${payment.order.id}">216</div>
+            </div>
+            <div>
+                <div class="text-slate-400">Amount</div>
+                <div class="font-semibold"
+                     th:text="'$ ' + ${#numbers.formatDecimal(payment.amount,1,'COMMA',2,'POINT')}">
+                    $16.50
+                </div>
+            </div>
+            <div>
+                <div class="text-slate-400">Provider</div>
+                <div class="font-semibold" th:text="${payment.provider}">STRIPE</div>
+            </div>
+            <div>
+                <div class="text-slate-400">Transaction ID</div>
+                <div class="font-mono text-xs break-all"
+                     th:text="${payment.transactionId}">
+                    pi_3SebIWPB...
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================== -->
+    <!-- 🔁 REFUND TABLE -->
+    <!-- ===================================================== -->
+    <section class="card soft p-6">
+        <h2 class="text-lg font-semibold mb-4">Refunds</h2>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="border-b border-[#1f2937]">
+                <tr class="text-slate-400">
+                    <th class="py-2 text-left">Refund ID</th>
+                    <th class="py-2 text-left">Amount</th>
+                    <th class="py-2 text-left">Provider</th>
+                    <th class="py-2 text-left">Gateway Refund ID</th>
+                    <th class="py-2 text-left">Status</th>
+                    <th class="py-2 text-left">Date</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="r : ${refunds}"
+                    th:onclick="|window.location='@{/admin/refunds/{id}(id=${r.id})}'|"
+                    class="cursor-pointer border-b border-[#1f2937] hover:bg-white/5 transition">
+
+                    <td class="py-3 font-medium" th:text="${r.id}">12</td>
+                    <td class="py-3"
+                        th:text="'$ ' + ${#numbers.formatDecimal(r.amount,1,'COMMA',2,'POINT')}">
+                        $10.00
+                    </td>
+                    <td class="py-3" th:text="${r.provider}">STRIPE</td>
+                    <td class="py-3 font-mono text-xs"
+                        th:text="${r.refundExternalId ?: '—'}">
+                        re_3Se...
+                    </td>
+                    <td class="py-3">
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                              th:classappend="${r.status=='REFUNDED'} ? ' bg-emerald-600/20 text-emerald-300' :
+                                              (${r.status=='FAILED'} ? ' bg-rose-600/20 text-rose-300' :
+                                                                        ' bg-amber-600/20 text-amber-300')"
+                              th:text="${r.status}">
+                            REFUNDED
+                        </span>
+                    </td>
+                    <td class="py-3 text-slate-400"
+                        th:text="${#temporals.format(r.createdAt,'MMM d, yyyy h:mm a')}">
+                        Dec 15, 7:55 AM
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(refunds)}">
+                    <td colspan="6" class="py-6 text-center text-slate-400">
+                        No refunds found.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+<footer class="py-8 text-center text-xs text-slate-500">
+    © <span th:text="${#dates.year(#dates.createNow())}">2025</span> SpiceJar Admin
+</footer>
+
+</body>
+</html>

@@ -217,9 +217,11 @@
           <td class="py-3">
             <div class="flex items-center gap-3">
               <!-- Existing details link -->
-              <a th:href="@{/admin/orders/{id}(id=${o.id})}" class="text-emerald-400 hover:underline">
+              <a th:href="@{/admin/orders/{id}(id=${o.id})}"
+                 class="text-emerald-400 hover:text-emerald-300 hover:underline">
                 Details
               </a>
+
 
               <!-- ✉️ Send survey email button -->
               <form th:action="@{/admin/orders/{id}/send-survey(id=${o.id})}"

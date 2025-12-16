@@ -2,6 +2,7 @@ package com.example.foodapp.controller;
 
 import com.example.foodapp.model.Category;
 import com.example.foodapp.model.Order;
+import com.example.foodapp.model.Payment;
 import com.example.foodapp.model.Product;
 import com.example.foodapp.model.ProductVariant;
 import com.example.foodapp.service.*;
@@ -40,50 +41,81 @@ public class AdminController {
     private final OrderService orderService;
     private final EmailService emailService;
 
+    // ✅ ADD
+    private final PaymentService paymentService;
 
-
-
-    public AdminController(ProductService productService, CategoryRepository categoryRepository, AnalyticsService analyticsService, CategoryService categoryService, OrderService orderService, EmailService emailService) {
+    public AdminController(ProductService productService,
+                           CategoryRepository categoryRepository,
+                           AnalyticsService analyticsService,
+                           CategoryService categoryService,
+                           OrderService orderService,
+                           EmailService emailService,
+                           PaymentService paymentService) {
         this.productService = productService;
         this.categoryRepository = categoryRepository;
         this.analyticsService = analyticsService;
         this.categoryService = categoryService;
         this.orderService = orderService;
         this.emailService = emailService;
+        this.paymentService = paymentService;
     }
-
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // Simple DTO used only for mapping variantsJson
     public static class VariantDto {
         public Integer weight;
         public BigDecimal price;
         public Integer stock;
     }
 
-
     @GetMapping({"", "/"})
     public String dashboard(Model m) {
-        // Get last 7 days revenue as an ordered map (label -> amount)
-        LinkedHashMap<String, BigDecimal> rev = analyticsService.revenueByDay(7);
 
-        // The dashboard.html expects revLabels and revValues
+        LinkedHashMap<String, BigDecimal> rev = analyticsService.revenueByDay(7);
         m.addAttribute("revLabels", new java.util.ArrayList<>(rev.keySet()));
         m.addAttribute("revValues", new java.util.ArrayList<>(rev.values()));
 
         m.addAttribute("ordersCount", orderService.findAll().size());
-        // ✅ Fetch last 5–10 orders for dashboard table
         m.addAttribute("recentOrders", orderService.recent(10));
         m.addAttribute("productsCount", productService.findAll().size());
         m.addAttribute("categoriesCount", categoryService.findAll().size());
         m.addAttribute("totalRevenue", orderService.calculateTotalRevenue());
-        final int LOW_STOCK_THRESHOLD = 5; // tweak as you like or make it configurable
+
+        final int LOW_STOCK_THRESHOLD = 5;
         m.addAttribute("lowStock", productService.findLowStock(LOW_STOCK_THRESHOLD));
+
+        // ✅ ADD: show recent refunds on dashboard
+       // m.addAttribute("recentRefunds", paymentService.findRecentRefunds(10));
+        m.addAttribute("recentPayments", paymentService.recentPayments(8)); // latest successful/paid
+        m.addAttribute("recentRefunds",  paymentService.recentRefunds(8));  // latest refunds
 
         return "admin/dashboard";
     }
 
+    @GetMapping("/refunds")
+    public String refunds(Model m) {
+        m.addAttribute("refunds", paymentService.recentRefunds(200)); // latest 200 refunds
+        return "admin/refunds";
+    }
+
+    // ✅ Refund detail page for one order (original payment + refund rows)
+    @GetMapping("/refunds/{orderId}")
+    public String refundDetails(@PathVariable Long orderId, Model m) {
+
+        Order order = orderService.findById(orderId);
+        if (order == null) {
+            throw new IllegalArgumentException("Order not found: " + orderId);
+        }
+
+        Payment original = paymentService.findLatestSuccessfulCharge(orderId);
+        List<Payment> refunds = paymentService.findRefundsForOrder(orderId);
+
+        m.addAttribute("order", order);
+        m.addAttribute("originalPayment", original);
+        m.addAttribute("refundRows", refunds);
+
+        return "admin/refund_details";
+    }
 
     // 🟢 Show catalog
     @GetMapping("/catalog")
@@ -110,7 +142,6 @@ public class AdminController {
         Category cat = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid category: " + categoryId));
 
-        // --- image upload (as you had) ---
         String imageUrl = null;
         if (imageFile != null && !imageFile.isEmpty()) {
             Path uploadsDir = Paths.get("uploads");
@@ -130,7 +161,6 @@ public class AdminController {
         p.setCategory(cat);
         p.setImageUrl(imageUrl);
 
-        // ---------- VARIANTS ----------
         if (useVariants && variantsJson != null && !variantsJson.isBlank()) {
 
             List<VariantDto> dtos =
@@ -145,10 +175,9 @@ public class AdminController {
                 v.setWeight(dto.weight);
                 v.setPrice(dto.price);
                 v.setStock(dto.stock != null ? dto.stock : 0);
-                p.addVariant(v);            // sets product + adds to list
+                p.addVariant(v);
             }
 
-            // derive base fields from variants so menu has a default
             ProductVariant first = p.getVariants().get(0);
             BigDecimal basePrice = first.getPrice();
             Integer baseWeight   = first.getWeight();
@@ -163,7 +192,6 @@ public class AdminController {
             p.setStock(stock != null ? stock : totalStock);
 
         } else {
-            // ---------- NO VARIANTS: behave like before ----------
             if (price == null || weight == null || stock == null) {
                 throw new IllegalArgumentException("Price, weight and stock are required when not using variants.");
             }
@@ -178,21 +206,15 @@ public class AdminController {
         return "redirect:/admin/catalog";
     }
 
-
-
-
-
     @GetMapping("/categories")
     public String categoriesRedirect() {
         return "redirect:/admin/catalog";
     }
 
-    /* -------------------- CATEGORY actions -------------------- */
-
     @PostMapping("/categories")
     public String addCategory(@RequestParam String name,
                               @RequestParam(required = false) String description) {
-        categoryService.save(new Category(name, description));         // if you added description to Category
+        categoryService.save(new Category(name, description));
         return "redirect:/admin/catalog";
     }
 
@@ -227,7 +249,6 @@ public class AdminController {
         existing.setDescription(description);
         existing.setCategory(cat);
 
-        // image
         if (imageFile != null && !imageFile.isEmpty()) {
             Path uploadsDir = Paths.get("uploads");
             Files.createDirectories(uploadsDir);
@@ -240,7 +261,6 @@ public class AdminController {
             existing.setImageUrl("/uploads/" + fileName);
         }
 
-        // ===== VARIANTS HANDLING =====
         if (useVariants && variantsJson != null && !variantsJson.isBlank()) {
 
             List<VariantDto> dtos =
@@ -259,7 +279,6 @@ public class AdminController {
                 newVariants.add(v);
             }
 
-            // This clears old variants + sets product on each new one
             existing.replaceVariants(newVariants);
 
             ProductVariant first = existing.getVariants().get(0);
@@ -276,9 +295,6 @@ public class AdminController {
             existing.setStock(stock != null ? stock : totalStock);
 
         } else {
-            // Not using variants → treat as simple product.
-            // If you want to *keep* old variants when the checkbox is not sent,
-            // comment out the next line.
             existing.getVariants().clear();
 
             if (price == null || weight == null || stock == null) {
@@ -294,8 +310,6 @@ public class AdminController {
         return "redirect:/admin/catalog";
     }
 
-
-    // 🔴 Delete product
     @PostMapping("/products/delete")
     public String deleteProduct(@RequestParam Long id, RedirectAttributes ra) {
         productService.delete(id);
@@ -303,15 +317,11 @@ public class AdminController {
         return "redirect:/admin/catalog";
     }
 
-    // ⚠️ Handle missing params gracefully
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public String handleMissingParam(MissingServletRequestParameterException ex, RedirectAttributes ra) {
         ra.addFlashAttribute("error", "Missing field: " + ex.getParameterName());
         return "redirect:/admin/catalog";
     }
-
-
-
 
     @GetMapping("/orders")
     public String orders(@RequestParam(required = false) String q,
@@ -345,18 +355,39 @@ public class AdminController {
         }
 
         try {
-            // 🔔 call your email logic here
             emailService.sendOrderSurveyEmail(order);
 
             ra.addFlashAttribute("alertType", "success");
-            ra.addFlashAttribute("alertMsg",
-                    "Survey email sent to " + order.getEmail());
+            ra.addFlashAttribute("alertMsg", "Survey email sent to " + order.getEmail());
         } catch (Exception ex) {
             ra.addFlashAttribute("alertType", "error");
-            ra.addFlashAttribute("alertMsg",
-                    "Could not send survey email: " + ex.getMessage());
+            ra.addFlashAttribute("alertMsg", "Could not send survey email: " + ex.getMessage());
         }
 
         return "redirect:/admin/orders";
     }
+
+
+    // ✅ NEW: Admin order details page
+    @GetMapping("/orders/{id}")
+    public String orderDetails(@PathVariable Long id, Model m) {
+
+        Order order = orderService.findById(id);
+        if (order == null) {
+            throw new IllegalArgumentException("Order not found: " + id);
+        }
+
+        // original successful payment (charge)
+        Payment originalPayment = paymentService.findLatestSuccessfulCharge(id);
+
+        // refunds for this order
+        List<Payment> refundRows = paymentService.findRefundsForOrder(id);
+
+        m.addAttribute("order", order);
+        m.addAttribute("originalPayment", originalPayment);
+        m.addAttribute("refundRows", refundRows);
+
+        return "admin/order_details";
+    }
+
 }

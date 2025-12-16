@@ -10,95 +10,429 @@
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
     <!-- SEO -->
-    <meta name="description" content="Premium Indian spices and blends delivered fresh. Shop bestsellers like Garam Masala, Turmeric, and more."/>
+    <meta name="description"
+          content="Premium Indian spices and blends delivered fresh. Shop bestsellers like Garam Masala, Turmeric, and more."/>
     <meta property="og:title" content="The Spice Jar"/>
     <meta property="og:description" content="Premium Indian spices & blends delivered fresh."/>
     <meta property="og:image" content="/images/spicejar-main.jpg"/>
     <meta property="og:type" content="website"/>
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <link rel="icon" type="image/svg+xml"
           href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
 
     <style>
         :root { --green:#218838; --accent:#b7410e; --dark:#111; }
         * { box-sizing: border-box; }
-        body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; background:#f0f8f0; color:#222; }
-        a:focus, button:focus, input:focus { outline: 3px solid #94d3a2; outline-offset: 2px; }
+        body {
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin:0;
+            background:#f0f8f0;
+            color:#222;
+        }
+        a:focus, button:focus, input:focus {
+            outline: 3px solid #94d3a2;
+            outline-offset: 2px;
+        }
 
-        .promo { background:#0f5132;color:#fff;padding:6px 6%;font-weight:700;text-align:center }
-        .promo a{ color:#b8ffd6; text-decoration:underline }
+        .promo {
+            background:#0f5132;
+            color:#fff;
+            padding:6px 6%;
+            font-weight:700;
+            text-align:center;
+        }
+        .promo a{
+            color:#b8ffd6;
+            text-decoration:underline;
+        }
 
         /* Coupon ticker */
-        .coupon-ticker-wrap{ background:#0a3624; color:#d9fbe5; border-top:1px solid #0c3f2a; border-bottom:1px solid #0c3f2a; position:relative; overflow:hidden; }
-        .coupon-ticker{ display:flex; gap:28px; padding:8px 0; will-change:transform; animation: ticker 28s linear infinite; }
-        .coupon-chip{ display:inline-flex; gap:8px; align-items:center; padding:6px 12px; border-radius:999px; background:#104d33; border:1px solid #1b6a47; color:#c7f8df; font-weight:700; white-space:nowrap; }
+        .coupon-ticker-wrap{
+            background:#0a3624;
+            color:#d9fbe5;
+            border-top:1px solid #0c3f2a;
+            border-bottom:1px solid #0c3f2a;
+            position:relative;
+            overflow:hidden;
+        }
+        .coupon-ticker{
+            display:flex;
+            gap:28px;
+            padding:8px 0;
+            will-change:transform;
+            animation: ticker 28s linear infinite;
+        }
+        .coupon-chip{
+            display:inline-flex;
+            gap:8px;
+            align-items:center;
+            padding:6px 12px;
+            border-radius:999px;
+            background:#104d33;
+            border:1px solid #1b6a47;
+            color:#c7f8df;
+            font-weight:700;
+            white-space:nowrap;
+        }
         .coupon-chip .val{ color:#94f1bd; font-weight:800 }
         .coupon-chip .min{ color:#bdebd4; font-weight:600 }
-        @keyframes ticker{ 0%{ transform: translateX(0) } 100%{ transform: translateX(-50%) } }
-        .ticker-inner{ display:flex; gap:28px; padding:0 6%; }
+        @keyframes ticker{
+            0%{ transform: translateX(0) }
+            100%{ transform: translateX(-50%) }
+        }
+        .ticker-inner{
+            display:flex;
+            gap:28px;
+            padding:0 6%;
+        }
 
         /* Navbar */
-        .navbar{ background:#fff; padding:6px 6%; box-shadow:0 2px 6px rgba(0,0,0,.05); display:flex; gap:16px; align-items:center; position:sticky; top:0; z-index:1000; height:60px; }
-        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
-        .brand-logo video{width:36px; height:auto; border-radius:4px}
-        .nav-search{flex:1; max-width:520px; display:flex; align-items:center; gap:8px}
-        .nav-search input{ width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:999px; background:#fff; font-size:14px; outline:none; }
-        .nav-search button{ border:none; border-radius:999px; padding:9px 12px; background:var(--green); color:#fff; cursor:pointer; }
-        .nav-search button:hover{background:var(--accent);}
-        .nav-links{display:flex; align-items:center; gap:18px; margin-left:auto;}
-        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
-        .nav-links a:hover{color:#218838}
+        .navbar{
+            background:#fff;
+            padding:6px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex;
+            gap:16px;
+            align-items:center;
+            position:sticky;
+            top:0;
+            z-index:1000;
+            height:60px;
+        }
+        .brand-logo{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            text-decoration:none;
+            color:var(--green);
+            font-weight:700;
+            font-size:20px;
+        }
+        .brand-logo video{
+            width:36px;
+            height:auto;
+            border-radius:4px;
+        }
+        .nav-search{
+            flex:1;
+            max-width:520px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+        .nav-search input{
+            width:100%;
+            padding:10px 12px;
+            border:1px solid #ddd;
+            border-radius:999px;
+            background:#fff;
+            font-size:14px;
+            outline:none;
+        }
+        .nav-search button{
+            border:none;
+            border-radius:999px;
+            padding:9px 12px;
+            background:var(--green);
+            color:#fff;
+            cursor:pointer;
+        }
+        .nav-search button:hover{
+            background:var(--accent);
+        }
+        .nav-links{
+            display:flex;
+            align-items:center;
+            gap:18px;
+            margin-left:auto;
+        }
+        .nav-links a{
+            text-decoration:none;
+            color:#333;
+            font-weight:500;
+            font-size:15px;
+        }
+        .nav-links a:hover{
+            color:#218838;
+        }
         .dropdown{position:relative}
-        .dropdown-toggle{background:none; border:none; cursor:pointer; font-size:15px; color:#333; display:flex; align-items:center; gap:6px}
-        .dropdown-menu{display:none; position:absolute; right:0; top:100%; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1); border-radius:6px; overflow:hidden; min-width:180px}
+        .dropdown-toggle{
+            background:none;
+            border:none;
+            cursor:pointer;
+            font-size:15px;
+            color:#333;
+            display:flex;
+            align-items:center;
+            gap:6px;
+        }
+        .dropdown-menu{
+            display:none;
+            position:absolute;
+            right:0;
+            top:100%;
+            background:#fff;
+            box-shadow:0 4px 10px rgba(0,0,0,.1);
+            border-radius:6px;
+            overflow:hidden;
+            min-width:180px;
+        }
         .dropdown:hover .dropdown-menu{display:block}
-        .dropdown-menu a, .dropdown-menu span{display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap}
-        .dropdown-menu a:hover{background:#f4f4f4}
-        .cart-icon-container { position: relative; display: inline-block; }
-        .cart-count-badge { position: absolute; top: -8px; right: -8px; background-color: var(--accent); color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; }
+        .dropdown-menu a,
+        .dropdown-menu span{
+            display:block;
+            padding:10px 16px;
+            text-decoration:none;
+            color:#333;
+            white-space:nowrap;
+        }
+        .dropdown-menu a:hover{
+            background:#f4f4f4;
+        }
+        .cart-icon-container {
+            position: relative;
+            display: inline-block;
+        }
+        .cart-count-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+        }
 
         /* Hero */
-        .hero-banner { position: relative; background: #1b5e20 url('/images/spicejar-main.jpg') center/cover no-repeat; height: 500px; margin: 24px 6% 0 6%; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,.28); }
-        .hero-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.25) 60%, rgba(0,0,0,.15) 100%); display:flex; align-items:center; justify-content:space-between; padding: 0 4%; gap: 28px; }
-        .hero-content { color:#fff; max-width: 520px; }
-        .hero-content h1{ font-size:42px; font-weight:800; line-height:1.15; margin:0 0 10px }
-        .hero-content p{ font-size:17px; margin:0 0 18px; color:#f2f2f2 }
-        .cta{background:#fff; color:var(--green); padding:12px 20px; border-radius:30px; text-decoration:none; font-weight:700; display:inline-block }
-        .cta:hover{ background:var(--accent); color:#fff }
-        .coupon-area{ width:340px; display:grid; gap:12px }
-        .coupon-card{ background: rgba(255,255,255,.88); color:#0f5132; padding:14px 16px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.20); backdrop-filter: blur(4px); }
-        .coupon-head{ display:flex; align-items:center; gap:8px; font-weight:800; }
+        .hero-banner {
+            position: relative;
+            background: #1b5e20 url('/images/spicejar-main.jpg') center/cover no-repeat;
+            height: 500px;
+            margin: 24px 6% 0 6%;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,.28);
+        }
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                    90deg,
+                    rgba(0,0,0,.55) 0%,
+                    rgba(0,0,0,.25) 60%,
+                    rgba(0,0,0,.15) 100%
+            );
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding: 0 4%;
+            gap: 28px;
+        }
+        .hero-content {
+            color:#fff;
+            max-width: 520px;
+        }
+        .hero-content h1{
+            font-size:42px;
+            font-weight:800;
+            line-height:1.15;
+            margin:0 0 10px;
+        }
+        .hero-content p{
+            font-size:17px;
+            margin:0 0 18px;
+            color:#f2f2f2;
+        }
+        .cta{
+            background:#fff;
+            color:var(--green);
+            padding:12px 20px;
+            border-radius:30px;
+            text-decoration:none;
+            font-weight:700;
+            display:inline-block;
+        }
+        .cta:hover{
+            background:var(--accent);
+            color:#fff;
+        }
+
+        .coupon-area{
+            width:340px;
+            display:grid;
+            gap:12px;
+        }
+        .coupon-card{
+            background: rgba(255,255,255,.88);
+            color:#0f5132;
+            padding:14px 16px;
+            border-radius:12px;
+            box-shadow:0 6px 18px rgba(0,0,0,.20);
+            backdrop-filter: blur(4px);
+        }
+        .coupon-head{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            font-weight:800;
+        }
         .coupon-head i{ color:var(--green) }
-        .coupon-sub{ margin:6px 0; color:#15553a; font-size:14px }
-        .coupon-actions{ display:flex; gap:8px; margin-top:10px }
-        .coupon-btn{ flex:1; background:var(--green); color:#fff; border:none; border-radius:8px; padding:8px 0; cursor:pointer; font-weight:800 }
+        .coupon-sub{
+            margin:6px 0;
+            color:#15553a;
+            font-size:14px;
+        }
+        .coupon-actions{
+            display:flex;
+            gap:8px;
+            margin-top:10px;
+        }
+        .coupon-btn{
+            flex:1;
+            background:var(--green);
+            color:#fff;
+            border:none;
+            border-radius:8px;
+            padding:8px 0;
+            cursor:pointer;
+            font-weight:800;
+        }
         .coupon-btn.apply{ background:#104d33 }
         .coupon-btn:hover{ background:var(--accent) }
-        @media (max-width: 980px){ .hero-overlay{ flex-direction:column; justify-content:center; text-align:center; padding: 24px } .coupon-area{ width:100%; max-width: 420px } }
+
+        @media (max-width: 980px){
+            .hero-overlay{
+                flex-direction:column;
+                justify-content:center;
+                text-align:center;
+                padding: 24px;
+            }
+            .coupon-area{
+                width:100%;
+                max-width: 420px;
+            }
+        }
 
         /* Sections & cards */
-        .chipbar{padding:12px 6%;display:flex;gap:10px;flex-wrap:wrap;background:#fff}
-        .chip{border:1px solid #dfe6df;background:#fff;color:#333;padding:8px 12px;border-radius:999px;font-weight:700;text-decoration:none}
-        .chip:hover{border-color:#218838;color:#218838}
-        .menu-section{padding:40px 6%}
-        .menu-section h2{text-align:center; margin:0 0 24px; color:var(--green)}
-        .cards{display:flex; flex-wrap:wrap; gap:24px; justify-content:center}
-        .card{width:280px; border-radius:12px; overflow:hidden; background:#fff; box-shadow:0 6px 20px rgba(0,0,0,.08); display:flex; flex-direction:column}
-        .card img{width:100%; height:200px; object-fit:cover}
-        .card-body{padding:16px; text-align:center}
-        .pill{background:#eef6f0; border:1px solid #d7eadf; color:#1e7e34; padding:4px 10px; border-radius:999px; font-weight:600; font-size:12px}
-        .btn-order{background:var(--green); color:#fff; padding:10px 16px; border-radius:30px; border:none; cursor:pointer}
-        .btn-order:hover{background:var(--accent)}
-        .order-now-wrap{display:flex; justify-content:center; margin-top:22px}
-        .order-now{display:inline-flex; align-items:center; gap:8px;background:var(--green); color:#fff; font-weight:800;padding:12px 18px; border-radius:999px; text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.12);}
-        .order-now:hover{background:var(--accent)}
-        .section{padding:30px 6%;background:#fff}
-        .section h2{color:#218838;text-align:center;margin:0 0 16px}
-        .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+        .chipbar{
+            padding:12px 6%;
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            background:#fff;
+        }
+        .chip{
+            border:1px solid #dfe6df;
+            background:#fff;
+            color:#333;
+            padding:8px 12px;
+            border-radius:999px;
+            font-weight:700;
+            text-decoration:none;
+        }
+        .chip:hover{
+            border-color:#218838;
+            color:#218838;
+        }
 
-        /* ⭐ Rating + meta (same style as menu) */
+        .menu-section{
+            padding:40px 6%;
+        }
+        .menu-section h2{
+            text-align:center;
+            margin:0 0 24px;
+            color:var(--green);
+        }
+        .cards{
+            display:flex;
+            flex-wrap:wrap;
+            gap:24px;
+            justify-content:center;
+        }
+        .card{
+            width:280px;
+            border-radius:12px;
+            overflow:hidden;
+            background:#fff;
+            box-shadow:0 6px 20px rgba(0,0,0,.08);
+            display:flex;
+            flex-direction:column;
+        }
+        .card img{
+            width:100%;
+            height:200px;
+            object-fit:cover;
+        }
+        .card-body{
+            padding:16px;
+            text-align:center;
+        }
+        .pill{
+            background:#eef6f0;
+            border:1px solid #d7eadf;
+            color:#1e7e34;
+            padding:4px 10px;
+            border-radius:999px;
+            font-weight:600;
+            font-size:12px;
+        }
+        .btn-order{
+            background:var(--green);
+            color:#fff;
+            padding:10px 16px;
+            border-radius:30px;
+            border:none;
+            cursor:pointer;
+        }
+        .btn-order:hover{
+            background:var(--accent);
+        }
+        .order-now-wrap{
+            display:flex;
+            justify-content:center;
+            margin-top:22px;
+        }
+        .order-now{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            background:var(--green);
+            color:#fff;
+            font-weight:800;
+            padding:12px 18px;
+            border-radius:999px;
+            text-decoration:none;
+            box-shadow:0 8px 24px rgba(0,0,0,.12);
+        }
+        .order-now:hover{
+            background:var(--accent);
+        }
+        .section{
+            padding:30px 6%;
+            background:#fff;
+        }
+        .section h2{
+            color:#218838;
+            text-align:center;
+            margin:0 0 16px;
+        }
+        .grid-3{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+            gap:16px;
+        }
+
+        /* ⭐ Rating + meta */
         .meta {
             margin-top: 8px;
             display: flex;
@@ -122,7 +456,7 @@
         }
         .rating-stars .fa-star,
         .rating-stars .fa-star-half-stroke {
-            color: #facc15; /* yellow */
+            color: #facc15;
         }
         .rating-stars .fa-regular {
             color: #e5e7eb;
@@ -154,18 +488,60 @@
         }
 
         /* Footer */
-        .site-footer{ background:#222; color:#ccc; padding:40px 6%; margin-top:40px; }
-        .footer-container { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px; margin-bottom: 30px; }
+        .site-footer{
+            background:#222;
+            color:#ccc;
+            padding:40px 6%;
+            margin-top:40px;
+        }
+        .footer-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
         .footer-column { flex: 1; min-width: 220px; }
-        .footer-column h3 { color: #fff; margin-bottom: 15px; font-weight: 600; border-bottom: 2px solid var(--green); padding-bottom: 8px; display: inline-block; }
+        .footer-column h3 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--green);
+            padding-bottom: 8px;
+            display: inline-block;
+        }
         .footer-column p { line-height: 1.6; font-size: 14px; }
         .footer-column ul { list-style: none; padding: 0; margin: 0; }
-        .footer-column ul li a { text-decoration: none; color: #ccc; display: block; padding: 5px 0; font-size: 14px; transition: color 0.3s; }
+        .footer-column ul li a {
+            text-decoration: none;
+            color: #ccc;
+            display: block;
+            padding: 5px 0;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
         .footer-column ul li a:hover { color: #fff; }
-        .social-links a { color: #ccc; text-decoration: none; font-size: 20px; margin-right: 15px; transition: color 0.3s; }
+        .social-links a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 20px;
+            margin-right: 15px;
+            transition: color 0.3s;
+        }
         .social-links a:hover { color: var(--green); }
-        .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid #444; font-size: 14px; }
-        @media (max-width: 768px) { .footer-container { flex-direction: column; text-align: center; } .footer-column { margin-bottom: 20px; } }
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            font-size: 14px;
+        }
+        @media (max-width: 768px) {
+            .footer-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .footer-column { margin-bottom: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -176,16 +552,29 @@
 </div>
 
 <!-- Coupon Ticker -->
-<div class="coupon-ticker-wrap" th:if="${availableCoupons != null and !#lists.isEmpty(availableCoupons)}" aria-label="Active coupons">
+<div class="coupon-ticker-wrap"
+     th:if="${availableCoupons != null and !#lists.isEmpty(availableCoupons)}"
+     aria-label="Active coupons">
     <div class="coupon-ticker">
         <div class="ticker-inner">
       <span class="coupon-chip" th:each="c : ${availableCoupons}">
         <i class="fa-solid fa-tags" aria-hidden="true"></i>
         <span th:text="${c.code}">SAVE10</span>
-        <span class="val" th:text="${c.type.name()=='PERCENT' ? (c.value + '%') : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT'))}">10%</span>
-        <span class="min" th:if="${c.minSubtotal != null and c.minSubtotal > 0}"
-              th:text="${'Min $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">Min $20.00</span>
-        <span th:if="${c.expiresOn != null}">&nbsp;• ends&nbsp;<span th:text="${#temporals.format(c.expiresOn,'MMM d yyyy')}">Dec 31 2025</span></span>
+        <span class="val"
+              th:text="${c.type.name()=='PERCENT'
+                        ? (c.value + '%')
+                        : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT'))}">
+            10%
+        </span>
+        <span class="min"
+              th:if="${c.minSubtotal != null and c.minSubtotal > 0}"
+              th:text="${'Min $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">
+            Min $20.00
+        </span>
+        <span th:if="${c.expiresOn != null}">
+            &nbsp;• ends&nbsp;
+            <span th:text="${#temporals.format(c.expiresOn,'MMM d yyyy')}">Dec 31 2025</span>
+        </span>
       </span>
         </div>
     </div>
@@ -199,7 +588,9 @@
     </a>
 
     <form class="nav-search" role="search" onsubmit="return false;">
-        <input id="nav-q" type="search" placeholder="Search spices…" aria-label="Search" th:value="${q}">
+        <input id="nav-q" type="search"
+               placeholder="Search spices…" aria-label="Search"
+               th:value="${q}">
         <button id="nav-search-btn" type="button" aria-label="Search">
             <i class="fa-solid fa-magnifying-glass"></i>
         </button>
@@ -208,25 +599,30 @@
     <div class="nav-links">
         <a th:href="@{/menu}">Menu</a>
         <a th:href="@{/about}">About Us</a>
+
         <a class="nav-link" th:href="@{/cart/view}">
             <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
                 <i class="fas fa-shopping-cart" style="font-size:24px"></i>
                 <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
             </div>
         </a>
+
         <a th:href="@{/contact}">Contact Us</a>
 
         <div class="dropdown">
             <button class="dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-user"></i>
-                <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">Account</span>
+                <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">
+                    Account
+                </span>
             </button>
             <div class="dropdown-menu">
                 <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+
                 <span th:if="${session.USER != null}">
-          Welcome, <strong th:text="${session.USER.firstName}">User</strong>
-        </span>
+                    Welcome, <strong th:text="${session.USER.firstName}">User</strong>
+                </span>
                 <a th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
                 <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
                 <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
@@ -244,34 +640,51 @@
             <a th:href="@{/menu}" class="cta">Explore Spices</a>
         </div>
 
-        <div class="coupon-area" th:if="${availableCoupons != null and !#lists.isEmpty(availableCoupons)}">
+        <div class="coupon-area"
+             th:if="${availableCoupons != null && !#lists.isEmpty(availableCoupons)}">
             <!-- render first 3 coupons -->
-            <div class="coupon-card" th:each="c, stat : ${availableCoupons}" th:if="${stat.index < 3}">
+            <div class="coupon-card"
+                 th:each="c, stat : ${availableCoupons}"
+                 th:if="${stat.index < 3}">
                 <div class="coupon-head">
                     <i class="fa-solid fa-tags" aria-hidden="true"></i>
                     <span th:text="${c.code}">HURRYUP20</span>
                     <span>—</span>
-                    <b th:text="${c.type != null && c.type.name()=='PERCENT' ? (c.value + '%') : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT'))}">
+                    <b th:text="${c.type != null && c.type.name()=='PERCENT'
+                                 ? (c.value + '%')
+                                 : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT'))}">
                         20%
                     </b>
                 </div>
-                <p class="coupon-sub" th:if="${c.minSubtotal != null}"
-                   th:text="${'Min $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">Min $30.00</p>
+                <p class="coupon-sub"
+                   th:if="${c.minSubtotal != null}"
+                   th:text="${'Min $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">
+                    Min $30.00
+                </p>
                 <small th:if="${c.expiresOn != null}"
                        th:text="${'Ends ' + #temporals.format(c.expiresOn,'MMM d yyyy')}">
                     Ends Mar 26 2025
                 </small>
                 <div class="coupon-actions">
-                    <button class="coupon-btn" type="button" th:attr="data-code=${c.code}" onclick="copyCoupon(this)">Copy</button>
+                    <button class="coupon-btn"
+                            type="button"
+                            th:attr="data-code=${c.code}"
+                            onclick="copyCoupon(this)">
+                        Copy
+                    </button>
                 </div>
             </div>
 
             <!-- "More coupons" hint -->
-            <div class="coupon-more" th:if="${#lists.size(availableCoupons) > 4}"
+            <div class="coupon-more"
+                 th:if="${#lists.size(availableCoupons) > 4}"
                  style="margin-top:4px;color:#15553a;font-size:13px">
                 <small>
                     and <b th:text="${#lists.size(availableCoupons) - 4}">0</b> more exciting coupons —
-                    <a th:href="@{/cart/view}" style="color:#0f5132;font-weight:700;text-decoration:underline">view all</a>
+                    <a th:href="@{/cart/view}"
+                       style="color:#0f5132;font-weight:700;text-decoration:underline">
+                        view all
+                    </a>
                 </small>
             </div>
         </div>
@@ -286,21 +699,25 @@
     <a class="chip" href="/menu?category=Herbs">Herbs</a>
 </div>
 
-<!-- Product grid (Best Sellers) – styled like menu cards -->
+<!-- Product grid (Best Sellers) -->
 <section id="menu" class="menu-section">
     <h2>Best Sellers</h2>
 
-    <div class="cards" th:if="${bestSellers != null and !#lists.isEmpty(bestSellers)}">
+    <div class="cards"
+         th:if="${bestSellers != null and !#lists.isEmpty(bestSellers)}">
         <div class="card" th:each="p : ${bestSellers}">
             <img loading="lazy" decoding="async" width="280" height="200"
-                 th:src="${#strings.isEmpty(p.imageUrl) ? '/images/chilli%20powder.jpeg' : p.imageUrl}"
-                 th:alt="${'Spice – ' + (p.name != null ? p.name : 'Product')}" />
+                 th:src="${#strings.isEmpty(p.imageUrl)
+                         ? '/images/chilli%20powder.jpeg'
+                         : p.imageUrl}"
+                 th:alt="${'Spice – ' + (p.name != null ? p.name : 'Product')}"/>
             <div class="card-body">
-                <div class="row" style="justify-content:center;gap:6px;margin-bottom:6px;display:flex">
+                <div class="row"
+                     style="justify-content:center;gap:6px;margin-bottom:6px;display:flex">
                     <span class="pill">Bestseller</span>
                 </div>
 
-                <!-- ⭐ Rating (same as before) -->
+                <!-- ⭐ Rating -->
                 <div class="rating"
                      th:if="${avgMap != null && avgMap[p.id] != null && avgMap[p.id] > 0}">
                     <div class="rating-stars">
@@ -310,7 +727,8 @@
                                     avgMap[p.id] >= i        ? ' fa-solid' :
                                     (avgMap[p.id] >= i - 0.5 ? ' fa-solid fa-star-half-stroke' :
                                                                ' fa-regular')
-                               }"></i>
+                               }">
+                            </i>
                         </span>
                     </div>
                     <span class="rating-value"
@@ -319,7 +737,7 @@
                     </span>
                     <span class="rating-count"
                           th:if="${cntMap != null && cntMap[p.id] != null && cntMap[p.id] > 0}"
-                          th:text="'(' + ${cntMap[p.id]} + ' reviews)'">
+                          th:text="${'(' + cntMap[p.id] + ' reviews)'}">
                         (12 reviews)
                     </span>
                 </div>
@@ -333,14 +751,14 @@
 
                 <!-- Base / from price -->
                 <h4>
-                    <span th:text="${p.variants != null && !#lists.isEmpty(p.variants) ?
-                                    'From $' + #numbers.formatDecimal(p.variants[0].price,1,'COMMA',2,'POINT')
+                    <span th:text="${p.variants != null && !#lists.isEmpty(p.variants)
+                                    ? 'From $' + #numbers.formatDecimal(p.variants[0].price,1,'COMMA',2,'POINT')
                                     : '$ ' + #numbers.formatDecimal(p.price,1,'COMMA',2,'POINT')}">
                         $ 0.00
                     </span>
                 </h4>
 
-                <!-- Variant list (variant-wise best sellers view) -->
+                <!-- Variant list -->
                 <div class="meta"
                      th:if="${p.variants != null && !#lists.isEmpty(p.variants)}"
                      style="flex-direction:column;align-items:center">
@@ -369,18 +787,22 @@
                     </div>
                 </div>
 
-                <!-- If no variants, fall back to product weight pill -->
+                <!-- If no variants, fallback weight -->
                 <div class="meta"
                      th:if="${(p.variants == null || #lists.isEmpty(p.variants)) && p.weight != null}">
                     <span class="pill"
-                          th:text="${#numbers.formatInteger(p.weight, 1, 'COMMA') + ' g'}">250 g</span>
+                          th:text="${#numbers.formatInteger(p.weight, 1, 'COMMA') + ' g'}">
+                        250 g
+                    </span>
                 </div>
 
-                <p th:text="${#strings.isEmpty(p.description) ? 'Premium spice blend.' : p.description}">
+                <p th:text="${#strings.isEmpty(p.description)
+                             ? 'Premium spice blend.'
+                             : p.description}">
                     Premium spice blend.
                 </p>
 
-                <!-- Add to cart (still product-level; variants handled on product page) -->
+                <!-- Add to cart -->
                 <button class="btn-order add-to-cart-btn"
                         th:data-product-id="${p.id}"
                         th:data-product-name="${p.name}"
@@ -398,7 +820,9 @@
         </div>
     </div>
 
-    <div class="cards" th:if="${bestSellers == null or #lists.isEmpty(bestSellers)}">
+    <!-- Fallback if no best sellers -->
+    <div class="cards"
+         th:if="${bestSellers == null or #lists.isEmpty(bestSellers)}">
         <div class="card">
             <div class="card-body">
                 <h5>No best sellers yet</h5>
@@ -417,12 +841,12 @@
     </div>
 </section>
 
-
 <section class="section">
     <h2>What our customers say</h2>
 
     <!-- Real reviews -->
-    <div class="grid-3" th:if="${latestReviews != null and !#lists.isEmpty(latestReviews)}">
+    <div class="grid-3"
+         th:if="${latestReviews != null and !#lists.isEmpty(latestReviews)}">
         <div th:each="r : ${latestReviews}"
              style="background:#f8fff8;border:1px solid #dceedd;border-radius:12px;padding:14px">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
@@ -438,7 +862,8 @@
     </div>
 
     <!-- Fallback reviews -->
-    <div class="grid-3" th:if="${latestReviews == null or #lists.isEmpty(latestReviews)}">
+    <div class="grid-3"
+         th:if="${latestReviews == null or #lists.isEmpty(latestReviews)}">
         <blockquote style="background:#f8fff8;border:1px solid #dceedd;border-radius:12px;padding:14px">
             “Super fresh spices. My curries taste restaurant-level now!” — Priya S.
         </blockquote>
@@ -454,9 +879,21 @@
 <!-- Why us -->
 <section class="section">
     <div class="grid-3" style="text-align:center">
-        <div><div style="font-size:28px">🟢</div><h3>Freshly Packed</h3><p class="muted">Small batches, sealed aroma.</p></div>
-        <div><div style="font-size:28px">🚚</div><h3>Fast Shipping</h3><p class="muted">2–5 day delivery.</p></div>
-        <div><div style="font-size:28px">✅</div><h3>Quality Assured</h3><p class="muted">100% satisfaction.</p></div>
+        <div>
+            <div style="font-size:28px">🟢</div>
+            <h3>Freshly Packed</h3>
+            <p class="muted">Small batches, sealed aroma.</p>
+        </div>
+        <div>
+            <div style="font-size:28px">🚚</div>
+            <h3>Fast Shipping</h3>
+            <p class="muted">2–5 day delivery.</p>
+        </div>
+        <div>
+            <div style="font-size:28px">✅</div>
+            <h3>Quality Assured</h3>
+            <p class="muted">100% satisfaction.</p>
+        </div>
     </div>
 </section>
 
@@ -464,10 +901,15 @@
 <section class="section" style="background:#f0f8f0;text-align:center">
     <h2>Get recipes & offers</h2>
 
-    <form id="newsletter" th:action="@{/subscribe}" method="post" style="display:inline-flex;gap:8px;flex-wrap:wrap">
-        <input id="newsEmail" type="email" name="email" placeholder="your@email.com"
-               style="padding:10px 12px;border:1px solid #ddd;border-radius:999px" required>
-        <button class="order-now" type="submit" style="border:none">Subscribe</button>
+    <form id="newsletter" th:action="@{/subscribe}" method="post"
+          style="display:inline-flex;gap:8px;flex-wrap:wrap">
+        <input id="newsEmail" type="email" name="email"
+               placeholder="your@email.com"
+               style="padding:10px 12px;border:1px solid #ddd;border-radius:999px"
+               required>
+        <button class="order-now" type="submit" style="border:none">
+            Subscribe
+        </button>
     </form>
 
     <p id="newsMsg" class="muted" style="margin-top:6px"></p>
@@ -499,7 +941,9 @@
             </div>
         </div>
     </div>
-    <div class="footer-bottom"><p>&copy; 2025 The Spice Jar. All rights reserved.</p></div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 The Spice Jar. All rights reserved.</p>
+    </div>
 </footer>
 
 <script>
@@ -513,15 +957,27 @@
             window.location.href = q ? `/menu?q=${encodeURIComponent(q)}` : '/menu';
         };
         document.getElementById('nav-search-btn')?.addEventListener('click', goSearch);
-        qInput?.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); goSearch(); }});
+        qInput?.addEventListener('keydown', (e)=>{
+            if(e.key==='Enter'){
+                e.preventDefault();
+                goSearch();
+            }
+        });
 
         function updateCartCount(count){
-            const el=document.getElementById('lblCartCount'); if(el && Number.isFinite(count)) el.textContent=String(count);
+            const el=document.getElementById('lblCartCount');
+            if(el && Number.isFinite(count)) el.textContent=String(count);
         }
         const toast=(msg)=>{
             let t=document.getElementById('sj-toast');
-            if(!t){ t=document.createElement('div'); t.id='sj-toast'; t.style.cssText='position:fixed;right:20px;bottom:20px;background:#111;color:#fff;padding:12px 14px;border-radius:10px;display:block;box-shadow:0 10px 24px rgba(0,0,0,.3);z-index:1300'; document.body.appendChild(t); }
-            t.textContent=msg; t.style.display='block';
+            if(!t){
+                t=document.createElement('div');
+                t.id='sj-toast';
+                t.style.cssText='position:fixed;right:20px;bottom:20px;background:#111;color:#fff;padding:12px 14px;border-radius:10px;display:block;box-shadow:0 10px 24px rgba(0,0,0,.3);z-index:1300';
+                document.body.appendChild(t);
+            }
+            t.textContent=msg;
+            t.style.display='block';
             setTimeout(()=>t.style.display='none',1600);
         };
 
@@ -531,14 +987,20 @@
                 try{
                     const res = await fetch(`/cart/add?productId=${productId}&qty=1`, {
                         method:'POST',
-                        headers:{'Content-Type':'application/json',[csrfHeader]:csrf}
+                        headers:{
+                            'Content-Type':'application/json',
+                            [csrfHeader]:csrf
+                        }
                     });
                     const data = await res.json();
                     if (data.status === 'success') {
                         if (typeof data.cartCount !== 'undefined') updateCartCount(data.cartCount);
                         toast('Added to cart ✓');
                     }
-                }catch(err){ console.error(err); toast('Could not add to cart'); }
+                }catch(err){
+                    console.error(err);
+                    toast('Could not add to cart');
+                }
             });
         });
     })();
@@ -548,16 +1010,41 @@
         const msg  = btn.closest('.coupon-card')?.querySelector('small');
         if(!code) return;
 
-        (navigator.clipboard?.writeText(code) || Promise.reject()).then(()=>{
-            if (msg) { msg.textContent = (msg.textContent?.startsWith('Ends') ? msg.textContent + ' • Copied ✓' : 'Copied ✓'); }
-            setTimeout(()=> { if (msg && msg.textContent?.includes('Copied')) { msg.textContent = msg.textContent.replace(' • Copied ✓','').replace('Copied ✓',''); } }, 1600);
-        }).catch(()=>{
-            const ta = document.createElement('textarea');
-            ta.value = code; document.body.appendChild(ta);
-            ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-            if (msg) { msg.textContent = (msg.textContent?.startsWith('Ends') ? msg.textContent + ' • Copied ✓' : 'Copied ✓'); }
-            setTimeout(()=> { if (msg && msg.textContent?.includes('Copied')) { msg.textContent = msg.textContent.replace(' • Copied ✓','').replace('Copied ✓',''); } }, 1600);
-        });
+        (navigator.clipboard?.writeText(code) || Promise.reject())
+            .then(()=>{
+                if (msg) {
+                    msg.textContent = (msg.textContent?.startsWith('Ends')
+                        ? msg.textContent + ' • Copied ✓'
+                        : 'Copied ✓');
+                }
+                setTimeout(()=>{
+                    if (msg && msg.textContent?.includes('Copied')) {
+                        msg.textContent = msg.textContent
+                            .replace(' • Copied ✓','')
+                            .replace('Copied ✓','');
+                    }
+                }, 1600);
+            })
+            .catch(()=>{
+                const ta = document.createElement('textarea');
+                ta.value = code;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                if (msg) {
+                    msg.textContent = (msg.textContent?.startsWith('Ends')
+                        ? msg.textContent + ' • Copied ✓'
+                        : 'Copied ✓');
+                }
+                setTimeout(()=>{
+                    if (msg && msg.textContent?.includes('Copied')) {
+                        msg.textContent = msg.textContent
+                            .replace(' • Copied ✓','')
+                            .replace('Copied ✓','');
+                    }
+                }, 1600);
+            });
     }
 
     // Newsletter AJAX subscribe
@@ -570,13 +1057,15 @@
 
         const res = await fetch('/subscribe', {
             method:'POST',
-            headers: { 'Content-Type':'application/x-www-form-urlencoded', [csrfHeader]: csrf },
+            headers: {
+                'Content-Type':'application/x-www-form-urlencoded',
+                [csrfHeader]: csrf
+            },
             body: new URLSearchParams({ email })
         });
         const out = await res.json().catch(()=>({}));
         msg.textContent = out.message || (res.ok ? 'Check your email to confirm.' : 'Something went wrong.');
     });
-
 </script>
 </body>
 </html>

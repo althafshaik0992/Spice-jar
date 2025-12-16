@@ -1,98 +1,412 @@
 <!-- src/main/resources/templates/gift-cards-buy.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<link rel="icon" type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 <head>
     <meta charset="UTF-8"/>
     <title>Buy a Gift Card • The Spice Jar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <link rel="icon" type="image/svg+xml"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
     <style>
-        :root{--green:#218838;--accent:#b7410e;--bg:#f6fbf6;--card:#fff;--muted:#6b7280;--ring:rgba(33,136,56,.12)}
+        :root{
+            --green:#218838;
+            --accent:#b7410e;
+            --bg:#f6fbf6;
+            --card:#fff;
+            --muted:#6b7280;
+            --ring:rgba(33,136,56,.12);
+        }
         *{box-sizing:border-box}
-        body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:var(--bg);color:#111}
 
-        /* Navbar (reuse) */
-        .navbar{background:#fff;padding:6px 6%;box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000;height:60px}
-        .brand-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--green);font-weight:700;font-size:20px}
-        .brand-logo video{width:36px;height:auto;border-radius:4px}
-        .nav-links{display:flex;align-items:center;gap:18px}
-        .nav-links a{text-decoration:none;color:#333;font-weight:500;font-size:15px}
-        .nav-links a:hover{color:var(--green)}
-        .cart-icon-container{position:relative;display:inline-block}
-        .cart-count-badge{position:absolute;top:-8px;right:-8px;background:var(--accent);color:#fff;border-radius:50%;
-            min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+        body{
+            margin:0;
+            font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;
+            background:var(--bg);
+            color:#111;
+        }
 
-        .wrap{max-width:1000px;margin:24px auto;padding:0 6%}
-        h1{font-size:28px;margin:6px 0 14px}
-        .muted{color:var(--muted)}
-        .grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-        @media (max-width:960px){.grid{grid-template-columns:1fr}}
-        /* Footer */
-        .site-footer{ background:#222; color:#ccc; padding:40px 6%; margin-top:40px; }
-        .footer-container { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px; margin-bottom: 30px; }
-        .footer-column { flex: 1; min-width: 220px; }
-        .footer-column h3 { color: #fff; margin-bottom: 15px; font-weight: 600; border-bottom: 2px solid var(--green); padding-bottom: 8px; display: inline-block; }
-        .footer-column p { line-height: 1.6; font-size: 14px; }
-        .footer-column ul { list-style: none; padding: 0; margin: 0; }
-        .footer-column ul li a { text-decoration: none; color: #ccc; display: block; padding: 5px 0; font-size: 14px; transition: color 0.3s; }
-        .footer-column ul li a:hover { color: #fff; }
-        .social-links a { color: #ccc; text-decoration: none; font-size: 20px; margin-right: 15px; transition: color 0.3s; }
-        .social-links a:hover { color: var(--green); }
-        .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid #444; font-size: 14px; }
-        @media (max-width: 768px) { .footer-container { flex-direction: column; text-align: center; } .footer-column { margin-bottom: 20px; } }
+        /* Navbar */
+        .navbar{
+            background:#fff;
+            padding:6px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:16px;
+            position:sticky;
+            top:0;
+            z-index:1000;
+            height:60px;
+        }
 
-        .card{background:var(--card);border-radius:16px;box-shadow:0 10px 24px rgba(0,0,0,.06);padding:18px}
-        .row{display:flex;gap:10px;flex-wrap:wrap}
-        .btn{display:inline-flex;gap:8px;align-items:center;background:var(--green);color:#fff;border:0;border-radius:12px;
-            padding:10px 14px;font-weight:700;text-decoration:none;cursor:pointer}
-        .btn:hover{background:var(--accent)}
-        .btn-ghost{background:#f6f9f6;color:#14532d;border:1px solid #e7eee7}
-        .pill{border:1px solid #e1e5e1;background:#fff;border-radius:999px;padding:6px 12px;cursor:pointer}
+        .brand-logo{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            text-decoration:none;
+            color:var(--green);
+            font-weight:700;
+            font-size:20px;
+        }
+
+        .brand-logo video{
+            width:36px;
+            height:auto;
+            border-radius:4px;
+        }
+
+        .nav-links{
+            display:flex;
+            align-items:center;
+            gap:18px;
+        }
+
+        .nav-links a{
+            text-decoration:none;
+            color:#333;
+            font-weight:500;
+            font-size:15px;
+        }
+
+        .nav-links a:hover{
+            color:var(--green);
+        }
+
+        /* Navbar search */
+        .nav-search{
+            flex:1;
+            max-width:520px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+
+        .nav-search input{
+            width:100%;
+            padding:10px 12px;
+            border:1px solid #ddd;
+            border-radius:999px;
+            background:#fff;
+            font-size:14px;
+            outline:none;
+        }
+
+        .nav-search button{
+            border:none;
+            border-radius:999px;
+            padding:9px 12px;
+            background:var(--green);
+            color:#fff;
+            cursor:pointer;
+        }
+
+        .nav-search button:hover{
+            background:var(--accent);
+        }
+
+        .cart-icon-container{
+            position:relative;
+            display:inline-block;
+        }
+        .cart-count-badge{
+            position:absolute;
+            top:-8px;
+            right:-8px;
+            background:var(--accent);
+            color:#fff;
+            border-radius:50%;
+            min-width:20px;
+            height:20px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:12px;
+            font-weight:700;
+        }
+
+        /* Dropdowns */
+        .dropdown{position:relative}
+        .dropdown-toggle{
+            background:none;
+            border:none;
+            cursor:pointer;
+            font-size:15px;
+            color:#333;
+            display:flex;
+            align-items:center;
+            gap:6px;
+        }
+        .dropdown-menu{
+            display:none;
+            position:absolute;
+            right:0;
+            top:100%;
+            background:#fff;
+            box-shadow:0 4px 10px rgba(0,0,0,.1);
+            border-radius:6px;
+            overflow:hidden;
+            min-width:180px;
+            z-index:1001;
+        }
+        .dropdown-menu a,
+        .dropdown-menu span{
+            display:block;
+            padding:10px 16px;
+            text-decoration:none;
+            color:#333;
+            white-space:nowrap;
+            font-size:14px;
+        }
+        .dropdown-menu a:hover{
+            background:#f4f4f4;
+        }
+
+        /* Layout */
+        .wrap{
+            max-width:1000px;
+            margin:24px auto;
+            padding:0 6%;
+        }
+        h1{
+            font-size:28px;
+            margin:6px 0 14px;
+        }
+        .muted{
+            color:var(--muted);
+        }
+
+        .grid{
+            display:grid;
+            grid-template-columns:2fr 1fr;
+            gap:16px;
+        }
+        @media (max-width:960px){
+            .grid{grid-template-columns:1fr}
+        }
+
+        .card{
+            background:var(--card);
+            border-radius:16px;
+            box-shadow:0 10px 24px rgba(0,0,0,.06);
+            padding:18px;
+        }
+        .row{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+
+        .btn{
+            display:inline-flex;
+            gap:8px;
+            align-items:center;
+            background:var(--green);
+            color:#fff;
+            border:0;
+            border-radius:12px;
+            padding:10px 14px;
+            font-weight:700;
+            text-decoration:none;
+            cursor:pointer;
+            font-size:14px;
+        }
+        .btn:hover{
+            background:var(--accent);
+        }
+        .btn-ghost{
+            background:#f6f9f6;
+            color:#14532d;
+            border:1px solid #e7eee7;
+        }
+
+        .pill{
+            border:1px solid #e1e5e1;
+            background:#fff;
+            border-radius:999px;
+            padding:6px 12px;
+            cursor:pointer;
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            font-size:14px;
+        }
         .pill input{display:none}
-        .pill.active{border-color:#cfead6;background:#e9f7ee}
-        .field{display:grid;gap:6px;margin-bottom:12px}
-        .field input,.field select,.field textarea{padding:10px 12px;border:1px solid #e1e5e1;border-radius:12px}
-        .section-title{margin:0 0 10px;font-size:16px;font-weight:800}
-        .divider{height:1px;background:#eef2ef;margin:12px 0}
+        .pill.active{
+            border-color:#cfead6;
+            background:#e9f7ee;
+        }
 
-        .preview{border:1px dashed #cfead6;border-radius:12px;padding:14px;background:#fbfffb}
-        .preview .gc{background:linear-gradient(135deg,#218838 0%,#1a6b2c 100%);border-radius:16px;color:#fff;padding:16px;position:relative;overflow:hidden}
-        .preview .gc .ribbon{position:absolute;right:-30px;top:14px;transform:rotate(35deg);background:#fff;color:#1a6b2c;font-weight:900;padding:4px 40px;border-radius:6px}
+        .field{
+            display:grid;
+            gap:6px;
+            margin-bottom:12px;
+        }
+        .field input,
+        .field select,
+        .field textarea{
+            padding:10px 12px;
+            border:1px solid #e1e5e1;
+            border-radius:12px;
+            font-size:14px;
+        }
+
+        .section-title{
+            margin:0 0 10px;
+            font-size:16px;
+            font-weight:800;
+        }
+        .divider{
+            height:1px;
+            background:#eef2ef;
+            margin:12px 0;
+        }
+
+        .preview{
+            border:1px dashed #cfead6;
+            border-radius:12px;
+            padding:14px;
+            background:#fbfffb;
+        }
+        .preview .gc{
+            background:linear-gradient(135deg,#218838 0%,#1a6b2c 100%);
+            border-radius:16px;
+            color:#fff;
+            padding:16px;
+            position:relative;
+            overflow:hidden;
+        }
+        .preview .gc .ribbon{
+            position:absolute;
+            right:-30px;
+            top:14px;
+            transform:rotate(35deg);
+            background:#fff;
+            color:#1a6b2c;
+            font-weight:900;
+            padding:4px 40px;
+            border-radius:6px;
+            font-size:12px;
+        }
+
+        /* Footer */
+        .site-footer{
+            background:#222;
+            color:#ccc;
+            padding:40px 6%;
+            margin-top:40px;
+        }
+        .footer-container{
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:space-between;
+            gap:30px;
+            margin-bottom:30px;
+        }
+        .footer-column{
+            flex:1;
+            min-width:220px;
+        }
+        .footer-column h3{
+            color:#fff;
+            margin-bottom:15px;
+            font-weight:600;
+            border-bottom:2px solid var(--green);
+            padding-bottom:8px;
+            display:inline-block;
+        }
+        .footer-column p{
+            line-height:1.6;
+            font-size:14px;
+        }
+        .footer-column ul{
+            list-style:none;
+            padding:0;
+            margin:0;
+        }
+        .footer-column ul li a{
+            text-decoration:none;
+            color:#ccc;
+            display:block;
+            padding:5px 0;
+            font-size:14px;
+            transition:color 0.3s;
+        }
+        .footer-column ul li a:hover{
+            color:#fff;
+        }
+        .social-links a{
+            color:#ccc;
+            text-decoration:none;
+            font-size:20px;
+            margin-right:15px;
+            transition:color 0.3s;
+        }
+        .social-links a:hover{
+            color:var(--green);
+        }
+        .footer-bottom{
+            text-align:center;
+            padding-top:20px;
+            border-top:1px solid #444;
+            font-size:14px;
+        }
+        @media (max-width: 768px){
+            .footer-container{
+                flex-direction:column;
+                text-align:center;
+            }
+            .footer-column{margin-bottom:20px;}
+        }
     </style>
 </head>
 <body>
-!-- Navbar -->
+
+<!-- Navbar -->
 <nav class="navbar">
     <a href="/" class="brand-logo">
         <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
         <span>SpiceJar</span>
     </a>
 
+    <form class="nav-search" role="search" onsubmit="return false;">
+        <input id="nav-q" type="search" placeholder="Search spices…" aria-label="Search" th:value="${q}">
+        <button id="nav-search-btn" type="button" aria-label="Search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+    </form>
+
     <div class="nav-links">
         <a th:href="@{/menu}">Menu</a>
         <a th:href="@{/about}">About Us</a>
+
         <a class="nav-link" th:href="@{/cart/view}">
             <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
                 <i class="fas fa-shopping-cart" style="font-size:24px"></i>
                 <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
             </div>
         </a>
+
         <a th:href="@{/contact}">Contact Us</a>
 
         <!-- Account -->
-        <div class="dropdown" style="position:relative">
-            <button class="dropdown-toggle" style="background:none;border:none;cursor:pointer;font-size:15px;color:#333;display:flex;align-items:center;gap:6px">
+        <div class="dropdown">
+            <button class="dropdown-toggle">
                 <i class="fas fa-user"></i>
                 <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">Account</span>
             </button>
-            <div class="dropdown-menu" style="display:none;position:absolute;right:0;top:100%;background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.1);border-radius:6px;overflow:hidden;min-width:180px">
+            <div class="dropdown-menu">
                 <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
-                <span th:if="${session.USER != null}">Welcome, <strong th:text="${session.USER.firstName}">User</strong></span>
+
+                <span th:if="${session.USER != null}">
+                    Welcome, <strong th:text="${session.USER.firstName}">User</strong>
+                </span>
                 <a th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
                 <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
                 <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
@@ -100,9 +414,12 @@
         </div>
     </div>
 </nav>
+
 <div class="wrap">
     <h1>Buy a Gift Card</h1>
-    <p class="muted">Send instant joy via email or ship a physical card. The balance never expires unless specified.</p>
+    <p class="muted">
+        Send instant joy via email or ship a physical card. The balance never expires unless specified.
+    </p>
 
     <div class="grid">
         <!-- Form -->
@@ -111,40 +428,82 @@
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
                 <!-- 1) Amount -->
-                <h3 class="section-title"><i class="fa-solid fa-dollar-sign"></i> Amount</h3>
+                <h3 class="section-title">
+                    <i class="fa-solid fa-dollar-sign"></i> Amount
+                </h3>
                 <div class="row" id="amountPills">
-                    <label class="pill"><input type="radio" name="amountPreset" value="10"/><span>$10</span></label>
-                    <label class="pill"><input type="radio" name="amountPreset" value="25"/><span>$25</span></label>
-                    <label class="pill"><input type="radio" name="amountPreset" value="50"/><span>$50</span></label>
-                    <label class="pill"><input type="radio" name="amountPreset" value="100"/><span>$100</span></label>
-                    <label class="pill"><input type="radio" name="amountPreset" value="0"/><span>Custom</span></label>
+                    <label class="pill">
+                        <input type="radio" name="amountPreset" value="10"/>
+                        <span>$10</span>
+                    </label>
+                    <label class="pill">
+                        <input type="radio" name="amountPreset" value="25"/>
+                        <span>$25</span>
+                    </label>
+                    <label class="pill">
+                        <input type="radio" name="amountPreset" value="50"/>
+                        <span>$50</span>
+                    </label>
+                    <label class="pill">
+                        <input type="radio" name="amountPreset" value="100"/>
+                        <span>$100</span>
+                    </label>
+                    <label class="pill">
+                        <input type="radio" name="amountPreset" value="0"/>
+                        <span>Custom</span>
+                    </label>
                 </div>
+
                 <div class="field" id="customAmountWrap" style="display:none">
                     <label for="customAmount" class="muted">Custom amount</label>
-                    <input id="customAmount" name="customAmount" type="number" step="0.01" min="1" placeholder="Enter amount"/>
+                    <input id="customAmount"
+                           name="customAmount"
+                           type="number"
+                           step="0.01"
+                           min="1"
+                           placeholder="Enter amount"/>
                 </div>
 
                 <div class="divider"></div>
 
                 <!-- 2) Delivery -->
-                <h3 class="section-title"><i class="fa-solid fa-truck-fast"></i> Delivery</h3>
+                <h3 class="section-title">
+                    <i class="fa-solid fa-truck-fast"></i> Delivery
+                </h3>
                 <div class="row" id="deliveryPills">
-                    <label class="pill active"><input type="radio" name="delivery" value="EMAIL" checked/><span>Email (Digital)</span></label>
-                    <label class="pill"><input type="radio" name="delivery" value="PHYSICAL"/><span>Physical card (Ship)</span></label>
+                    <label class="pill active">
+                        <input type="radio" name="delivery" value="EMAIL" checked/>
+                        <span>Email (Digital)</span>
+                    </label>
+                    <label class="pill">
+                        <input type="radio" name="delivery" value="PHYSICAL"/>
+                        <span>Physical card (Ship)</span>
+                    </label>
                 </div>
 
                 <!-- Email fields -->
                 <div id="emailBlock">
                     <div class="field">
                         <label class="muted" for="recipientName">Recipient name</label>
-                        <input id="recipientName" name="recipientName" type="text" maxlength="80" placeholder="e.g., Anjali"/>
+                        <input id="recipientName"
+                               name="recipientName"
+                               type="text"
+                               maxlength="80"
+                               placeholder="e.g., Anjali"/>
                     </div>
                     <div class="field">
                         <label class="muted" for="recipientEmail">Recipient email</label>
-                        <input id="recipientEmail" name="recipientEmail" type="email" th:value="${suggestedEmail}" placeholder="name@example.com"/>
+                        <input id="recipientEmail"
+                               name="recipientEmail"
+                               type="email"
+                               th:value="${suggestedEmail}"
+                               placeholder="name@example.com"/>
                     </div>
                     <div class="row">
-                        <label class="pill"><input type="checkbox" id="scheduleToggle"/><span>Schedule delivery</span></label>
+                        <label class="pill">
+                            <input type="checkbox" id="scheduleToggle"/>
+                            <span>Schedule delivery</span>
+                        </label>
                     </div>
                     <div class="field" id="scheduleWrap" style="display:none">
                         <label class="muted" for="scheduleDate">Delivery date</label>
@@ -157,11 +516,17 @@
                     <div class="field">
                         <label class="muted" for="shipToAddressId">Ship to address</label>
                         <select id="shipToAddressId" name="shipToAddressId" required>
-                            <option value="" disabled th:if="${addresses == null or #lists.isEmpty(addresses)}">No saved addresses — add one first</option>
+                            <option value=""
+                                    disabled
+                                    th:if="${addresses == null or #lists.isEmpty(addresses)}">
+                                No saved addresses — add one first
+                            </option>
                             <option th:each="a : ${addresses}"
                                     th:value="${a.id}"
                                     th:selected="${selectedAddressId != null and selectedAddressId == a.id}"
-                                    th:text="${a.fullName + ' — ' + a.line1 + ', ' + a.city}">John D — 123 Main</option>
+                                    th:text="${a.fullName + ' — ' + a.line1 + ', ' + a.city}">
+                                John D — 123 Main
+                            </option>
                         </select>
                     </div>
                 </div>
@@ -169,21 +534,31 @@
                 <div class="divider"></div>
 
                 <!-- 3) Personalize -->
-                <h3 class="section-title"><i class="fa-solid fa-message"></i> Personalize</h3>
+                <h3 class="section-title">
+                    <i class="fa-solid fa-message"></i> Personalize
+                </h3>
                 <div class="field">
                     <label class="muted" for="fromName">From</label>
-                    <input id="fromName" name="fromName" type="text" maxlength="80" placeholder="Your name"/>
+                    <input id="fromName"
+                           name="fromName"
+                           type="text"
+                           maxlength="80"
+                           placeholder="Your name"/>
                 </div>
                 <div class="field">
                     <label class="muted" for="message">Message (optional)</label>
-                    <textarea id="message" name="message" rows="3" maxlength="280" placeholder="Write a short note…"></textarea>
+                    <textarea id="message"
+                              name="message"
+                              rows="3"
+                              maxlength="280"
+                              placeholder="Write a short note…"></textarea>
                 </div>
 
                 <div class="divider"></div>
 
                 <!-- 4) Submit -->
                 <div class="row" style="justify-content:space-between;align-items:center">
-                    <a class="btn-ghost btn" th:href="@{/gift-cards}">
+                    <a class="btn btn-ghost" th:href="@{/gift-cards}">
                         <i class="fa-solid fa-circle-arrow-left"></i> Back
                     </a>
                     <button class="btn" type="submit">
@@ -200,19 +575,28 @@
                 <div class="gc">
                     <div class="ribbon">GIFT</div>
                     <div style="font-size:22px;font-weight:900;letter-spacing:.3px">The Spice Jar</div>
-                    <div class="muted" style="color:#d1fae5;margin:2px 0 12px">A little spice for your day</div>
+                    <div class="muted" style="color:#d1fae5;margin:2px 0 12px">
+                        A little spice for your day
+                    </div>
                     <div style="display:flex;justify-content:space-between;align-items:end">
                         <div>
-                            <div style="font-weight:700">To: <span id="p_to">Recipient</span></div>
-                            <div style="font-weight:700">From: <span id="p_from">You</span></div>
+                            <div style="font-weight:700">
+                                To: <span id="p_to">Recipient</span>
+                            </div>
+                            <div style="font-weight:700">
+                                From: <span id="p_from">You</span>
+                            </div>
                         </div>
                         <div style="text-align:right">
                             <div class="muted" style="color:#d1fae5">Amount</div>
-                            <div style="font-size:28px;font-weight:900">$<span id="p_amt">25</span></div>
+                            <div style="font-size:28px;font-weight:900">
+                                $<span id="p_amt">25</span>
+                            </div>
                         </div>
                     </div>
                     <div class="muted" style="color:#d1fae5;margin-top:10px;font-size:12px">
-                        Delivery: <span id="p_delivery">Email</span> <span id="p_when"></span>
+                        Delivery: <span id="p_delivery">Email</span>
+                        <span id="p_when"></span>
                     </div>
                 </div>
             </div>
@@ -221,19 +605,25 @@
 
             <h3 style="margin:0 0 8px">Order summary</h3>
             <div class="row" style="justify-content:space-between">
-                <span>Gift card</span><span>$<span id="s_amt">25</span></span>
+                <span>Gift card</span>
+                <span>$<span id="s_amt">25</span></span>
             </div>
             <div class="row" style="justify-content:space-between">
-                <span>Delivery</span><span id="s_ship">$0.00</span>
+                <span>Delivery</span>
+                <span id="s_ship">$0.00</span>
             </div>
             <div class="divider"></div>
             <div class="row" style="justify-content:space-between;font-weight:900">
-                <span>Total</span><span>$<span id="s_total">25</span></span>
+                <span>Total</span>
+                <span>$<span id="s_total">25</span></span>
             </div>
-            <p class="muted" style="margin-top:8px">Digital delivery is free. Physical card may include standard shipping at checkout (set in backend if needed).</p>
+            <p class="muted" style="margin-top:8px">
+                Digital delivery is free. Physical card may include standard shipping at checkout (set in backend if needed).
+            </p>
         </aside>
     </div>
 </div>
+
 <footer class="site-footer">
     <div class="footer-container">
         <div class="footer-column">
@@ -259,9 +649,21 @@
             </div>
         </div>
     </div>
-    <div class="footer-bottom"><p>&copy; 2025 The Spice Jar. All rights reserved.</p></div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 The Spice Jar. All rights reserved.</p>
+    </div>
 </footer>
+
 <script>
+    // Simple hover dropdown
+    document.addEventListener('DOMContentLoaded', function () {
+        const dd = document.querySelector('.dropdown');
+        if (!dd) return;
+        const menu = dd.querySelector('.dropdown-menu');
+        dd.addEventListener('mouseenter', () => menu.style.display = 'block');
+        dd.addEventListener('mouseleave', () => menu.style.display = 'none');
+    });
+
     (function(){
         const pills = document.querySelectorAll('#amountPills .pill');
         const deliveryPills = document.querySelectorAll('#deliveryPills .pill');
@@ -282,7 +684,6 @@
         const sShip= document.getElementById('s_ship');
         const sTotal= document.getElementById('s_total');
 
-        // helpers
         const money = v => (Math.max(0, Number(v||0))).toFixed(2);
 
         function selectPill(group, el){
@@ -342,8 +743,9 @@
         fn && fn.addEventListener('input', ()=> pFrom.textContent = fn.value || 'You');
 
         // defaults
-        document.querySelector('#amountPills .pill input[value="25"]').click();
-        deliveryPills[0].click();
+        const defaultPill = document.querySelector('#amountPills .pill input[value="25"]');
+        if (defaultPill) defaultPill.closest('.pill').click();
+        if (deliveryPills[0]) deliveryPills[0].click();
     })();
 </script>
 

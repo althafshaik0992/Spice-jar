@@ -8,10 +8,12 @@ import com.example.foodapp.repository.CouponRedemptionRepository;
 import com.example.foodapp.service.*;
 import com.example.foodapp.util.CartItem;
 import com.example.foodapp.util.SessionCart;
+import com.stripe.model.Refund;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -32,6 +34,10 @@ public class OrderController extends BaseController {
     private final CouponRepository couponRepository;
     private final GiftCardService giftCardService;
     private final CouponRedemptionRepository couponRedemptionRepository;
+    private final PaymentService paymentService;
+    private final PaypalService paypalService;
+    private final StripeService stripeService;
+
 
     public OrderController(OrderService orderService,
                            AddressService addressService,
@@ -40,7 +46,7 @@ public class OrderController extends BaseController {
                            SessionCart sessionCart,
                            CouponRepository couponRepository,
                            GiftCardService giftCardService,
-                           CouponRedemptionRepository couponRedemptionRepository) {
+                           CouponRedemptionRepository couponRedemptionRepository, PaymentService paymentService, PaypalService paypalService, StripeService stripeService) {
         this.orderService = orderService;
         this.addressService = addressService;
         this.inventoryService = inventoryService;
@@ -49,6 +55,9 @@ public class OrderController extends BaseController {
         this.couponRepository = couponRepository;
         this.giftCardService = giftCardService;
         this.couponRedemptionRepository = couponRedemptionRepository;
+        this.paymentService = paymentService;
+        this.paypalService = paypalService;
+        this.stripeService = stripeService;
     }
 
     @GetMapping("/checkout")
@@ -244,13 +253,207 @@ public class OrderController extends BaseController {
         }
 
         cart.clear();
-        emailService.sendOrderConfirmation(saved.getId());
+       // emailService.sendOrderConfirmation(saved.getId());
         inventoryService.applyOrder(saved);
-        emailService.sendOrderSurveyEmail(saved);
+       // emailService.sendOrderSurveyEmail(saved);
         m.addAttribute("cart", sessionCart);
 
         return "redirect:/payment/checkout?orderId=" + saved.getId();
     }
+
+
+
+
+
+    // =====================================================
+//  RETURN SINGLE ITEM
+//  URL: POST /orders/{orderId}/returnItem/{itemId}
+// =====================================================
+
+
+    // =====================================================
+    // ✅ RETURN SINGLE ITEM
+    // =====================================================
+    @PostMapping("/{orderId}/returnItem/{itemId}")
+    public String requestItemReturn(@PathVariable Long orderId,
+                                    @PathVariable Long itemId,
+                                    HttpSession session,
+                                    RedirectAttributes ra) {
+
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
+
+        Order order = orderService.findById(orderId);
+        if (order == null) throw new IllegalArgumentException("Order not found");
+
+        try {
+            assertOrderBelongsToUser(order, user);
+            assertReturnEligibleStatus(order);
+            assertWithinReturnWindow(order, 30);
+
+            OrderItem item = order.getItems().stream()
+                    .filter(it -> it.getId().equals(itemId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Order item not found"));
+
+            if (Boolean.TRUE.equals(item.getReturnRequested()) || Boolean.TRUE.equals(item.getReturned())) {
+                throw new IllegalStateException("Return already requested");
+            }
+
+            BigDecimal refundAmount = item.getLineTotal() != null ? item.getLineTotal() : BigDecimal.ZERO;
+            if (refundAmount.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalStateException("Refund amount is zero for this item");
+            }
+
+            item.setReturnRequested(true);
+            if (order.getRefundTotal() == null) order.setRefundTotal(BigDecimal.ZERO);
+            order.setRefundTotal(order.getRefundTotal().add(refundAmount));
+            order.setStatus("RETURN_REQUESTED");
+            orderService.save(order);
+
+            // ✅ 1) normal successful payment lookup
+            Payment originalCharge = paymentService.findLatestSuccessfulCharge(orderId);
+
+            // ✅ 2) if not found, try to SYNC from Stripe using latest payment
+            if (originalCharge == null) {
+                Payment latest = paymentService.findLatestByOrderId(orderId);
+                if (latest != null && "STRIPE".equalsIgnoreCase(latest.getProvider())) {
+                    stripeService.syncPaymentIfSucceeded(latest);
+                }
+                originalCharge = paymentService.findLatestSuccessfulCharge(orderId);
+            }
+
+            if (originalCharge == null) {
+                ra.addFlashAttribute("msg",
+                        "Return requested. No successful online payment found to refund (COD/manual).");
+                return "redirect:/orders/" + orderId;
+            }
+
+            Payment refundRecord = paymentService.createRefundRecord(
+                    order, originalCharge, refundAmount, "Refund for item " + item.getProductName()
+            );
+
+            String refundId = null;
+            String provider = originalCharge.getProvider();
+
+            if ("STRIPE".equalsIgnoreCase(provider)) {
+                refundId = stripeService.refundStripePayment(originalCharge.getTransactionId(), refundAmount);
+            } else if ("PAYPAL".equalsIgnoreCase(provider)) {
+                refundId = paypalService.refundPaypalPayment(originalCharge.getTransactionId(), refundAmount);
+            }
+
+            if (refundId != null) {
+                paymentService.markRefundCompleted(refundRecord, refundId, order);
+                ra.addFlashAttribute("msg", "Refund processed successfully. Confirmation email sent.");
+            } else {
+                ra.addFlashAttribute("msg", "Return requested. Refund pending (no gateway refund id).");
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            ra.addFlashAttribute("err", ex.getMessage());
+        }
+
+        return "redirect:/orders/" + orderId;
+    }
+
+    // =====================================================
+    // ✅ RETURN FULL ORDER
+    // =====================================================
+    @PostMapping("/{orderId}/return")
+    public String requestOrderReturn(@PathVariable Long orderId,
+                                     HttpSession session,
+                                     RedirectAttributes ra) {
+
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
+
+        Order order = orderService.findById(orderId);
+        if (order == null) throw new IllegalArgumentException("Order not found");
+
+        try {
+            assertOrderBelongsToUser(order, user);
+            assertReturnEligibleStatus(order);
+            assertWithinReturnWindow(order, 30);
+
+            if ("RETURN_REQUESTED".equals(order.getStatus()) || "RETURNED".equals(order.getStatus())) {
+                throw new IllegalStateException("Return already requested");
+            }
+
+            BigDecimal refundAmount = BigDecimal.ZERO;
+            for (OrderItem it : order.getItems()) {
+                if (!Boolean.TRUE.equals(it.getReturned())) {
+                    it.setReturnRequested(true);
+                    if (it.getLineTotal() != null) refundAmount = refundAmount.add(it.getLineTotal());
+                }
+            }
+
+            if (order.getRefundTotal() == null) order.setRefundTotal(BigDecimal.ZERO);
+            order.setRefundTotal(order.getRefundTotal().add(refundAmount));
+            order.setStatus("RETURN_REQUESTED");
+            orderService.save(order);
+
+            Payment originalCharge = paymentService.findLatestSuccessfulCharge(orderId);
+
+            if (originalCharge == null) {
+                Payment latest = paymentService.findLatestByOrderId(orderId);
+                if (latest != null && "STRIPE".equalsIgnoreCase(latest.getProvider())) {
+                    stripeService.syncPaymentIfSucceeded(latest);
+                }
+                originalCharge = paymentService.findLatestSuccessfulCharge(orderId);
+            }
+
+            if (originalCharge == null) {
+                ra.addFlashAttribute("msg",
+                        "Return requested. No successful online payment found to refund (COD/manual).");
+                return "redirect:/orders/" + orderId;
+            }
+
+            Payment refundRecord = paymentService.createRefundRecord(order, originalCharge, refundAmount, "Full order refund");
+
+            String refundId = null;
+            try {
+                if ("STRIPE".equalsIgnoreCase(originalCharge.getProvider())) {
+                    refundId = stripeService.refundStripePayment(originalCharge.getTransactionId(), refundAmount);
+                } else if ("PAYPAL".equalsIgnoreCase(originalCharge.getProvider())) {
+                    refundId = paypalService.refundPaypalPayment(originalCharge.getTransactionId(), refundAmount);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                paymentService.markRefundFailed(refundRecord, ex.getMessage());
+            }
+
+            if (refundId != null) {
+                paymentService.markRefundCompleted(refundRecord, refundId, order);
+                ra.addFlashAttribute("msg", "Return requested and refund started. You'll receive a confirmation email.");
+            } else {
+                ra.addFlashAttribute("msg", "Return requested. Refund could not be started (check logs).");
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            ra.addFlashAttribute("err", ex.getMessage());
+        }
+
+        return "redirect:/orders/" + orderId;
+    }
+
+
+
+
+
+
+
+
+    // -------------------------------------------------------
+    // validation helpers
+    // -------------------------------------------------------
+
+
+
+
+
+
 
     private static String nvl(String v, String fb) {
         return (v == null || v.isBlank()) ? fb : v;
@@ -261,4 +464,35 @@ public class OrderController extends BaseController {
                 .filter(s -> s != null && !s.isBlank())
                 .collect(java.util.stream.Collectors.joining(" "));
     }
+
+
+    private static final Set<String> RETURN_ELIGIBLE_STATUSES =
+            Set.of("PAID", "SHIPPED", "DELIVERED");
+
+    private void assertOrderBelongsToUser(Order order, User user) {
+        if (order == null) {
+            throw new IllegalArgumentException("Order not found");
+        }
+        if (!order.getUserId().equals(user.getId())) {
+            throw new IllegalStateException("You are not allowed to modify this order");
+        }
+    }
+
+    private void assertReturnEligibleStatus(Order order) {
+        if (!RETURN_ELIGIBLE_STATUSES.contains(order.getStatus())) {
+            throw new IllegalStateException("Order is not eligible for returns in status " + order.getStatus());
+        }
+    }
+
+    private void assertWithinReturnWindow(Order order, int days) {
+        if (order.getCreatedAt() == null) return; // be lenient if missing
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(days);
+        if (order.getCreatedAt().isBefore(cutoff)) {
+            throw new IllegalStateException("Return window has expired for this order");
+        }
+    }
+
+
+
+
 }

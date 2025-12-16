@@ -4,6 +4,7 @@ package com.example.foodapp.util;
 import com.example.foodapp.model.Coupon;
 import com.example.foodapp.model.OrderItem;
 import com.example.foodapp.model.Product;
+import jakarta.servlet.http.HttpSession;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
@@ -205,7 +206,7 @@ public class SessionCart {
         recalc();
     }
 
-    public void clear() {
+    public void clear(HttpSession session) {
         log("[CART] clear()");
         items.clear();
         setAppliedCoupon(null);

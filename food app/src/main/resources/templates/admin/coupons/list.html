@@ -358,9 +358,9 @@
         </div>
 
         <nav class="admin-nav-main">
-            <a th:href="@{/admin}"        >Dashboard</a>
-            <a th:href="@{/admin/orders}" >Orders</a>
-            <a th:href="@{/admin/menu}"   >Menu</a>
+            <a th:href="@{/admin}">Dashboard</a>
+            <a th:href="@{/admin/orders}">Orders</a>
+            <a th:href="@{/admin/menu}">Menu</a>
             <a th:href="@{/admin/categories}">Categories</a>
             <a th:href="@{/admin/coupons}" class="active">Coupons</a>
         </nav>
@@ -372,7 +372,7 @@
             </a>
             <div class="admin-user">
                 <i class="fa-solid fa-user-shield"></i>
-                <span>Admin</span>
+                <span th:text="${session.ADMIN_USER != null ? session.ADMIN_USER.username : 'Admin'}">Admin</span>
             </div>
         </div>
     </header>
@@ -441,7 +441,9 @@
                     <!-- Type -->
                     <td>
                         <span class="badge-type"
-                              th:text="${c.type}">PERCENT</span>
+                              th:text="${c.type.name() == 'PERCENT' ? 'Percent off' : 'Fixed amount'}">
+                            Percent off
+                        </span>
                     </td>
 
                     <!-- Value -->
@@ -462,12 +464,12 @@
                     </td>
 
                     <!-- Starts -->
-                    <td th:text="${c.startsOn != null ? c.startsOn : '—'}">
-                        2025-01-01
+                    <td th:text="${c.startsOn != null ? #temporals.format(c.startsOn,'MMM d, yyyy') : '—'}">
+                        Jan 1, 2025
                     </td>
 
                     <!-- Expires (No expiry if null) -->
-                    <td th:text="${c.expiresOn != null ? c.expiresOn : 'No expiry'}">
+                    <td th:text="${c.expiresOn != null ? #temporals.format(c.expiresOn,'MMM d, yyyy') : 'No expiry'}">
                         No expiry
                     </td>
 
@@ -494,7 +496,7 @@
                                 <button type="submit"
                                         class="icon-btn danger"
                                         title="Delete"
-                                        onclick="return confirm('Delete coupon ' + '[[${c.code}]]' + '?');">
+                                        th:onclick="|return confirm('Delete coupon ${c.code}?');|">
                                     <i class="fa-regular fa-trash-can"></i>
                                 </button>
                             </form>

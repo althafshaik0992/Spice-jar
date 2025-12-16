@@ -18,6 +18,9 @@ public class PaymentMethod {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private User user;
 
+
+
+
     // We store only NON-sensitive info (never full PAN or CVC!)
     private String brand;     // e.g. "Visa", "Mastercard"
     private String last4;     // e.g. "4242"
@@ -33,10 +36,17 @@ public class PaymentMethod {
     private String billingCountry;
     private String billingZip;
 
+
+
+    private String code;       // e.g. "STRIPE", "PAYPAL", "COD"
+    private String displayName;
+
     private boolean defaultMethod;
 
     private Instant createdAt = Instant.now();
 
-    // getters/setters
+
+
+
 }
 

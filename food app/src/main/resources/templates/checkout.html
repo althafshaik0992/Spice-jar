@@ -6,113 +6,530 @@
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Checkout • The Spice Jar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml"
           href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
+
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        :root { --green:#218838; --accent:#b7410e; --dark:#111; --bg:#f6fbf6; --card:#fff; }
-        * { box-sizing: border-box; }
-        body { font-family:'Segoe UI',Tahoma,Arial; margin:0; background:var(--bg); color:#222; }
+        :root {
+            --green:#218838;
+            --accent:#b7410e;
+            --dark:#111827;
+            --bg:#f5faf6;
+            --card:#ffffff;
+            --ring:rgba(15,23,42,.08);
+        }
+
+        * { box-sizing:border-box; }
+
+        body {
+            font-family:"Inter", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial;
+            margin:0;
+            background:radial-gradient(circle at top left, #f1fdf3 0, #f5faf6 40%, #f9fafb 100%);
+            color:#111827;
+        }
+
+        a { color:inherit; }
 
         /* Navbar */
         .navbar{
-            background:#fff; padding:6px 6%;
-            box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex; justify-content:space-between; align-items:center;
-            position:sticky; top:0; z-index:1000; height:60px;
+            background:rgba(255,255,255,0.96);
+            backdrop-filter:blur(8px);
+            padding:8px 6%;
+            box-shadow:0 2px 8px rgba(15,23,42,.06);
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            position:sticky;
+            top:0;
+            z-index:1000;
+            height:64px;
+            gap:14px;
         }
-        .nav-search{flex:1; max-width:520px; display:flex; align-items:center; gap:8px}
+
+        .brand-logo{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            text-decoration:none;
+            color:var(--green);
+            font-weight:800;
+            font-size:20px;
+            letter-spacing:.02em;
+        }
+
+        .brand-logo video{
+            width:36px;
+            height:36px;
+            border-radius:8px;
+            object-fit:cover;
+            box-shadow:0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .nav-search{
+            flex:1;
+            max-width:520px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+
         .nav-search input{
-            width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:999px;
-            background:#fff; font-size:14px; outline:none;
+            width:100%;
+            padding:9px 12px;
+            border:1px solid #d1d5db;
+            border-radius:999px;
+            background:#fff;
+            font-size:14px;
+            outline:none;
         }
+
+        .nav-search input:focus{
+            border-color:var(--green);
+            box-shadow:0 0 0 2px rgba(34,197,94,0.2);
+        }
+
         .nav-search button{
-            border:none; border-radius:999px; padding:9px 12px; background:var(--green); color:#fff; cursor:pointer;
+            border:none;
+            border-radius:999px;
+            padding:8px 11px;
+            background:var(--green);
+            color:#fff;
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            justify-content:center;
         }
+
         .nav-search button:hover{background:var(--accent);}
-        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
-        .brand-logo video{width:36px; height:auto; border-radius:4px}
-        .nav-links{display:flex; align-items:center; gap:18px}
-        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
-        .nav-links a:hover{color:var(--green)}
+
+        .nav-links{
+            display:flex;
+            align-items:center;
+            gap:18px;
+            flex-wrap:wrap;
+        }
+
+        .nav-links a{
+            text-decoration:none;
+            color:#374151;
+            font-weight:500;
+            font-size:14px;
+            position:relative;
+            padding:4px 0;
+        }
+
+        .nav-links a::after{
+            content:"";
+            position:absolute;
+            left:0;
+            bottom:-3px;
+            width:0;
+            height:2px;
+            background:var(--green);
+            border-radius:999px;
+            transition:width .18s ease;
+        }
+
+        .nav-links a:hover::after{
+            width:100%;
+        }
+
+        .cart-icon-container { position:relative; display:inline-flex; align-items:center; justify-content:center; }
+        .cart-count-badge {
+            position:absolute;
+            top:-6px;
+            right:-10px;
+            background-color:var(--accent);
+            color:#fff;
+            border-radius:999px;
+            padding:1px 7px;
+            font-size:11px;
+            font-weight:700;
+            min-width:18px;
+            height:18px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            line-height:1;
+            box-shadow:0 0 0 2px #fff;
+        }
+
+        /* Dropdown */
         .dropdown{position:relative}
-        .dropdown-toggle{background:none; border:none; cursor:pointer; font-size:15px; color:#333; display:flex; align-items:center; gap:6px}
-        .dropdown-menu{display:none; position:absolute; right:0; top:100%; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1); border-radius:6px; overflow:hidden; min-width:180px}
+        .dropdown-toggle{
+            background:none;
+            border:none;
+            cursor:pointer;
+            font-size:14px;
+            color:#111827;
+            display:flex;
+            align-items:center;
+            gap:6px;
+            padding:6px 10px;
+            border-radius:999px;
+            font-weight:700;
+            transition:background .15s ease, box-shadow .15s ease;
+        }
+        .dropdown-toggle:hover{
+            background:#f3f4f6;
+            box-shadow:0 0 0 1px rgba(148,163,184,0.3);
+        }
+        .dropdown-menu{
+            display:none;
+            position:absolute;
+            right:0;
+            top:calc(100% + 8px);
+            background:#fff;
+            box-shadow:0 10px 28px rgba(15,23,42,0.18);
+            border-radius:12px;
+            overflow:hidden;
+            min-width:200px;
+            border:1px solid #e5e7eb;
+        }
         .dropdown:hover .dropdown-menu{display:block}
-        .dropdown-menu a, .dropdown-menu span{display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap}
-        .dropdown-menu a:hover{background:#f4f4f4}
-        .cart-icon-container { position: relative; display: inline-block; }
-        .cart-count-badge { position: absolute; top: -8px; right: -8px; background-color: var(--accent); color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; }
+        .dropdown-menu a, .dropdown-menu span{
+            display:block;
+            padding:10px 14px;
+            text-decoration:none;
+            color:#111827;
+            white-space:nowrap;
+            font-size:14px;
+            font-weight:500;
+        }
+        .dropdown-menu a:hover{background:#f7faf7}
 
         /* Layout + cards */
-        .wrap{max-width:1200px; margin:22px auto; padding:0 6%}
-        h1{margin:0 0 18px; color:var(--green); font-size:28px}
-        .grid{display:grid; grid-template-columns:1fr 420px; gap:28px}
-        @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
-        .card{background:var(--card); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.06); padding:18px}
-        .card h2{font-size:18px; margin:0 0 12px; color:#333}
+        .wrap{
+            max-width:1200px;
+            margin:22px auto 36px;
+            padding:0 4%;
+        }
+
+        h1{
+            margin:4px 0 4px;
+            color:var(--dark);
+            font-size:26px;
+            letter-spacing:.01em;
+        }
+
+        .checkout-subtitle{
+            margin:0 0 18px;
+            color:#6b7280;
+            font-size:13px;
+        }
+
+        .grid{
+            display:grid;
+            grid-template-columns: minmax(0,1.2fr) minmax(320px, 0.8fr);
+            gap:24px;
+        }
+
+        @media (max-width:980px){
+            .grid{ grid-template-columns:1fr; }
+        }
+
+        .card{
+            background:var(--card);
+            border-radius:16px;
+            box-shadow:0 10px 30px var(--ring);
+            padding:18px 18px 20px;
+            border:1px solid rgba(209,213,219,0.85);
+        }
+
+        .card h2{
+            font-size:18px;
+            margin:0 0 8px;
+            color:#111827;
+        }
+
+        /* Step pill */
+        .step-pill{
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            font-size:11px;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:.12em;
+            padding:4px 10px;
+            border-radius:999px;
+            background:#ecfdf3;
+            color:#166534;
+            margin-bottom:4px;
+        }
 
         /* Form */
-        .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px}
-        .form-grid .full{grid-column:1 / -1}
-        label{display:block; font-size:13px; color:#444; margin:4px 0 6px}
-        input, select{width:100%; padding:11px 12px; border:1px solid #ddd; border-radius:8px; font-size:14px; transition:border-color .2s}
-        input:focus, select:focus { outline:none; border-color:var(--green) }
-        .muted{color:#777; font-size:13px}
-
-        /* Summary */
-        .summary h3{margin:0 0 12px; color:#333}
-        .row{display:flex; justify-content:space-between; margin:8px 0}
-        .row.total{font-size:18px; font-weight:800; padding-top:12px; border-top:1px dashed #ddd}
-
-        .btn-primary{
-            display:inline-flex; align-items:center; gap:10px; background:var(--green); color:#fff; border:none;
-            padding:14px 18px; border-radius:10px; font-weight:800; cursor:pointer; justify-content:center;
-            font-size:16px; transition:background-color .2s, transform .1s;
+        .form-grid{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:14px;
         }
-        .btn-primary:hover{background:var(--accent); transform:translateY(-1px)}
-
-        /* Coupon */
-        .coupon-box{border:1px dashed #e0e6df; border-radius:10px; padding:10px; margin-bottom:12px}
-        .coupon-row{display:flex; gap:8px; align-items:stretch}
-        .coupon-row input{flex:1}
-        .btn-ghost{background:#eef6f0;color:#1e7e34;border:1px solid #d7eadf;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}
-        .note{font-size:12px;color:#666;margin-top:6px}
-        #checkout-btn { width: 100%; }
-        #coupon-apply, #coupon-remove { padding: 10px 14px; font-size: 14px; width: auto; }
-
-        .links{margin-top:10px; text-align:center}
-        .links a{color:#218838; text-decoration:none}
+        .form-grid .full{grid-column:1 / -1}
+        label{
+            display:block;
+            font-size:12px;
+            color:#4b5563;
+            margin:3px 0 5px;
+            font-weight:600;
+        }
+        input, select{
+            width:100%;
+            padding:10px 11px;
+            border:1px solid #d1d5db;
+            border-radius:10px;
+            font-size:14px;
+            transition:border-color .2s, box-shadow .2s;
+            background:#fff;
+        }
+        input:focus, select:focus{
+            outline:none;
+            border-color:var(--green);
+            box-shadow:0 0 0 2px rgba(34,197,94,0.20);
+        }
+        .muted{
+            color:#6b7280;
+            font-size:12px;
+        }
 
         /* Address picker */
-        .addr-list{display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:10px}
+        .picker-head{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin:0 0 8px;
+        }
+        .picker-head a{
+            font-size:12px;
+            text-decoration:none;
+            color:var(--green);
+            font-weight:700;
+        }
+        .picker-head a:hover{text-decoration:underline}
+
+        .addr-list{
+            display:grid;
+            grid-template-columns:1fr;
+            gap:10px;
+            margin-bottom:10px;
+        }
         .addr-card{
-            display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:flex-start;
-            border:1px solid #e5e7eb; border-radius:10px; padding:10px; background:#fff;
+            display:grid;
+            grid-template-columns:auto 1fr;
+            gap:10px;
+            align-items:flex-start;
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            padding:10px 12px;
+            background:#fff;
         }
         .addr-radio{accent-color:var(--green); margin-top:3px}
-        .addr-meta{font-size:13px; color:#444; line-height:1.45}
-        .addr-name{font-weight:700; color:#111; margin-bottom:4px}
-        .addr-actions{display:flex; gap:8px; margin-top:4px}
-        .btn-sm{border:1px solid #d9e2d9; background:#f8fff8; color:#1f7a1f; padding:6px 10px; border-radius:8px; font-weight:700; cursor:pointer; font-size:12px}
-        .btn-sm.secondary{background:#fff; color:#333}
-        .picker-head{display:flex; justify-content:space-between; align-items:center; margin:0 0 8px}
-        .picker-head a{font-size:13px; text-decoration:none; color:var(--green); font-weight:700}
-        .sep{height:1px; background:#eee; margin:12px 0}
+        .addr-meta{
+            font-size:13px;
+            color:#4b5563;
+            line-height:1.45;
+        }
+        .addr-name{
+            font-weight:700;
+            color:#111827;
+            margin-bottom:4px;
+        }
+        .addr-actions{
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            margin-top:6px;
+        }
+        .btn-sm{
+            border:1px solid #d9e2d9;
+            background:#f8fff8;
+            color:#166534;
+            padding:6px 10px;
+            border-radius:999px;
+            font-weight:700;
+            cursor:pointer;
+            font-size:12px;
+        }
+        .btn-sm.secondary{
+            background:#fff;
+            color:#374151;
+        }
+        .btn-sm i{margin-right:4px}
+        .sep{height:1px; background:#e5e7eb; margin:12px 0}
+
+        /* Summary */
+        .summary{ position:sticky; top:88px; }
+
+        .summary h2{
+            margin-bottom:10px;
+        }
+
+        .row{
+            display:flex;
+            justify-content:space-between;
+            margin:6px 0;
+            font-size:14px;
+        }
+        .row.total{
+            font-size:16px;
+            font-weight:800;
+            padding-top:10px;
+            border-top:1px dashed #d1d5db;
+        }
+
+        .btn-primary{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            background:linear-gradient(90deg,#22c55e,#16a34a);
+            color:#fff;
+            border:none;
+            padding:12px 16px;
+            border-radius:999px;
+            font-weight:800;
+            cursor:pointer;
+            justify-content:center;
+            font-size:15px;
+            transition:transform .1s, box-shadow .15s;
+            width:100%;
+            box-shadow:0 10px 24px rgba(22,163,74,0.4);
+        }
+        .btn-primary:hover{
+            box-shadow:0 14px 30px rgba(22,163,74,0.5);
+            transform:translateY(-1px);
+        }
+        .btn-primary i{font-size:14px}
+
+        .links{
+            margin-top:10px;
+            text-align:center;
+            font-size:13px;
+        }
+        .links a{
+            color:var(--green);
+            text-decoration:none;
+        }
+        .links a:hover{text-decoration:underline}
+
+        /* Coupon */
+        .coupon-box{
+            border:1px dashed #e0e6df;
+            border-radius:12px;
+            padding:10px 10px 8px;
+            margin-bottom:12px;
+            background:#f9fafb;
+        }
+        .coupon-row{
+            display:flex;
+            gap:8px;
+            align-items:stretch;
+        }
+        .coupon-row input{
+            flex:1;
+            padding:10px 11px;
+            border-radius:10px;
+            border:1px solid #d1d5db;
+        }
+
+        .btn-ghost{
+            background:#eef6f0;
+            color:#166534;
+            border:1px solid #d7eadf;
+            border-radius:10px;
+            padding:10px 12px;
+            font-weight:700;
+            cursor:pointer;
+            font-size:13px;
+            white-space:nowrap;
+        }
+
+        .note{font-size:12px;color:#6b7280;margin-top:6px}
+
+        #checkout-btn { width:100%; }
+        #coupon-apply, #coupon-remove { width:auto; }
 
         /* Footer */
-        .site-footer{background:#222; color:#ccc; padding:40px 6%; margin-top:40px;}
-        .footer-container{display:flex; flex-wrap:wrap; justify-content:space-between; gap:30px; margin-bottom:30px}
+        .site-footer{
+            background:#111827;
+            color:#9ca3af;
+            padding:40px 6% 26px;
+            margin-top:40px;
+        }
+        .footer-container{
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:space-between;
+            gap:30px;
+            margin-bottom:30px;
+        }
         .footer-column{flex:1; min-width:220px}
-        .footer-column h3{color:#fff; margin-bottom:15px; font-weight:600; border-bottom:2px solid #218838; padding-bottom:8px; display:inline-block}
+        .footer-column h3{
+            color:#f9fafb;
+            margin-bottom:14px;
+            font-weight:600;
+            border-bottom:2px solid var(--green);
+            padding-bottom:6px;
+            display:inline-block;
+            font-size:15px;
+        }
         .footer-column p{line-height:1.6; font-size:14px}
         .footer-column ul{list-style:none; padding:0; margin:0}
-        .footer-column ul li a{text-decoration:none; color:#ccc; display:block; padding:5px 0; font-size:14px; transition:color .3s}
-        .footer-column ul li a:hover{color:#fff}
-        .social-links a{color:#ccc; text-decoration:none; font-size:20px; margin-right:15px; transition:color .3s}
-        .social-links a:hover{color:#218838}
-        .footer-bottom{text-align:center; padding-top:20px; border-top:1px solid #444; font-size:14px}
-        @media (max-width: 768px){ .footer-container{flex-direction:column; text-align:center} .footer-column h3{border-bottom:none; padding-bottom:0; margin-bottom:10px} .footer-column{margin-bottom:20px} }
+        .footer-column ul li a{
+            text-decoration:none;
+            color:#9ca3af;
+            display:block;
+            padding:5px 0;
+            font-size:14px;
+            transition:color .2s ease, transform .1s ease;
+        }
+        .footer-column ul li a:hover{
+            color:#e5e7eb;
+            transform:translateX(2px);
+        }
+        .social-links a{
+            color:#9ca3af;
+            text-decoration:none;
+            font-size:20px;
+            margin-right:16px;
+            transition:color .2s ease, transform .1s ease;
+        }
+        .social-links a:hover{
+            color:var(--green);
+            transform:translateY(-1px);
+        }
+        .footer-bottom{
+            text-align:center;
+            padding-top:18px;
+            border-top:1px solid #1f2937;
+            font-size:13px;
+            color:#6b7280;
+        }
+
+        @media (max-width:768px){
+            .navbar{
+                flex-wrap:wrap;
+                height:auto;
+            }
+            .nav-search{
+                order:3;
+                width:100%;
+                max-width:none;
+            }
+            .footer-container{
+                flex-direction:column;
+                text-align:left;
+            }
+            .footer-column{margin-bottom:12px}
+        }
     </style>
 </head>
 <body>
@@ -136,14 +553,14 @@
         <a th:href="@{/about}">About Us</a>
         <a class="nav-link" th:href="@{/cart/view}">
             <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
-                <i class="fas fa-shopping-cart" style="font-size:24px"></i>
+                <i class="fas fa-shopping-cart" style="font-size:20px"></i>
                 <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
             </div>
         </a>
         <a th:href="@{/contact}">Contact Us</a>
 
         <div class="dropdown">
-            <button class="dropdown-toggle">
+            <button class="dropdown-toggle" type="button">
                 <i class="fas fa-user"></i>
                 <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">Account</span>
             </button>
@@ -152,8 +569,8 @@
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
 
                 <span th:if="${session.USER != null}">
-          Welcome, <strong th:text="${session.USER.firstName}">User</strong>
-        </span>
+                    Welcome, <strong th:text="${session.USER.firstName}">User</strong>
+                </span>
                 <a th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
                 <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
                 <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
@@ -163,7 +580,13 @@
 </nav>
 
 <main class="wrap">
-    <h1>Secure checkout</h1>
+    <div>
+        <span class="step-pill">
+            <i class="fa-solid fa-lock"></i> Step 1 of 2 • Shipping
+        </span>
+        <h1>Secure checkout</h1>
+        <p class="checkout-subtitle">Enter your shipping details and apply coupons before continuing to payment.</p>
+    </div>
 
     <!-- SUBMITS to /order/place -->
     <form th:action="@{/order/place}" method="post" id="checkout-form">
@@ -174,8 +597,12 @@
             <!-- Left: Shipping & Contact -->
             <section class="card">
                 <div class="picker-head">
-                    <h2 style="margin:0">Shipping & Contact</h2>
-                    <a th:href="@{/addresses}"><i class="fa-regular fa-address-book"></i> Manage addresses</a>
+                    <div>
+                        <h2 style="margin:0">Shipping &amp; contact</h2>
+                    </div>
+                    <a th:href="@{/addresses}">
+                        <i class="fa-regular fa-address-book"></i> Manage addresses
+                    </a>
                 </div>
 
                 <div th:if="${addresses != null and !#lists.isEmpty(addresses)}">
@@ -220,39 +647,39 @@
 
                 <div class="form-grid">
                     <div class="full">
-                        <label>Full name</label>
-                        <label for="f_fullname"></label><input id="f_fullname" name="customerName" placeholder="e.g., Priya Sharma" required>
+                        <label for="f_fullname">Full name</label>
+                        <input id="f_fullname" name="customerName" placeholder="e.g., Priya Sharma" required>
                     </div>
                     <div>
-                        <label>Email</label>
-                        <label for="f_email"></label><input id="f_email" name="email" type="email" required>
+                        <label for="f_email">Email</label>
+                        <input id="f_email" name="email" type="email" required>
                     </div>
                     <div>
-                        <label>Phone</label>
-                        <label for="f_phone"></label><input id="f_phone" name="phone" type="tel" required>
+                        <label for="f_phone">Phone</label>
+                        <input id="f_phone" name="phone" type="tel" required>
                     </div>
                     <div class="full">
-                        <label>Street address line 1</label>
-                        <label for="f_line1"></label><input id="f_line1" name="street" placeholder="123 Main St, Apt 4B" required>
+                        <label for="f_line1">Street address line 1</label>
+                        <input id="f_line1" name="street" placeholder="123 Main St, Apt 4B" required>
                     </div>
                     <div class="full">
-                        <label>Street address line 2</label>
-                        <label for="f_line2"></label><input id="f_line2" name="line2" placeholder="e.g., Suite 200">
+                        <label for="f_line2">Street address line 2</label>
+                        <input id="f_line2" name="line2" placeholder="e.g., Suite 200">
                     </div>
                     <div>
-                        <label>City</label>
-                        <label for="f_city"></label><input id="f_city" name="city" required>
+                        <label for="f_city">City</label>
+                        <input id="f_city" name="city" required>
                     </div>
                     <div>
-                        <label>State</label>
-                        <label for="f_state"></label><input id="f_state" name="state" required>
+                        <label for="f_state">State</label>
+                        <input id="f_state" name="state" required>
                     </div>
                     <div>
-                        <label>ZIP</label>
-                        <label for="f_zip"></label><input id="f_zip" name="zip" required>
+                        <label for="f_zip">ZIP</label>
+                        <input id="f_zip" name="zip" required>
                     </div>
                     <div>
-                        <label>Country</label>
+                        <label for="f_country">Country</label>
                         <select id="f_country" name="country" required>
                             <option value="" disabled selected>Select</option>
                             <option>United States</option>
@@ -264,8 +691,9 @@
                     </div>
                 </div>
 
-                <p class="muted" style="margin-top:10px">
-                    <i class="fa-solid fa-lock"></i> All payments are processed on the next page via a secure connection.
+                <p class="muted" style="margin-top:12px">
+                    <i class="fa-solid fa-lock"></i>
+                    Your details are encrypted and your payment is processed securely on the next step.
                 </p>
             </section>
 
@@ -273,8 +701,10 @@
             <aside class="card summary">
                 <h2>Order summary</h2>
 
-                <!-- If the cart DOES contain a gift card: show info and block coupons -->
-                <div th:if="${cartHasGiftCard}" class="coupon-box" style="background:#fff8e1;border-color:#facc15;margin-bottom:16px">
+                <!-- Gift card-only message -->
+                <div th:if="${cartHasGiftCard}"
+                     class="coupon-box"
+                     style="background:#fff8e1;border-color:#facc15;margin-bottom:16px">
                     <strong><i class="fa-solid fa-gift"></i> Gift card order</strong><br/>
                     Gift card purchases are <strong>not eligible</strong> for discount codes or coupons.
                 </div>
@@ -285,27 +715,26 @@
                     <div class="coupon-box">
                         <div class="coupon-row">
                             <input id="coupon-input" type="text" placeholder="Discount code"
-                                   th:value="${cart.appliedCouponCode}"
-                                   style="flex:1;padding:11px;border:1px solid #ddd;border-radius:8px">
-                            <button id="coupon-apply" type="button"
-                                    style="border:none;border-radius:8px;background:#218838;color:#fff;padding:10px 14px;font-weight:800;cursor:pointer">
+                                   th:value="${cart.appliedCouponCode}">
+                            <button id="coupon-apply" type="button" class="btn-ghost"
+                                    style="background:#218838;color:#fff;border-color:#166534;">
                                 <i class="fa-solid fa-badge-percent"></i>&nbsp;Apply
                             </button>
-                            <button id="coupon-remove" type="button"
-                                    th:style="${cart.appliedCouponCode}!=null? 'display:inline-block' : 'display:none'"
-                                    style="border:1px solid #d7eadf;background:#eef6f0;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer">
+                            <button id="coupon-remove" type="button" class="btn-ghost"
+                                    th:style="${cart.appliedCouponCode}!=null? 'display:inline-block' : 'display:none'">
                                 Remove
                             </button>
                         </div>
                         <div id="coupon-msg" class="muted"
-                             th:text="${cart.appliedCouponCode!=null ? 'Code ' + cart.appliedCouponCode + ' applied' : ''}"></div>
+                             th:text="${cart.appliedCouponCode!=null ? 'Code ' + cart.appliedCouponCode + ' applied' : ''}">
+                        </div>
                     </div>
 
                     <!-- Available coupons list (from admin) -->
                     <div th:if="${availableCoupons != null and !#lists.isEmpty(availableCoupons)}"
                          class="coupon-box" style="margin-top:10px">
                         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                            <h3 style="margin:0;font-size:15px;color:#333">Available coupons</h3>
+                            <h3 style="margin:0;font-size:15px;color:#111827">Available coupons</h3>
                             <span class="muted" th:text="${availableCoupons.size()} + ' available'">0 available</span>
                         </div>
 
@@ -314,19 +743,23 @@
                                  style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px dashed #e0e6df;border-radius:10px;padding:10px">
                                 <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
                                     <div>
-                      <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#eef6f0;border:1px solid #d7eadf;color:#1e7e34;font-weight:800;letter-spacing:.3px"
-                            th:text="${c.code}">SAVE10</span>
+                                        <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#eef6f0;border:1px solid #d7eadf;color:#166534;font-weight:800;letter-spacing:.3px"
+                                              th:text="${c.code}">SAVE10</span>
                                         <span class="muted" style="margin-left:6px"
                                               th:text="${c.type.name()=='PERCENT' ? (c.value + '% off') : ('$' + #numbers.formatDecimal(c.value,1,'COMMA',2,'POINT') + ' off')}">
-                        10% off
-                      </span>
+                                            10% off
+                                        </span>
                                     </div>
                                     <div class="muted" style="font-size:12px;line-height:1.3">
-                      <span th:if="${c.minSubtotal != null and c.minSubtotal > 0}"
-                            th:text="${'Min subtotal $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">Min subtotal $0.00</span>
+                                        <span th:if="${c.minSubtotal != null and c.minSubtotal > 0}"
+                                              th:text="${'Min subtotal $' + #numbers.formatDecimal(c.minSubtotal,1,'COMMA',2,'POINT')}">
+                                            Min subtotal $0.00
+                                        </span>
                                         <span th:if="${c.minSubtotal == null or c.minSubtotal == 0}">No minimum</span>
                                         <span> • </span>
-                                        <span th:text="${c.expiresOn != null ? 'Expires ' + c.expiresOn : 'No expiry'}">No expiry</span>
+                                        <span th:text="${c.expiresOn != null ? 'Expires ' + c.expiresOn : 'No expiry'}">
+                                            No expiry
+                                        </span>
                                     </div>
                                 </div>
 
@@ -340,16 +773,34 @@
                     </div>
                 </div>
 
-                <div class="row"><span>Items</span><span th:text="${cart.items.size()}">0</span></div>
-                <div class="row"><span>Subtotal</span><span>$ <span data-total="subtotal" th:text="${#numbers.formatDecimal(cart.subtotal,1,'COMMA',2,'POINT')}">0.00</span></span></div>
-                <div class="row"><span>Discount</span><span>− $ <span data-total="discount" th:text="${#numbers.formatDecimal(cart.discount,1,'COMMA',2,'POINT')}">0.00</span></span></div>
-                <div class="row"><span>Tax (8%)</span><span>$ <span data-total="tax" th:text="${#numbers.formatDecimal(cart.tax,1,'COMMA',2,'POINT')}">0.00</span></span></div>
-                <div class="row total"><span>Total</span><span>$ <span data-total="grand" th:text="${#numbers.formatDecimal(cart.grandTotal,1,'COMMA',2,'POINT')}">0.00</span></span></div>
+                <div class="row">
+                    <span>Items</span>
+                    <span th:text="${cart.items.size()}">0</span>
+                </div>
+                <div class="row">
+                    <span>Subtotal</span>
+                    <span>$ <span data-total="subtotal" th:text="${#numbers.formatDecimal(cart.subtotal,1,'COMMA',2,'POINT')}">0.00</span></span>
+                </div>
+                <div class="row">
+                    <span>Discount</span>
+                    <span>− $ <span data-total="discount" th:text="${#numbers.formatDecimal(cart.discount,1,'COMMA',2,'POINT')}">0.00</span></span>
+                </div>
+                <div class="row">
+                    <span>Tax (8%)</span>
+                    <span>$ <span data-total="tax" th:text="${#numbers.formatDecimal(cart.tax,1,'COMMA',2,'POINT')}">0.00</span></span>
+                </div>
+                <div class="row total">
+                    <span>Total</span>
+                    <span>$ <span data-total="grand" th:text="${#numbers.formatDecimal(cart.grandTotal,1,'COMMA',2,'POINT')}">0.00</span></span>
+                </div>
 
                 <button type="submit" class="btn-primary" style="margin-top:20px" id="checkout-btn">
-                    <i class="fa-solid fa-arrow-right"></i> Continue to payment
+                    <i class="fa-solid fa-arrow-right"></i>
+                    Continue to payment
                 </button>
-                <div class="links"><a th:href="@{/cart/view}">Back to cart</a></div>
+                <div class="links">
+                    <a th:href="@{/cart/view}">Back to cart</a>
+                </div>
             </aside>
         </div>
     </form>
@@ -398,7 +849,10 @@
     const clearBtn = document.getElementById('clearSelected');
     const addressIdEl = document.getElementById('addressId');
 
-    function selectedRadio() { for (const r of radios) if (r.checked) return r; return null; }
+    function selectedRadio() {
+        for (const r of radios) if (r.checked) return r;
+        return null;
+    }
 
     useBtn?.addEventListener('click', () => {
         const r = selectedRadio();
@@ -477,9 +931,12 @@
     btnA?.addEventListener('click', async ()=>{
         const code = (cInput?.value || '').trim();
         if (!code){ msg('Please enter a code.'); return; }
-        const prev = btnA.innerHTML; btnA.disabled = true; btnA.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        const prev = btnA.innerHTML;
+        btnA.disabled = true;
+        btnA.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         const r = await postFlexible('/api/cart/coupon/apply', { code });
-        btnA.disabled = false; btnA.innerHTML = prev;
+        btnA.disabled = false;
+        btnA.innerHTML = prev;
         const out = r.body || {};
         msg(out.message || (r.ok ? 'Done' : 'Server error'));
         if (out.status === 'success' && btnR) btnR.style.display = 'inline-block';
@@ -487,9 +944,12 @@
     });
 
     btnR?.addEventListener('click', async ()=>{
-        const prev = btnR.innerHTML; btnR.disabled = true; btnR.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        const prev = btnR.innerHTML;
+        btnR.disabled = true;
+        btnR.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         const r = await postFlexible('/api/cart/coupon/remove', {});
-        btnR.disabled = false; btnR.innerHTML = prev;
+        btnR.disabled = false;
+        btnR.innerHTML = prev;
         const out = r.body || {};
         msg(out.message || (r.ok ? 'Removed' : 'Server error'));
         if (btnR) btnR.style.display = 'none';

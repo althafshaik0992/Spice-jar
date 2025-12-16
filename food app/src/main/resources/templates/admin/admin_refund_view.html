@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin • Refunds</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#f6f7fb;margin:0;color:#111827}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px 18px;box-shadow:0 10px 24px rgba(0,0,0,.06);margin-bottom:16px}
+    h1{margin:0 0 6px;font-size:22px}
+    .sub{color:#6b7280;margin:0 0 12px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px 8px;border-bottom:1px solid #eef2f7;text-align:left;font-size:13px}
+    th{color:#6b7280;font-weight:700;background:#fafafa}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-weight:700;font-size:12px}
+    .ok{background:#ecfdf5;color:#065f46;border:1px solid #bbf7d0}
+    .bad{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .muted{color:#6b7280}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="card">
+    <h1>Refunds • Order <span th:text="'#' + ${order.id}">#0</span></h1>
+    <p class="sub">
+      Confirmation: <strong th:text="${order.confirmationNumber}">TSJ-...</strong> •
+      Status: <strong th:text="${order.status}">PAID</strong> •
+      Total: <strong th:text="${order.grandTotal}">0.00</strong>
+    </p>
+  </div>
+
+  <!-- ORIGINAL PAYMENT -->
+  <div class="card">
+    <h2 style="margin:0 0 10px;font-size:16px;">Original Payment</h2>
+
+    <div th:if="${original == null}" class="muted">
+      No payment record found for this order.
+    </div>
+
+    <table th:if="${original != null}">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Status</th>
+        <th>Provider</th>
+        <th>Amount</th>
+        <th>Currency</th>
+        <th>Provider Payment ID</th>
+        <th>Transaction ID</th>
+        <th>Created</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td th:text="${original.id}">1</td>
+        <td>
+          <span class="pill"
+                th:classappend="${#strings.equalsIgnoreCase(original.status,'SUCCEEDED')} ? ' ok' : ' bad'"
+                th:text="${original.status}">
+            SUCCEEDED
+          </span>
+        </td>
+        <td th:text="${original.provider}">STRIPE</td>
+        <td th:text="${original.amount}">16.50</td>
+        <td th:text="${original.currency}">USD</td>
+        <td class="mono" th:text="${original.providerPaymentId}">sess/pi</td>
+        <td class="mono" th:text="${original.transactionId}">pi_...</td>
+        <td th:text="${original.createdAt}">2025-12-15</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- REFUND ROWS -->
+  <div class="card">
+    <h2 style="margin:0 0 10px;font-size:16px;">Refund Rows</h2>
+
+    <div th:if="${refunds == null || #lists.isEmpty(refunds)}" class="muted">
+      No refund rows found for this order.
+    </div>
+
+    <table th:if="${refunds != null && !#lists.isEmpty(refunds)}">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Status</th>
+        <th>Provider</th>
+        <th>Amount</th>
+        <th>Currency</th>
+        <th>Gateway Refund ID</th>
+        <th>Original Txn ID (used)</th>
+        <th>Reason</th>
+        <th>Refunded At</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="r : ${refunds}">
+        <td th:text="${r.id}">10</td>
+        <td>
+          <span class="pill"
+                th:classappend="${#strings.equalsIgnoreCase(r.status,'REFUNDED')} ? ' ok' : ' bad'"
+                th:text="${r.status}">
+            REFUNDED
+          </span>
+        </td>
+        <td th:text="${r.provider}">STRIPE</td>
+        <td th:text="${r.amount}">15.28</td>
+        <td th:text="${r.currency}">USD</td>
+
+        <!-- ✅ This is the main thing you asked for -->
+        <td class="mono" th:text="${r.refundExternalId}">re_...</td>
+
+        <td class="mono" th:text="${r.transactionId}">pi_...</td>
+        <td th:text="${r.refundReason}">Full order refund</td>
+        <td th:text="${r.refundedAt}">2025-12-15</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

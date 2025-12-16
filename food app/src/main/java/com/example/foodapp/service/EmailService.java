@@ -5,6 +5,7 @@ package com.example.foodapp.service;
 import com.example.foodapp.model.GiftCard;
 import com.example.foodapp.model.Order;
 import com.example.foodapp.model.OrderItem;
+import com.example.foodapp.model.Payment;
 import com.example.foodapp.repository.OrderRepository;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -169,6 +170,23 @@ public class EmailService {
         sendTemplate(order.getEmail(), subject, "email/order_survey", model);
     }
 
+    public void sendRefundConfirmation(Order order, Payment refund) {
+        if (order == null || order.getEmail() == null || order.getEmail().isBlank()) return;
+        if (refund == null) return;
+
+        String subject = "Refund confirmed • " + order.getConfirmationNumber();
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("subject", subject);
+        model.put("customerName", order.getCustomerName());
+        model.put("order", order);
+        model.put("refund", refund);
+        model.put("brandLogoUrl", baseUrl + "images/logo-circle.png");
+        model.put("siteUrl", baseUrl);
+        model.put("year", java.time.Year.now().getValue());
+
+        sendTemplate(order.getEmail(), subject, "email/refund_confirmation", model);
+    }
 
 
 

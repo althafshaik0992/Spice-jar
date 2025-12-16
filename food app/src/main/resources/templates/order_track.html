@@ -4,82 +4,345 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Track Order • The Spice Jar</title>
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml"
           href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <!-- Icons -->
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
     <style>
-        :root{ --green:#22c55e; --accent:#b7410e; --bg:#f6fbf6; --ink:#111; }
-        *{ box-sizing:border-box }
-        body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial; background:var(--bg); color:var(--ink) }
+        :root{
+            --green:#218838;
+            --accent:#b7410e;
+            --bg:#f6fbf6;
+            --ink:#111;
+        }
+        *{ box-sizing:border-box; }
+
+        body{
+            margin:0;
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:radial-gradient(circle at top left,#e0f5e5 0,#f6fbf6 40%,#f0f8f0 100%);
+            color:var(--ink);
+        }
 
         /* Navbar (same look as other pages) */
         .navbar{
-            background:#fff; padding:6px 6%;
+            background:#fff;
+            padding:6px 6%;
             box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex; justify-content:space-between; align-items:center;
-            position:sticky; top:0; z-index:1000; height:60px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            position:sticky;
+            top:0;
+            z-index:1000;
+            height:60px;
         }
-        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
-        .brand-logo video{width:36px; height:auto; border-radius:4px}
-        .nav-links{display:flex; align-items:center; gap:18px}
-        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
-        .nav-links a:hover{color:var(--green)}
-        .dropdown{position:relative}
-        .dropdown-toggle{background:none;border:none;cursor:pointer;font-size:15px;color:#333;display:flex;align-items:center;gap:6px}
-        .dropdown-menu{display:none;position:absolute;right:0;top:100%;background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.1);border-radius:6px;overflow:hidden;min-width:180px}
-        .dropdown:hover .dropdown-menu{display:block}
-        .dropdown-menu a,.dropdown-menu span{display:block;padding:10px 16px;text-decoration:none;color:#333;white-space:nowrap}
-        .dropdown-menu a:hover{background:#f4f4f4}
+        .brand-logo{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            text-decoration:none;
+            color:var(--green);
+            font-weight:700;
+            font-size:20px;
+        }
+        .brand-logo video{
+            width:36px;
+            height:auto;
+            border-radius:4px;
+        }
+        .nav-links{
+            display:flex;
+            align-items:center;
+            gap:18px;
+        }
+        .nav-links a{
+            text-decoration:none;
+            color:#333;
+            font-weight:500;
+            font-size:15px;
+        }
+        .nav-links a:hover{ color:var(--green); }
+
+        .dropdown{ position:relative; }
+        .dropdown-toggle{
+            background:none;
+            border:none;
+            cursor:pointer;
+            font-size:15px;
+            color:#333;
+            display:flex;
+            align-items:center;
+            gap:6px;
+        }
+        .dropdown-menu{
+            display:none;
+            position:absolute;
+            right:0;
+            top:100%;
+            background:#fff;
+            box-shadow:0 4px 10px rgba(0,0,0,.1);
+            border-radius:6px;
+            overflow:hidden;
+            min-width:180px;
+        }
+        .dropdown:hover .dropdown-menu{ display:block; }
+        .dropdown-menu a,
+        .dropdown-menu span{
+            display:block;
+            padding:10px 16px;
+            text-decoration:none;
+            color:#333;
+            white-space:nowrap;
+        }
+        .dropdown-menu a:hover{ background:#f4f4f4; }
+
+        .cart-icon-container{
+            position:relative;
+            display:inline-block;
+        }
+        .cart-count-badge{
+            position:absolute;
+            top:-8px;
+            right:-8px;
+            background-color:var(--accent);
+            color:#fff;
+            border-radius:50%;
+            padding:2px 6px;
+            font-size:12px;
+            font-weight:bold;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            min-width:20px;
+            height:20px;
+        }
 
         /* Page layout */
-        .wrap{max-width:920px; margin:26px auto; padding:0 6%}
-        h1{display:flex; align-items:center; gap:10px; font-size:26px; margin:0 0 14px}
+        .wrap{
+            max-width:920px;
+            margin:26px auto 40px;
+            padding:0 6%;
+        }
+        h1{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            font-size:26px;
+            margin:0 0 6px;
+        }
+        .subtitle{
+            margin:0 0 16px;
+            font-size:13px;
+            color:#6b7280;
+        }
 
-        .card{background:#fff; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.08); padding:22px}
-        .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px}
-        @media (max-width:800px){ .grid{grid-template-columns:1fr} }
+        .card{
+            background:#fff;
+            border-radius:16px;
+            box-shadow:0 10px 30px rgba(0,0,0,.08);
+            padding:22px;
+        }
 
-        .info{background:#fafafa; border:1px solid #eee; border-radius:12px; padding:14px}
-        .label{font-size:12px; letter-spacing:.04em; color:#64748b; font-weight:800}
-        .val{font-weight:800; margin-top:6px}
+        .grid{
+            display:grid;
+            grid-template-columns:repeat(2,minmax(0,1fr));
+            gap:14px;
+        }
+        @media (max-width:800px){
+            .grid{ grid-template-columns:1fr; }
+        }
+
+        .info{
+            background:#fafafa;
+            border:1px solid #eee;
+            border-radius:12px;
+            padding:14px;
+        }
+        .label{
+            font-size:12px;
+            letter-spacing:.04em;
+            color:#64748b;
+            font-weight:800;
+        }
+        .val{
+            font-weight:800;
+            margin-top:6px;
+            color:#111;
+        }
+
+        /* Status pill (reuse semantics from orders page) */
+        .pill{
+            padding:6px 10px;
+            border-radius:999px;
+            font-size:12px;
+            font-weight:700;
+            display:inline-block;
+        }
+        .pill.NEW{ background:#f0f0f0; color:#4a4a4a; }
+        .pill.PAID{ background:#e6f7e9; color:#137a2a; }
+        .pill.SHIPPED{ background:#e0f2fe; color:#0c5678; }
+        .pill.DELIVERED{ background:#dff0d8; color:#4f8a10; }
+        .pill.PENDING_PAYMENT{ background:#fff7e6; color:#92400e; }
 
         /* Timeline */
-        .timeline{position:relative; margin-top:18px; padding-left:24px}
+        .timeline{
+            position:relative;
+            margin-top:20px;
+            padding-left:26px;
+        }
         .timeline::before{
-            content:""; position:absolute; left:8px; top:0; bottom:0; width:2px; background:#e5e7eb;
+            content:"";
+            position:absolute;
+            left:10px;
+            top:0;
+            bottom:0;
+            width:2px;
+            background:#e5e7eb;
         }
-        .event{position:relative; margin-bottom:18px; padding-left:14px}
-        .event:last-child{margin-bottom:6px}
+        .event{
+            position:relative;
+            margin-bottom:18px;
+            padding-left:14px;
+        }
+        .event:last-child{ margin-bottom:4px; }
+
         .dot{
-            position:absolute; left:-1px; top:3px; width:18px; height:18px; border-radius:50%;
-            background:#fff; border:2px solid #e5e7eb; box-shadow:0 0 0 2px #fff inset;
+            position:absolute;
+            left:-1px;
+            top:3px;
+            width:18px;
+            height:18px;
+            border-radius:50%;
+            background:#fff;
+            border:2px solid #e5e7eb;
+            box-shadow:0 0 0 2px #fff inset;
         }
-        .event.done .dot{ background:var(--green); border-color:var(--green) }
-        .event.now .dot{ background:#f59e0b; border-color:#f59e0b }
-        .event h3{ margin:0 0 4px; font-size:16px }
-        .meta{ color:#64748b; font-size:13px }
-        .note{ margin-top:4px; font-size:14px }
+        .event.done .dot{
+            background:var(--green);
+            border-color:var(--green);
+        }
+        .event.now .dot{
+            background:#f59e0b;
+            border-color:#f59e0b;
+        }
 
-        .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px}
+        .event h3{
+            margin:0 0 4px;
+            font-size:15px;
+        }
+        .meta{
+            color:#64748b;
+            font-size:13px;
+        }
+        .note{
+            margin-top:4px;
+            font-size:14px;
+        }
+
+        /* Actions */
+        .actions{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            margin-top:20px;
+        }
         .btn{
-            display:inline-flex; align-items:center; gap:8px; border:none; border-radius:10px;
-            padding:10px 14px; font-weight:800; cursor:pointer; text-decoration:none
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            border:none;
+            border-radius:999px;
+            padding:10px 14px;
+            font-weight:700;
+            cursor:pointer;
+            text-decoration:none;
+            font-size:14px;
+            transition:background-color .15s ease, transform .05s ease;
         }
-        .btn.primary{ background:var(--green); color:#fff }
-        .btn.warn{ background:#ef4444; color:#fff }
-        .btn.neutral{ background:#111; color:#fff }
-        .btn:hover{ opacity:.95 }
+        .btn:hover{
+            opacity:.95;
+            transform:translateY(-1px);
+        }
+        .btn.primary{ background:var(--green); color:#fff; }
+        .btn.warn{ background:#ef4444; color:#fff; }
+        .btn.neutral{ background:#111; color:#fff; }
 
-        /* Footer (simple) */
-        .site-footer{ background:#222; color:#ccc; padding:24px 6%; margin-top:40px; text-align:center }
+        /* Footer (match other pages) */
+        .site-footer{
+            background:#222;
+            color:#ccc;
+            padding:40px 6%;
+            margin-top:40px;
+        }
+        .footer-container{
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:space-between;
+            gap:30px;
+            margin-bottom:30px;
+        }
+        .footer-column{
+            flex:1;
+            min-width:220px;
+        }
+        .footer-column h3{
+            color:#fff;
+            margin-bottom:15px;
+            font-weight:600;
+            border-bottom:2px solid:var(--green);
+            border-bottom:2px solid var(--green);
+            padding-bottom:8px;
+            display:inline-block;
+        }
+        .footer-column p{
+            line-height:1.6;
+            font-size:14px;
+        }
+        .footer-column ul{
+            list-style:none;
+            padding:0;
+            margin:0;
+        }
+        .footer-column ul li a{
+            text-decoration:none;
+            color:#ccc;
+            display:block;
+            padding:5px 0;
+            font-size:14px;
+            transition:color .3s;
+        }
+        .footer-column ul li a:hover{ color:#fff; }
+        .social-links a{
+            color:#ccc;
+            text-decoration:none;
+            font-size:20px;
+            margin-right:15px;
+            transition:color .3s;
+        }
+        .social-links a:hover{ color:var(--green); }
+        .footer-bottom{
+            text-align:center;
+            padding-top:20px;
+            border-top:1px solid #444;
+            font-size:14px;
+        }
+        @media(max-width:768px){
+            .footer-container{
+                flex-direction:column;
+                text-align:center;
+            }
+            .footer-column{ margin-bottom:20px; }
+        }
     </style>
 </head>
 <body>
 
-<!-- Navbar -->
 <!-- Navbar -->
 <nav class="navbar">
     <a href="/" class="brand-logo">
@@ -98,11 +361,9 @@
         </a>
         <a th:href="@{/contact}">Contact Us</a>
 
-
-
         <!-- Account -->
         <div class="dropdown">
-            <button class="dropdown-toggle">
+            <button class="dropdown-toggle" type="button">
                 <i class="fas fa-user"></i>
                 <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">Account</span>
             </button>
@@ -111,8 +372,8 @@
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
 
                 <span th:if="${session.USER != null}">
-          Welcome, <strong th:text="${session.USER.firstName}">User</strong>
-        </span>
+                    Welcome, <strong th:text="${session.USER.firstName}">User</strong>
+                </span>
                 <a th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
                 <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
                 <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
@@ -121,15 +382,20 @@
     </div>
 </nav>
 
-
 <main class="wrap">
     <h1><i class="fa-solid fa-truck"></i> Track Order</h1>
+    <p class="subtitle">
+        Live updates on where your Spice Jar order is right now.
+    </p>
 
     <section class="card">
+        <!-- Summary header -->
         <div class="grid">
             <div class="info">
                 <div class="label">ORDER ID</div>
-                <div class="val">#<span th:text="${order.id}">123</span></div>
+                <div class="val">
+                    #<span th:text="${order.id}">123</span>
+                </div>
             </div>
             <div class="info">
                 <div class="label">CONFIRMATION #</div>
@@ -137,11 +403,20 @@
             </div>
             <div class="info">
                 <div class="label">STATUS</div>
-                <div class="val" th:text="${order.status}">SHIPPED</div>
+                <div class="val">
+                    <span class="pill"
+                          th:classappend="${order.status}"
+                          th:text="${order.status}">
+                        SHIPPED
+                    </span>
+                </div>
             </div>
             <div class="info">
                 <div class="label">PLACED ON</div>
-                <div class="val" th:text="${#temporals.format(order.createdAt, 'MMM d, yyyy • h:mm a')}">Sep 1, 2025</div>
+                <div class="val"
+                     th:text="${#temporals.format(order.createdAt, 'MMM d, yyyy • h:mm a')}">
+                    Sep 1, 2025 • 9:32 AM
+                </div>
             </div>
         </div>
 
@@ -149,49 +424,59 @@
         <div class="timeline">
             <div class="event"
                  th:each="ev, iStat : ${events}"
-                 th:classappend="${iStat.index} < ${events.size()} - 1 ? 'done' : 'now'">
+                 th:classappend="${iStat.last} ? ' now' : ' done'">
                 <span class="dot"></span>
                 <h3 th:text="${ev.title}">Shipped</h3>
-                <div class="meta" th:text="${#temporals.format(ev.time, 'MMM d, yyyy • h:mm a')}">Sep 2, 2025 • 10:05 AM</div>
+                <div class="meta"
+                     th:text="${ev.time != null ? #temporals.format(ev.time, 'MMM d, yyyy • h:mm a') : ''}">
+                    Sep 2, 2025 • 10:05 AM
+                </div>
                 <div class="note" th:text="${ev.note}">Carrier picked up the package.</div>
             </div>
 
-            <!-- Empty state if no events -->
-            <div th:if="${#lists.isEmpty(events)}" style="color:#64748b; margin-top:8px">
-                Tracking will appear once the package is scanned by the carrier.
+            <!-- Empty state -->
+            <div th:if="${#lists.isEmpty(events)}"
+                 style="color:#64748b; margin-top:8px">
+                Tracking updates will appear here after the carrier scans your package.
             </div>
         </div>
 
         <!-- Actions -->
         <div class="actions">
-            <!-- Track with carrier (replace href if you have real tracking URL) -->
-            <a class="btn primary" th:href="@{'/orders/' + ${order.id} + '/track'}">
-                <i class="fa-solid fa-location-crosshairs"></i> Refresh Tracking
+            <!-- Refresh (same URL; just reloads page) -->
+            <a class="btn primary"
+               th:href="@{/orders/{id}/track(id=${order.id})}">
+                <i class="fa-solid fa-location-crosshairs"></i>
+                Refresh Tracking
             </a>
 
-            <!-- Cancel (allowed before shipped/delivered) -->
+            <!-- Cancel: only before shipped/delivered -->
             <form th:if="${!#lists.contains({'SHIPPED','DELIVERED'}, order.status)}"
-                  th:action="@{/orders/{id}/cancel(id=${order.id})}" method="post">
+                  th:action="@{/orders/{id}/cancel(id=${order.id})}"
+                  method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <button class="btn warn" type="submit">
-                    <i class="fa-solid fa-ban"></i> Cancel Order
+                    <i class="fa-solid fa-ban"></i>
+                    Cancel Order
                 </button>
             </form>
 
-            <!-- Return (allowed when shipped/paid/delivered; 30-day window optional) -->
+            <!-- Return: shipped/paid/delivered and within 30 days -->
             <form
                     th:if="${#lists.contains({'DELIVERED','SHIPPED','PAID'}, order.status)
-                and order.createdAt != null
-                and #temporals.createNow().minusDays(30).isBefore(order.createdAt)}"
-                    th:action="@{/orders/{id}/return(id=${order.id})}" method="post">
+                       and order.createdAt != null
+                       and #temporals.createNow().minusDays(30).isBefore(order.createdAt)}"
+                    th:action="@{/orders/{id}/return(id=${order.id})}"
+                    method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <button class="btn neutral" type="submit">
-                    <i class="fa-solid fa-rotate-left"></i> Return Order
+                    <i class="fa-solid fa-rotate-left"></i>
+                    Return Order
                 </button>
             </form>
         </div>
 
-        <!-- Friendly hint when return not allowed yet -->
+        <!-- Friendly hint -->
         <p th:if="${!#lists.contains({'DELIVERED','SHIPPED','PAID'}, order.status)}"
            style="margin-top:10px;color:#6b7280">
             Returns will be available after your order ships.
@@ -199,8 +484,36 @@
     </section>
 </main>
 
+<!-- Footer -->
 <footer class="site-footer">
-    <div>&copy; <span th:text="${#temporals.format(#temporals.createNow(),'yyyy')}">2025</span> The Spice Jar</div>
+    <div class="footer-container">
+        <div class="footer-column">
+            <h3>About Spice Jar</h3>
+            <p>Bringing the world's finest spices to your kitchen. Quality, aroma, and flavor guaranteed in every jar.</p>
+        </div>
+        <div class="footer-column">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a th:href="@{/menu}">Menu</a></li>
+                <li><a th:href="@{/about}">About Us</a></li>
+                <li><a th:href="@{/contact}">Contact</a></li>
+                <li><a href="#">FAQ</a></li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h3>Connect With Us</h3>
+            <div class="social-links">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; <span th:text="${T(java.time.Year).now()}">2025</span> The Spice Jar. All rights reserved.</p>
+    </div>
 </footer>
+
 </body>
 </html>

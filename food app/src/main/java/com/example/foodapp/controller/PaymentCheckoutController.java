@@ -1,9 +1,10 @@
+// src/main/java/com/example/foodapp/controller/PaymentCheckoutController.java
 package com.example.foodapp.controller;
 
 import com.example.foodapp.model.Order;
+import com.example.foodapp.model.Payment;
 import com.example.foodapp.model.User;
 import com.example.foodapp.service.*;
-import com.example.foodapp.util.GlobalData;
 import com.example.foodapp.util.SessionCart;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,12 +14,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import static com.example.foodapp.util.GlobalData.cart;
 
 @Controller
 @RequestMapping("/payment")
@@ -30,243 +27,218 @@ public class PaymentCheckoutController extends BaseController {
     private final StripeService stripeService;
     private final SessionCart cart;
     private final GiftCardService giftCardService;
-
-
+    private final EmailService emailService;
 
     public PaymentCheckoutController(OrderService orderService,
                                      PaymentService paymentService,
                                      PaypalService paypalService,
-                                     StripeService stripeService, SessionCart cart, GiftCardService giftCardService) {
+                                     StripeService stripeService,
+                                     SessionCart cart,
+                                     GiftCardService giftCardService,
+                                     EmailService emailService) {
         this.orderService = orderService;
         this.paymentService = paymentService;
         this.paypalService = paypalService;
         this.stripeService = stripeService;
         this.cart = cart;
         this.giftCardService = giftCardService;
+        this.emailService = emailService;
     }
 
     @Value("${app.paypal.currency:USD}")
     private String paypalCurrency;
 
+    // ======================================
+    //  CHECKOUT PAGE
+    // ======================================
     @GetMapping("/checkout")
     public String checkout(@RequestParam("orderId") Long orderId,
                            HttpSession session,
                            Model model) {
 
         User user = currentUser(session);
-        if (user == null) {
-            return "redirect:/login";
-        }
+        if (user == null) return "redirect:/login";
 
         Order order = orderService.findById(orderId);
-        if (order == null) {
-            return "redirect:/cart/view";
-        }
-
-        // 1) Gift card balance for this user
-        BigDecimal giftBalance = giftCardService.usableBalanceForUser(user.getId());
-
-        // 2) How much has already been applied on this order
-        BigDecimal alreadyApplied = order.getGiftAppliedSafe();
-
-        // 3) Remaining amount to pay AFTER gift cards
-        BigDecimal remainingToPay = order.getRemainingToPay();
+        if (order == null) return "redirect:/cart/view";
 
         model.addAttribute("order", order);
-        model.addAttribute("cartCount", 0); // or your real cart badge count
+        model.addAttribute("cartCount", 0);
 
-        // gift-card–related attributes used by the HTML/JS
-        model.addAttribute("giftBalance", giftBalance);
-        model.addAttribute("giftApplied", alreadyApplied);
-        model.addAttribute("remainingToPay", remainingToPay);
+        model.addAttribute("giftBalance", giftCardService.usableBalanceForUser(user.getId()));
+        model.addAttribute("giftApplied", order.getGiftAppliedSafe());
+        model.addAttribute("remainingToPay", order.getRemainingToPay());
 
         return "payment";
     }
 
+    // ======================================
+    //  PAYPAL
+    // ======================================
+    @PostMapping("/paypal/start")
+    @ResponseBody
+    public Map<String, Object> startPaypal(@RequestBody Map<String, Object> body, HttpSession session) {
+        if (session.getAttribute("USER") == null) return Map.of("ok", false);
+
+        Long orderId = ((Number) body.get("orderId")).longValue();
+        var out = paypalService.createOrder(orderId, paypalCurrency);
+
+        return Map.of("ok", out.ok(), "approvalUrl", out.approvalUrl(), "paymentId", out.paymentId());
+    }
+
+    @GetMapping("/paypal/return")
+    public String paypalReturn(@RequestParam String token,
+                               @RequestParam(required = false) String PayerID) {
+
+        var ok = paypalService.capture(token);
+        Long orderId = ok.orderId();
+
+        if (ok.ok()) {
+            // PayPal capture should already mark the Payment row SUCCEEDED in paypalService.capture(...)
+            orderService.markPaid(orderId);
+            return "redirect:/payment/success?orderId=" + orderId + "&paymentId=" + ok.paymentId();
+        }
+
+        return "redirect:/orders";
+    }
+
+    // ======================================
+    //  STRIPE – WALLET / CARD FORM (PaymentIntent)
+    // ======================================
+    @PostMapping("/stripe/start")
+    @ResponseBody
+    public Map<String, Object> startStripe(@RequestBody Map<String, Object> body, HttpSession session) {
+
+        if (session.getAttribute("USER") == null) {
+            return Map.of("status", "error", "message", "Not authenticated");
+        }
+
+        Long orderId = ((Number) body.get("orderId")).longValue();
+
+        // MUST return: clientSecret + paymentIntentId + paymentId
+        Map<String, Object> out = stripeService.createWalletIntent(orderId);
+
+        Map<String, Object> res = new LinkedHashMap<>();
+        res.put("status", "success");
+        res.put("clientSecret", out.get("clientSecret"));
+        res.put("paymentIntentId", out.get("paymentIntentId"));
+        res.put("paymentId", out.get("paymentId"));
+        return res;
+    }
+
+    /**
+     * ✅ CONFIRM endpoint: updates DB so refunds work
+     *
+     * Body: { orderId, paymentId, paymentIntentId }
+     */
     @PostMapping(
-            path = "/gift/apply",
+            path = "/stripe/confirm",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    public Map<String, Object> applyGiftBalance(@RequestBody Map<String, Object> body,
-                                                HttpSession session) {
+    public Map<String, Object> stripeConfirm(@RequestBody Map<String, Object> body, HttpSession session) {
 
-        User user = currentUser(session);
-        if (user == null) {
-            return Map.of(
-                    "status", "error",
-                    "message", "Please login to use gift cards."
-            );
+        if (session.getAttribute("USER") == null) {
+            return Map.of("status", "error", "message", "Not authenticated");
         }
 
-        Long orderId;
-        BigDecimal requested;
+        Long orderId = Long.valueOf(String.valueOf(body.get("orderId")));
+        Long paymentId = Long.valueOf(String.valueOf(body.get("paymentId")));
+        String piId = String.valueOf(body.get("paymentIntentId"));
+
+        if (piId == null || !piId.startsWith("pi_")) {
+            return Map.of("status", "error", "message", "Invalid paymentIntentId");
+        }
+
+        // Optional but recommended: verify with Stripe server-side
+        if (!stripeService.isPaymentIntentSucceeded(piId)) {
+            return Map.of("status", "error", "message", "Stripe says payment is not succeeded yet");
+        }
+
+        // 1) Mark payment SUCCEEDED + store pi id for refunds
+        paymentService.markSucceededByPaymentId(paymentId, piId, piId, "STRIPE");
+
+        // 2) Mark order PAID
+        orderService.markPaid(orderId);
+
+        return Map.of("status", "success");
+    }
+
+    // ======================================
+    //  STRIPE CHECKOUT SESSION RETURN (Legacy)
+    // ======================================
+    @GetMapping("/stripe/return")
+    public String stripeReturn(@RequestParam Long orderId,
+                               @RequestParam(required = false) String session_id) {
 
         try {
-            orderId = Long.valueOf(String.valueOf(body.get("orderId")));
-            requested = new BigDecimal(String.valueOf(body.get("amount")));
+            if (session_id != null && stripeService.verifySession(session_id)) {
+
+                orderService.markPaid(orderId);
+
+                Payment p = paymentService.findByProviderPaymentId(session_id);
+                if (p != null) {
+                    String piId = stripeService.getPaymentIntentIdFromSession(session_id);
+                    if (piId != null) {
+                        paymentService.markSucceededByProviderPaymentId(session_id, piId, "STRIPE");
+                    }
+                }
+
+                Long paymentId = (p != null ? p.getId() : null);
+                return "redirect:/payment/success?orderId=" + orderId +
+                        (paymentId != null ? ("&paymentId=" + paymentId) : "");
+            }
+
+            return "redirect:/orders";
+
         } catch (Exception e) {
-            return Map.of(
-                    "status", "error",
-                    "message", "Invalid request."
-            );
+            e.printStackTrace();
+            return "redirect:/orders";
         }
-
-        Order order = orderService.findById(orderId);
-        if (order == null) {
-            return Map.of(
-                    "status", "error",
-                    "message", "Order not found."
-            );
-        }
-
-        // available gift credit for this user
-        BigDecimal available = giftCardService.usableBalanceForUser(user.getId());
-        if (available.signum() <= 0) {
-            return Map.of(
-                    "status", "error",
-                    "message", "No gift card balance available."
-            );
-        }
-
-        if (requested.signum() <= 0) {
-            return Map.of(
-                    "status", "error",
-                    "message", "Amount must be greater than zero."
-            );
-        }
-
-        // You can't apply more than available or more than remaining to pay
-        BigDecimal maxAllowed = available.min(order.getRemainingToPay());
-        BigDecimal desired = requested.min(maxAllowed);
-
-        if (desired.signum() <= 0) {
-            return Map.of(
-                    "status", "error",
-                    "message", "Nothing to apply for this order."
-            );
-        }
-
-        // Actually consume from the user's gift cards
-        BigDecimal used = giftCardService.consumeBalanceForUser(
-                user.getId(),
-                desired,
-                "Order payment",
-                order.getId()
-        );
-
-        if (used.signum() <= 0) {
-            return Map.of(
-                    "status", "error",
-                    "message", "Unable to apply gift balance."
-            );
-        }
-
-        // Increase giftApplied on this order
-        BigDecimal newApplied = order.getGiftAppliedSafe().add(used);
-        order.setGiftApplied(newApplied);
-        orderService.save(order);
-
-        // Compute updated remaining amounts
-        BigDecimal newRemainingToPay = order.getRemainingToPay();
-        BigDecimal newAvailable = available.subtract(used);
-        if (newAvailable.signum() < 0) newAvailable = BigDecimal.ZERO;
-
-        Map<String, Object> resp = new LinkedHashMap<>();
-        resp.put("status", "success");
-        resp.put("message", "Applied $" + used + " from your gift balance.");
-        resp.put("applied", newApplied);
-        resp.put("giftBalanceLeft", newAvailable);
-        resp.put("remainingToPay", newRemainingToPay);
-
-        return resp;
     }
 
-
-    /** COD: mark pending and return 200 */
-    @PostMapping("/cod")
-    @ResponseBody
-    public Map<String,Object> cod(@RequestBody Map<String,Object> body, HttpSession session){
-        if (session.getAttribute("USER") == null) return Map.of("ok", false);
-        Long orderId = ((Number) body.get("orderId")).longValue();
-        paymentService.markCodPending(orderId);
-        orderService.markPendingCod(orderId);
-        return Map.of("ok", true);
-    }
-
-    /** Start PayPal: create order on PayPal and return approval URL */
-    @PostMapping("/paypal/start")
-    @ResponseBody
-    public Map<String,Object> startPaypal(@RequestBody Map<String,Object> body, HttpSession session){
-        if (session.getAttribute("USER") == null) return Map.of("ok", false);
-        Long orderId = ((Number) body.get("orderId")).longValue();
-        var out = paypalService.createOrder(orderId, paypalCurrency);
-        // out.approvalUrl is where the browser should go
-        return Map.of("ok", out.ok(), "approvalUrl", out.approvalUrl(), "paymentId", out.paymentId());
-    }
-
-    /** PayPal return (success) */
-    @GetMapping("/paypal/return")
-    public String paypalReturn(@RequestParam String token, @RequestParam(required=false) String PayerID){
-        // token == PayPal order id
-        var ok = paypalService.capture(token);
-        Long orderId = ok.orderId();
-        if (ok.ok()) {
-            orderService.markPaid(orderId);
-            return "redirect:/payment/success?orderId=" + orderId + "&paymentId=" + ok.paymentId();
-        }
-        return "redirect:/orders";
-    }
-
-    /** Start Stripe Checkout: create session & return its URL */
-    @PostMapping("/stripe/start")
-    @ResponseBody
-    public Map<String,Object> startStripe(@RequestBody Map<String,Object> body, HttpSession session){
-        if (session.getAttribute("USER") == null) return Map.of("ok", false);
-        Long orderId = ((Number) body.get("orderId")).longValue();
-        var out = stripeService.createCheckoutSession(orderId);
-        return Map.of("ok", out.ok(), "checkoutUrl", out.checkoutUrl(), "paymentId", out.paymentId());
-    }
-
-    /** Stripe success/cancel return URLs */
-    @GetMapping("/stripe/return")
-    public String stripeReturn(@RequestParam Long orderId, @RequestParam(required=false) String session_id){
-        if (session_id != null && stripeService.verifySession(session_id)) {
-            orderService.markPaid(orderId);
-            var paymentId = paymentService.findLatestByOrderId(orderId) != null
-                    ? paymentService.findLatestByOrderId(orderId).getId()
-                    : null;
-            return "redirect:/payment/success?orderId=" + orderId + (paymentId!=null?("&paymentId="+paymentId):"");
-        }
-        return "redirect:/orders";
-    }
-
-    /** Success page */
+    // ======================================
+    //  SUCCESS PAGE
+    // ======================================
     @GetMapping("/success")
     public String success(@RequestParam Long orderId,
                           @RequestParam(required = false) Long paymentId,
-                          Model m){
-        var order = orderService.findById(orderId);
-        var payment = (paymentId != null) ? paymentService.findById(paymentId) : paymentService.findLatestByOrderId(orderId);
+                          HttpSession session,
+                          Model m) {
+
+        Order order = orderService.findById(orderId);
+
+        Payment payment = (paymentId != null)
+                ? paymentService.findById(paymentId)
+                : paymentService.findLatestByOrderId(orderId);
+
+        if (order != null && "PAID".equalsIgnoreCase(order.getStatus())) {
+            if (!Boolean.TRUE.equals(order.getConfirmationSent())) {
+                emailService.sendOrderConfirmation(order.getId());
+                emailService.sendOrderSurveyEmail(order);
+                order.setConfirmationSent(true);
+                orderService.save(order);
+            }
+        }
+
+        cart.clear(session);
+
         m.addAttribute("order", order);
         m.addAttribute("payment", payment);
+        m.addAttribute("cartCount", 0);
+
         return "order_success";
     }
 
-    @PostMapping("/wallet/start")
-    @ResponseBody
-    public Map<String, Object> startWallet(@RequestBody Map<String, Object> body, HttpSession session) {
-        if (session.getAttribute("USER") == null) return Map.of("ok", false);
-        Long orderId = ((Number) body.get("orderId")).longValue();
-        var out = stripeService.createWalletIntent(orderId);
-        return Map.of("ok", true, "clientSecret", out.get("clientSecret"), "paymentIntentId", out.get("paymentIntentId"));
-    }
-
-    /** Stripe webhook (configure the endpoint URL in your Stripe dashboard) */
+    // ======================================
+    //  STRIPE WEBHOOK (optional)
+    // ======================================
     @PostMapping("/stripe/webhook")
-    public ResponseEntity<String> stripeWebhook(@RequestHeader(value = "Stripe-Signature", required = false) String sig,
-                                                @RequestBody String payload) {
+    public ResponseEntity<String> stripeWebhook(
+            @RequestHeader(value = "Stripe-Signature", required = false) String sig,
+            @RequestBody String payload) {
+
         stripeService.handleStripeWebhook(payload, sig);
         return ResponseEntity.ok("ok");
     }

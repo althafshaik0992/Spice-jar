@@ -11,45 +11,95 @@
     <link rel="icon" type="image/svg+xml"
           href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <!-- Icons & Tailwind -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        :root{color-scheme:dark}
-        body{background:#0b1020;color:#e2e8f0}
-        .surface{background:#0b1220}
-        .card{background:#0b1220;border:1px solid #1f2637;border-radius:16px}
-        .soft{box-shadow:0 10px 30px rgba(0,0,0,.25)}
-        .chip{background:#111a2a;border:1px solid #273447}
-        .ring-subtle{box-shadow:0 0 0 1px rgba(39,52,71,.8) inset}
-        ::-webkit-scrollbar{height:10px;width:10px}
-        ::-webkit-scrollbar-thumb{background:#223049;border-radius:999px}
-        ::-webkit-scrollbar-track{background:transparent}
+        :root {
+            color-scheme: dark;
+        }
+
+        body {
+            background:#020617;
+            color:#e2e8f0;
+        }
+
+        .card {
+            background:#020617;
+            border:1px solid #1f2937;
+            border-radius:16px;
+        }
+
+        .soft {
+            box-shadow:0 16px 40px rgba(0,0,0,.55);
+        }
+
+        .chip {
+            background:#020617;
+            border:1px solid #273447;
+            border-radius:999px;
+        }
+
+        .ring-subtle {
+            box-shadow:0 0 0 1px rgba(39,52,71,.7) inset;
+        }
+
+        ::-webkit-scrollbar {
+            height:10px;
+            width:10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background:#223049;
+            border-radius:999px;
+        }
+        ::-webkit-scrollbar-track {
+            background:transparent;
+        }
+
+        /* Simple hover dropdown */
+        .dropdown-group:hover .dropdown-menu {
+            display:block;
+        }
     </style>
 </head>
 <body class="min-h-screen">
 
-<!-- Global Nav (same as dashboard) -->
-<header class="sticky top-0 z-40 border-b border-[#1f2637] bg-[#0b1220]/85 backdrop-blur">
+<!-- Global Nav -->
+<header class="sticky top-0 z-40 border-b border-[#1f2937] bg-[#020617]/90 backdrop-blur">
     <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
         <!-- Brand + primary nav -->
         <div class="flex items-center gap-4">
             <a th:href="@{/admin}" class="flex items-center gap-2 group">
-                <div class="h-9 w-9 grid place-items-center rounded-xl bg-emerald-600 text-white font-black shadow-lg shadow-emerald-900/40 ring-1 ring-emerald-400/30 group-hover:scale-[1.02] transition">
+                <div class="h-9 w-9 grid place-items-center rounded-xl bg-emerald-600 text-white font-black shadow-lg shadow-emerald-900/40 ring-1 ring-emerald-400/40 group-hover:scale-[1.03] transition">
                     SJ
                 </div>
                 <div>
-                    <div class="text-sm text-slate-300">SpiceJar</div>
+                    <div class="text-sm text-slate-200 font-semibold">SpiceJar</div>
                     <div class="text-[13px] text-slate-400 -mt-0.5">Admin</div>
                 </div>
             </a>
 
-            <nav class="hidden md:flex items-center gap-1 ml-4">
-                <a th:href="@{/admin}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Dashboard</a>
-                <a th:href="@{/admin/orders}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Orders</a>
-                <a th:href="@{/admin/catalog}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Menu</a>
-                <a th:href="@{/admin/categories}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Categories</a>
-                <a th:href="@{/admin/gift-cards}" class="px-3 py-2 rounded-lg text-sm text-emerald-300 bg-white/5">
+            <nav class="hidden md:flex items-center gap-1 ml-4 text-sm">
+                <a th:href="@{/admin}"
+                   class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition">
+                    Dashboard
+                </a>
+                <a th:href="@{/admin/orders}"
+                   class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition">
+                    Orders
+                </a>
+                <a th:href="@{/admin/catalog}"
+                   class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition">
+                    Menu
+                </a>
+                <a th:href="@{/admin/categories}"
+                   class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition">
+                    Categories
+                </a>
+                <a th:href="@{/admin/gift-cards}"
+                   class="px-3 py-2 rounded-lg text-emerald-300 bg-white/5">
                     Gift Cards
                 </a>
             </nav>
@@ -57,20 +107,26 @@
 
         <!-- Right utilities -->
         <div class="flex items-center gap-3">
-            <div class="hidden md:flex items-center gap-2 px-3 h-10 rounded-xl ring-subtle bg-[#0f172a]">
+            <!-- Search -->
+            <div class="hidden md:flex items-center gap-2 px-3 h-10 rounded-xl ring-subtle bg-[#020617]">
                 <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
-                <input type="search" placeholder="Search…" class="bg-transparent outline-none text-sm placeholder:text-slate-500 w-48"/>
+                <input type="search"
+                       placeholder="Search…"
+                       class="bg-transparent outline-none text-sm placeholder:text-slate-500 w-48"/>
                 <span class="text-xs text-slate-500 hidden lg:inline">/ to focus</span>
             </div>
 
-            <a th:href="@{/}" class="hidden sm:inline-flex items-center gap-2 px-3 h-10 rounded-xl text-sm text-slate-200 hover:bg-white/5">
+            <!-- View site -->
+            <a th:href="@{/}"
+               class="hidden sm:inline-flex items-center gap-2 px-3 h-10 rounded-xl text-sm text-slate-200 hover:bg-white/5 transition">
                 <i class="fa-solid fa-up-right-from-square"></i>
                 <span>Site</span>
             </a>
 
             <!-- User dropdown -->
-            <div class="relative group">
-                <button class="inline-flex items-center gap-2 px-3 h-10 rounded-xl bg-emerald-600/15 text-emerald-300 hover:bg-emerald-600/25">
+            <div class="relative dropdown-group text-sm">
+                <button type="button"
+                        class="inline-flex items-center gap-2 px-3 h-10 rounded-xl bg-emerald-600/15 text-emerald-300 hover:bg-emerald-600/25 transition">
                     <i class="fa-solid fa-circle-user"></i>
                     <span>
                         <span sec:authorize="isAuthenticated()" sec:authentication="name">Admin</span>
@@ -78,14 +134,23 @@
                     </span>
                     <i class="fa-solid fa-chevron-down text-[11px] opacity-70"></i>
                 </button>
-                <div class="absolute right-0 mt-2 hidden group-hover:block w-56 rounded-xl border border-[#1f2637] bg-[#0c1528] shadow-2xl">
-                    <div class="px-3 py-2 text-[12px] text-slate-400">Signed in</div>
-                    <a th:href="@{/admin}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5"><i class="fa-solid fa-chart-line"></i> Overview</a>
-                    <a th:href="@{/admin/orders}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5"><i class="fa-solid fa-receipt"></i> Orders</a>
-                    <div class="h-px bg-[#1f2637] my-1"></div>
+                <div class="dropdown-menu absolute right-0 mt-2 hidden w-56 rounded-xl border border-[#1f2937] bg-[#020617] shadow-2xl">
+                    <div class="px-3 py-2 text-[12px] text-slate-400 border-b border-[#1f2937]">
+                        Signed in
+                    </div>
+                    <a th:href="@{/admin}"
+                       class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5">
+                        <i class="fa-solid fa-chart-line text-slate-300"></i> Overview
+                    </a>
+                    <a th:href="@{/admin/orders}"
+                       class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5">
+                        <i class="fa-solid fa-receipt text-slate-300"></i> Orders
+                    </a>
+                    <div class="h-px bg-[#1f2937] my-1"></div>
                     <form th:action="@{/admin/logout}" method="post" class="px-3 py-2">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="w-full flex items-center gap-2 text-left text-sm text-rose-300 hover:text-rose-200 hover:bg-rose-600/10 px-2 py-2 rounded-lg">
+                        <button type="submit"
+                                class="w-full flex items-center gap-2 text-left text-sm text-rose-300 hover:text-rose-100 hover:bg-rose-600/10 px-2 py-2 rounded-lg">
                             <i class="fa-solid fa-right-from-bracket"></i> Logout
                         </button>
                     </form>
@@ -95,12 +160,12 @@
     </div>
 
     <!-- Sub-header / breadcrumbs -->
-    <div class="border-t border-[#1f2637]">
-        <div class="max-w-7xl mx-auto px-5 h-12 flex items-center justify-between">
-            <div class="text-sm text-slate-400">
+    <div class="border-t border-[#1f2937]">
+        <div class="max-w-7xl mx-auto px-5 h-11 flex items-center justify-between text-xs sm:text-sm">
+            <div class="text-slate-400 flex items-center gap-1">
                 <a th:href="@{/admin}" class="hover:text-slate-200">Admin</a>
-                <span class="mx-2 opacity-50">/</span>
-                <span class="text-slate-300">Gift Cards</span>
+                <span class="opacity-50">/</span>
+                <span class="text-slate-200 font-medium">Gift Cards</span>
             </div>
         </div>
     </div>
@@ -119,7 +184,8 @@
                 Create, view, and manage all SpiceJar gift cards.
             </p>
         </div>
-        <a th:href="@{/admin}" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm bg-white/5 text-slate-200 hover:bg-white/10">
+        <a th:href="@{/admin}"
+           class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm bg-white/5 text-slate-200 hover:bg-white/10">
             <i class="fa-solid fa-gauge"></i>
             <span>Back to Dashboard</span>
         </a>
@@ -127,9 +193,11 @@
 
     <!-- Flash message -->
     <section th:if="${flashMsg}">
-        <div th:class="${flashOk} ? 'border border-emerald-500/40 bg-emerald-500/10 text-emerald-200 rounded-xl px-4 py-3 text-sm flex items-start gap-2' :
-                                    'border border-rose-500/40 bg-rose-500/10 text-rose-100 rounded-xl px-4 py-3 text-sm flex items-start gap-2'">
-            <i class="fa-solid" th:classappend="${flashOk} ? ' fa-circle-check mt-0.5' : ' fa-triangle-exclamation mt-0.5'"></i>
+        <div th:class="${flashOk} ?
+                       'border border-emerald-500/40 bg-emerald-500/10 text-emerald-200 rounded-xl px-4 py-3 text-sm flex items-start gap-2' :
+                       'border border-rose-500/40 bg-rose-500/10 text-rose-100 rounded-xl px-4 py-3 text-sm flex items-start gap-2'">
+            <i class="fa-solid"
+               th:classappend="${flashOk} ? ' fa-circle-check mt-0.5' : ' fa-triangle-exclamation mt-0.5'"></i>
             <span th:text="${flashMsg}">Message</span>
         </div>
     </section>
@@ -137,9 +205,9 @@
     <!-- Main layout: create + list -->
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-        <!-- Create card -->
+        <!-- Create gift card -->
         <div class="card soft p-6 space-y-4">
-            <h2 class="text-lg font-semibold mb-1">Create new gift card</h2>
+            <h2 class="text-lg font-semibold">Create new gift card</h2>
             <p class="text-sm text-slate-400">
                 Generate a new gift card with a fixed amount and optional expiration date.
             </p>
@@ -148,39 +216,42 @@
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
                 <div class="space-y-1">
-                    <label class="text-sm font-medium text-slate-200">Code</label>
-                    <input name="code"
+                    <label for="gc-code" class="text-sm font-medium text-slate-200">Code</label>
+                    <input id="gc-code"
+                           name="code"
                            placeholder="e.g. SJ-NEWYEAR-2026"
-                           class="w-full rounded-xl bg-[#020617] border border-[#1f2637] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"/>
+                           class="w-full rounded-xl bg-[#020617] border border-[#1f2937] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"/>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-sm font-medium text-slate-200">Amount</label>
-                    <input type="number" name="amount" min="1" step="0.01"
+                    <label for="gc-amount" class="text-sm font-medium text-slate-200">Amount</label>
+                    <input id="gc-amount"
+                           type="number" name="amount" min="1" step="0.01"
                            placeholder="25.00" required
-                           class="w-full rounded-xl bg-[#020617] border border-[#1f2637] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"/>
+                           class="w-full rounded-xl bg-[#020617] border border-[#1f2937] px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"/>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-sm font-medium text-slate-200">Expires (optional)</label>
-                    <input type="date" name="expires"
-                           class="w-full rounded-xl bg-[#020617] border border-[#1f2637] px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"/>
+                    <label for="gc-expires" class="text-sm font-medium text-slate-200">Expires (optional)</label>
+                    <input id="gc-expires"
+                           type="date" name="expires"
+                           class="w-full rounded-xl bg-[#020617] border border-[#1f2937] px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"/>
                 </div>
 
-                <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 text-[#02140a] px-4 py-2.5 text-sm font-semibold hover:bg-emerald-400 transition"
-                        type="submit">
+                <button type="submit"
+                        class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 text-[#02140a] px-4 py-2.5 text-sm font-semibold hover:bg-emerald-400 transition">
                     <i class="fa-solid fa-plus"></i>
                     <span>Create gift card</span>
                 </button>
             </form>
         </div>
 
-        <!-- List card -->
+        <!-- Gift cards table -->
         <div class="lg:col-span-2 card soft p-6">
             <div class="flex items-center justify-between mb-3">
                 <h2 class="text-lg font-semibold">All gift cards</h2>
-                <span class="chip text-xs px-2 py-1 rounded text-slate-200">
-                    <i class="fa-solid fa-database mr-1"></i>
+                <span class="chip text-xs px-2 py-1 text-slate-200 flex items-center gap-1">
+                    <i class="fa-solid fa-database text-slate-300"></i>
                     <span th:text="${#lists.size(cards) ?: 0}">0</span> total
                 </span>
             </div>
@@ -189,18 +260,18 @@
                 <table class="min-w-full text-sm border-separate [border-spacing:0]">
                     <thead>
                     <tr class="text-slate-300">
-                        <th class="py-2 pr-4 text-left border-b border-[#1f2637]">ID</th>
-                        <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Code</th>
-                        <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Original</th>
-                        <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Balance</th>
-                        <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Owner</th>
-                        <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Expires</th>
-                        <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Status</th>
-                        <th class="py-2 text-left border-b border-[#1f2637]">Actions</th>
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2937]">ID</th>
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Code</th>
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Original</th>
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Balance</th>
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Owner</th>
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Expires</th>
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Status</th>
+                        <th class="py-2 text-left border-b border-[#1f2937]">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="gc : ${cards}" class="border-b border-[#1f2637]">
+                    <tr th:each="gc : ${cards}" class="border-b border-[#1f2937]">
                         <td class="py-3 pr-4" th:text="${gc.id}">1</td>
                         <td class="py-3 pr-4 font-mono text-[13px]" th:text="${gc.code}">SJ-XXXX</td>
                         <td class="py-3 pr-4"
@@ -229,18 +300,22 @@
                                 </span>
                             </span>
                         </td>
-                        <td class="py-3 pr-4 space-x-1">
-                            <form class="inline" th:action="@{/admin/gift-cards/{id}/toggle(id=${gc.id})}" method="post">
+                        <td class="py-3 pr-4 space-x-1 whitespace-nowrap">
+                            <form class="inline"
+                                  th:action="@{/admin/gift-cards/{id}/toggle(id=${gc.id})}"
+                                  method="post">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                 <button type="submit"
-                                        class="inline-flex items-center gap-1 rounded-lg bg-[#020617] border border-[#1f2637] px-2.5 py-1.5 text-[11px] font-medium text-slate-200 hover:bg-white/5">
+                                        class="inline-flex items-center gap-1 rounded-lg bg-[#020617] border border-[#1f2937] px-2.5 py-1.5 text-[11px] font-medium text-slate-200 hover:bg-white/5">
                                     <i class="fa-solid text-xs"
                                        th:classappend="${gc.active}? ' fa-toggle-on text-emerald-400' : ' fa-toggle-off text-slate-400'"></i>
                                     <span th:text="${gc.active}? 'Disable' : 'Enable'">Toggle</span>
                                 </button>
                             </form>
+
                             <form class="inline"
-                                  th:action="@{/admin/gift-cards/{id}/delete(id=${gc.id})}" method="post"
+                                  th:action="@{/admin/gift-cards/{id}/delete(id=${gc.id})}"
+                                  method="post"
                                   onsubmit="return confirm('Delete this gift card?');">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                 <button type="submit"
@@ -270,10 +345,14 @@
 </main>
 
 <script>
+    // Keyboard shortcut to focus search
     document.addEventListener('keydown', (e) => {
         if (e.key === '/' && !/input|textarea/i.test(document.activeElement.tagName)) {
             const search = document.querySelector('input[type="search"]');
-            if (search) { e.preventDefault(); search.focus(); }
+            if (search) {
+                e.preventDefault();
+                search.focus();
+            }
         }
     });
 </script>
