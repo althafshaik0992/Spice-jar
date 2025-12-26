@@ -2,10 +2,14 @@
 package com.example.foodapp.controller;
 
 import com.example.foodapp.model.User;
+import com.example.foodapp.repository.LoyaltyLedgerRepository;
+import com.example.foodapp.service.LoyaltyService;
 import com.example.foodapp.service.UserService;
+import com.example.foodapp.web.SessionUser;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -21,7 +25,16 @@ import java.util.UUID;
 public class ProfileController extends BaseController {
 
     private final UserService userService;
-    public ProfileController(UserService userService) { this.userService = userService; }
+
+    private final LoyaltyService loyaltyService;
+
+    private final LoyaltyLedgerRepository loyaltyLedgerRepository;
+
+
+    public ProfileController(UserService userService, LoyaltyService loyaltyService, LoyaltyLedgerRepository loyaltyLedgerRepository) { this.userService = userService;
+        this.loyaltyService = loyaltyService;
+        this.loyaltyLedgerRepository = loyaltyLedgerRepository;
+    }
 
     // ---- helpers ----
     private User requireUser(HttpSession session) {
@@ -43,8 +56,33 @@ public class ProfileController extends BaseController {
 
 
     @GetMapping("/account")
-    public String accountHub() {
-        return "account"; }
+    public String accountHub(HttpSession session, Model model) {
+
+
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
+        model.addAttribute("walletPoints", loyaltyService.getBalance(user.getId()));
+        return "account";
+    }
+
+
+
+    @GetMapping("/account/wallet")
+    public String wallet(HttpSession session, Model model) {
+
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
+        Long userId = user.getId();
+
+        model.addAttribute("walletPoints", loyaltyService.getBalance(userId));
+        model.addAttribute("ledger",
+                loyaltyLedgerRepository.findTop20ByUserIdOrderByCreatedAtDesc(userId));
+
+        return "wallet";
+    }
+
+
+
 
     @GetMapping("/profile")
     public String editProfile(HttpSession session, Model m,

@@ -37,6 +37,7 @@ public class OrderController extends BaseController {
     private final PaymentService paymentService;
     private final PaypalService paypalService;
     private final StripeService stripeService;
+    private final LoyaltyService loyaltyService;
 
 
     public OrderController(OrderService orderService,
@@ -46,7 +47,7 @@ public class OrderController extends BaseController {
                            SessionCart sessionCart,
                            CouponRepository couponRepository,
                            GiftCardService giftCardService,
-                           CouponRedemptionRepository couponRedemptionRepository, PaymentService paymentService, PaypalService paypalService, StripeService stripeService) {
+                           CouponRedemptionRepository couponRedemptionRepository, PaymentService paymentService, PaypalService paypalService, StripeService stripeService, LoyaltyService loyaltyService) {
         this.orderService = orderService;
         this.addressService = addressService;
         this.inventoryService = inventoryService;
@@ -58,6 +59,7 @@ public class OrderController extends BaseController {
         this.paymentService = paymentService;
         this.paypalService = paypalService;
         this.stripeService = stripeService;
+        this.loyaltyService = loyaltyService;
     }
 
     @GetMapping("/checkout")
@@ -129,6 +131,8 @@ public class OrderController extends BaseController {
         m.addAttribute("cartCount", sessionCart.getCount());
         m.addAttribute("availableCoupons", availableCoupons);
         m.addAttribute("cartHasGiftCard", cartHasGiftCard);
+        m.addAttribute("walletPoints", loyaltyService.getBalance(user.getId()));
+
 
         return "checkout";
     }
@@ -143,6 +147,7 @@ public class OrderController extends BaseController {
                         @RequestParam String state,
                         @RequestParam String zip,
                         @RequestParam String country,
+                        @RequestParam(required = false, defaultValue = "0") Integer pointsUsed,
                         HttpSession session,
                         Model m) {
 
@@ -223,6 +228,32 @@ public class OrderController extends BaseController {
 
         // save order
         Order saved = orderService.save(o);
+
+        // ✅ Loyalty redeem (wallet points) - add-on logic
+        if (pointsUsed != null && pointsUsed > 0) {
+
+            // 1) Do not allow points with gift cards
+            boolean cartHasGiftCard = sessionCart.containsGiftCard();
+            if (cartHasGiftCard) {
+                return "redirect:/checkout?error=Wallet+points+cannot+be+used+with+gift+cards";
+            }
+
+            // 2) Do not allow points with coupon (optional rule - keep if you want)
+            if (sessionCart.getAppliedCoupon() != null && effectiveDiscount.compareTo(BigDecimal.ZERO) > 0) {
+                return "redirect:/checkout?error=Use+either+coupon+or+wallet+points,+not+both";
+            }
+
+            // 3) Redeem points -> returns discount amount ($)
+            BigDecimal loyaltyDiscount = loyaltyService.redeem(user.getId(), saved.getId(), pointsUsed);
+
+            // 4) Update order discount + totals
+            BigDecimal newDiscount = effectiveDiscount.add(loyaltyDiscount);
+
+            saved.setDiscount(newDiscount);
+            saved.setTotal(saved.getGrandTotal());
+            saved = orderService.save(saved);
+        }
+
 
         // 🔹 record coupon redemption (one-time per user)
         if (user != null && sessionCart.getAppliedCoupon() != null

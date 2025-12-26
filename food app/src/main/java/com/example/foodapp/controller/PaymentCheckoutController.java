@@ -14,6 +14,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -28,6 +30,7 @@ public class PaymentCheckoutController extends BaseController {
     private final SessionCart cart;
     private final GiftCardService giftCardService;
     private final EmailService emailService;
+    private final LoyaltyService loyaltyService;
 
     public PaymentCheckoutController(OrderService orderService,
                                      PaymentService paymentService,
@@ -35,7 +38,7 @@ public class PaymentCheckoutController extends BaseController {
                                      StripeService stripeService,
                                      SessionCart cart,
                                      GiftCardService giftCardService,
-                                     EmailService emailService) {
+                                     EmailService emailService, LoyaltyService loyaltyService) {
         this.orderService = orderService;
         this.paymentService = paymentService;
         this.paypalService = paypalService;
@@ -43,6 +46,7 @@ public class PaymentCheckoutController extends BaseController {
         this.cart = cart;
         this.giftCardService = giftCardService;
         this.emailService = emailService;
+        this.loyaltyService = loyaltyService;
     }
 
     @Value("${app.paypal.currency:USD}")
@@ -68,9 +72,98 @@ public class PaymentCheckoutController extends BaseController {
         model.addAttribute("giftBalance", giftCardService.usableBalanceForUser(user.getId()));
         model.addAttribute("giftApplied", order.getGiftAppliedSafe());
         model.addAttribute("remainingToPay", order.getRemainingToPay());
+        model.addAttribute("walletPoints", loyaltyService.getBalance(user.getId()));
 
         return "payment";
     }
+
+    @PostMapping(
+            path = "/loyalty/apply",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ResponseBody
+    public Map<String, Object> applyLoyalty(@RequestBody Map<String, Object> body, HttpSession session) {
+
+        User user = currentUser(session);
+        if (user == null) {
+            return Map.of("status", "error", "message", "Not authenticated");
+        }
+
+        Long orderId = Long.valueOf(String.valueOf(body.get("orderId")));
+        int pointsUsed = Integer.parseInt(String.valueOf(body.getOrDefault("pointsUsed", 0)));
+
+        if (pointsUsed <= 0) {
+            return Map.of("status", "error", "message", "Please enter points greater than 0.");
+        }
+
+        Order order = orderService.findById(orderId);
+        if (order == null) {
+            return Map.of("status", "error", "message", "Order not found.");
+        }
+
+        // ✅ IMPORTANT: ensure order belongs to logged in user
+        // Your Order has userId column (Long userId)
+        if (order.getUserId() == null || !order.getUserId().equals(user.getId())) {
+            return Map.of("status", "error", "message", "Unauthorized order.");
+        }
+
+        // ✅ IMPORTANT: redeem should apply AFTER gift card, so cap by remainingToPay
+        BigDecimal remainingBeforeWallet = order.getRemainingToPay(); // includes discount + giftApplied already
+        if (remainingBeforeWallet.signum() <= 0) {
+            return Map.of("status", "error", "message", "Nothing to pay. Order already covered.");
+        }
+
+        try {
+            // 1 point = $1 -> loyaltyService.redeem returns BigDecimal dollars
+            BigDecimal loyaltyDiscount = loyaltyService.redeem(user.getId(), orderId, pointsUsed);
+            if (loyaltyDiscount == null) loyaltyDiscount = BigDecimal.ZERO;
+
+            loyaltyDiscount = loyaltyDiscount.setScale(2, RoundingMode.HALF_UP);
+
+            if (loyaltyDiscount.signum() <= 0) {
+                return Map.of("status", "error", "message", "No discount was applied.");
+            }
+
+            // ✅ Cap so remaining never goes negative
+            if (loyaltyDiscount.compareTo(remainingBeforeWallet) > 0) {
+                loyaltyDiscount = remainingBeforeWallet;
+            }
+
+            // ✅ Apply wallet redemption into order.discount
+            BigDecimal currentDiscount = order.getDiscountSafe(); // safe helper in your Order class
+            BigDecimal newDiscount = currentDiscount.add(loyaltyDiscount).setScale(2, RoundingMode.HALF_UP);
+
+            order.setDiscount(newDiscount);
+            orderService.save(order);
+
+            // Re-fetch to ensure computed fields reflect saved values (optional but safe)
+            Order updated = orderService.findById(orderId);
+
+            // return updated numbers for UI
+            BigDecimal remainingToPay = updated.getRemainingToPay();
+            Integer walletPointsLeft = loyaltyService.getBalance(user.getId());
+
+            Map<String, Object> res = new LinkedHashMap<>();
+            res.put("status", "success");
+            res.put("message", "Loyalty points applied successfully.");
+            res.put("walletDiscountApplied", loyaltyDiscount); // ✅ your JS supports walletDiscountApplied
+            res.put("loyaltyDiscountApplied", loyaltyDiscount); // ✅ also keeping your old field
+            res.put("orderDiscount", updated.getDiscountSafe());
+            res.put("remainingToPay", remainingToPay);
+            res.put("walletPointsLeft", walletPointsLeft);
+            return res;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("status", "error", "message", "Unable to apply loyalty points.");
+        }
+    }
+
+
+
+
+
 
     // ======================================
     //  PAYPAL

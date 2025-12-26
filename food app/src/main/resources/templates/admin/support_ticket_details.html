@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin • Ticket Details</title>
+
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root{color-scheme:dark}
+    body{background:#020617;color:#e2e8f0}
+    .card{background:#020617;border:1px solid #1f2937;border-radius:16px}
+    .soft{box-shadow:0 16px 40px rgba(0,0,0,.55)}
+    .chip{background:#020617;border:1px solid #273447;border-radius:999px}
+  </style>
+</head>
+
+<body class="min-h-screen">
+
+<header class="sticky top-0 z-40 border-b border-[#1f2937] bg-[#020617]/90 backdrop-blur">
+  <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+    <a th:href="@{/admin/support}" class="chip px-4 py-2 text-sm text-slate-200 hover:bg-white/5">
+      ← Back to Tickets
+    </a>
+    <div class="text-slate-300 text-sm font-mono" th:text="${ticket.ticketId}">SJ-XXXX</div>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-5 py-8 space-y-6">
+
+  <section class="card soft p-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <h1 class="text-xl font-semibold text-slate-100">
+          <span th:text="${ticket.subject}">Subject</span>
+        </h1>
+        <p class="text-sm text-slate-400 mt-1">
+          <span th:text="${ticket.name}">Name</span>
+          <span class="mx-2 opacity-50">•</span>
+          <span th:text="${ticket.email}">email</span>
+          <span th:if="${ticket.phone != null and !#strings.isEmpty(ticket.phone)}">
+            <span class="mx-2 opacity-50">•</span>
+            <span th:text="${ticket.phone}">phone</span>
+          </span>
+        </p>
+      </div>
+
+      <div class="text-sm text-slate-400"
+           th:text="${#temporals.format(ticket.createdAt,'MMM d, yyyy h:mm a')}">Date</div>
+    </div>
+
+    <div class="mt-5">
+      <div class="text-slate-400 text-sm">Customer message</div>
+      <div class="mt-2 p-4 rounded-xl border border-[#1f2937] text-slate-200 whitespace-pre-line"
+           th:text="${ticket.message}">
+        Message
+      </div>
+    </div>
+  </section>
+
+  <section class="card soft p-6">
+    <h2 class="text-lg font-semibold text-slate-100 mb-4">Update Ticket</h2>
+
+    <form th:action="@{/admin/support/{id}/update(id=${ticket.id})}" method="post" class="space-y-4">
+      <div>
+        <label class="block text-sm text-slate-300 mb-2">Status</label>
+        <select name="status"
+                class="w-full bg-[#020617] border border-[#1f2937] rounded-xl p-3 text-slate-200">
+          <option value="OPEN" th:selected="${ticket.status=='OPEN'}">OPEN</option>
+          <option value="IN_PROGRESS" th:selected="${ticket.status=='IN_PROGRESS'}">IN_PROGRESS</option>
+          <option value="CLOSED" th:selected="${ticket.status=='CLOSED'}">CLOSED</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm text-slate-300 mb-2">Admin notes (internal)</label>
+        <textarea name="adminNotes"
+                  class="w-full min-h-[140px] bg-[#020617] border border-[#1f2937] rounded-xl p-3 text-slate-200"
+                  th:text="${ticket.adminNotes}"
+                  placeholder="What did we do? Any follow up?"></textarea>
+      </div>
+
+      <button type="submit"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-[#022c15] font-semibold hover:bg-emerald-500">
+        <i class="fa-solid fa-floppy-disk"></i> Save
+      </button>
+    </form>
+  </section>
+
+</main>
+</body>
+</html>

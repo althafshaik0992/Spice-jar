@@ -367,6 +367,43 @@
             margin-top:4px;
         }
 
+        /* ===== UPDATED Loyalty Wallet styles + remove button ===== */
+        .wallet-box{
+            border:1px dashed #d7eadb;
+            border-radius:12px;
+            padding:12px 10px;
+            margin:12px 0 16px;
+            background:#f9fdf9;
+        }
+        .wallet-header{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:8px;
+        }
+        .wallet-header span{
+            font-size:13px;
+            color:var(--muted);
+        }
+        .wallet-row{
+            display:flex;
+            gap:8px;
+            align-items:stretch;
+            margin-top:6px;
+        }
+        .wallet-row input{
+            flex:1;
+            padding:9px 10px;
+            border-radius:8px;
+            border:1px solid #d1d5db;
+            font-size:14px;
+        }
+        .wallet-hint{
+            font-size:12px;
+            color:var(--muted);
+            margin-top:4px;
+        }
+
         .card-inline{
             border:1px solid var(--line);
             border-radius:12px;
@@ -561,7 +598,8 @@
                         <button type="submit" class="btn primary" id="card-submit">
                             Pay
                             <span id="card-pay-amount">
-                                $<span th:text="${#numbers.formatDecimal((order.remainingToPay != null ? order.remainingToPay : order.grandTotal),1,'COMMA',2,'POINT')}">0.00</span>
+                                $<span id="card-pay-amount-inner"
+                                       th:text="${#numbers.formatDecimal((order.remainingToPay != null ? order.remainingToPay : order.grandTotal),1,'COMMA',2,'POINT')}">0.00</span>
                             </span>
                         </button>
                     </div>
@@ -605,6 +643,7 @@
 
             <hr class="hr">
 
+            <!-- ===================== GIFT CARD (existing) ===================== -->
             <div class="gift-card-box">
                 <div class="gift-card-header">
                     <div style="display:flex;align-items:center;gap:8px;">
@@ -624,15 +663,53 @@
                 <div class="gift-hint" id="gc-msg">You can use any amount up to your gift balance and order total.</div>
             </div>
 
+            <!-- ===================== LOYALTY WALLET (UPDATED) ===================== -->
+            <div class="wallet-box">
+                <div class="wallet-header">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <i class="fa-solid fa-star" style="color:#f59e0b;"></i>
+                        <strong>Use Loyalty Wallet</strong>
+                    </div>
+                    <span>
+                        Points:
+                        <span id="wallet-points-balance"
+                              th:text="${walletPoints != null ? walletPoints : 0}">0</span>
+                    </span>
+                </div>
+
+                <!-- ✅ rule shown + enforce 50-step in input -->
+                <div class="wallet-hint" style="margin-top:-2px;">
+                    Redeem in steps of <strong>50 points</strong> (50 points = $1.00).
+                </div>
+
+                <div class="wallet-row">
+                    <input id="wallet-points"
+                           type="number"
+                           min="50"
+                           step="50"
+                           placeholder="Enter points (50 = $1)">
+                    <button id="wallet-apply" type="button" class="btn primary">Apply</button>
+                    <button id="wallet-remove" type="button" class="btn ghost" style="display:none">Remove</button>
+                </div>
+
+                <div class="wallet-hint" id="wallet-msg">
+                    Redeem points to reduce your remaining payable amount.
+                </div>
+            </div>
+
             <h4 style="margin:8px 0 8px;font-size:16px;">Price Details</h4>
 
             <div class="price-details">
                 <div class="row"><span>Subtotal</span>
                     <span th:text="${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">$0.00</span>
                 </div>
+
+                <!-- Discount row: updateable via JS -->
                 <div class="row"><span>Discount</span>
-                    <span>− $<span th:text="${#numbers.formatDecimal(order.discount,1,'COMMA',2,'POINT')}">0.00</span></span>
+                    <span>− $<span id="order-discount"
+                                   th:text="${#numbers.formatDecimal(order.discount,1,'COMMA',2,'POINT')}">0.00</span></span>
                 </div>
+
                 <div class="row"><span>Tax (8%)</span>
                     <span th:text="${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">$0.00</span>
                 </div>
@@ -645,6 +722,11 @@
 
                 <div class="row"><span>Gift card applied</span>
                     <span>− $<span id="gc-applied" th:text="${#numbers.formatDecimal(order.giftApplied != null ? order.giftApplied : 0,1,'COMMA',2,'POINT')}">0.00</span></span>
+                </div>
+
+                <!-- wallet applied row -->
+                <div class="row"><span>Wallet discount applied</span>
+                    <span>− $<span id="wallet-applied">0.00</span></span>
                 </div>
             </div>
 
@@ -691,12 +773,9 @@
     const orderTotal = document.getElementById('order-total');
 
     function updateCardPayAmount(remaining) {
-        const container = document.getElementById('card-pay-amount');
-        if (!container) return;
-        const inner = container.querySelector('span');
-        const formatted = remaining.toFixed(2);
-        if (inner) inner.textContent = formatted;
-        else container.textContent = '$' + formatted;
+        const inner = document.getElementById('card-pay-amount-inner');
+        if (!inner) return;
+        inner.textContent = Number(remaining || 0).toFixed(2);
     }
 
     async function applyGift(){
@@ -757,6 +836,128 @@
     gcApply?.addEventListener('click', applyGift);
     gcInput?.addEventListener('keydown', e => {
         if (e.key === 'Enter'){ e.preventDefault(); applyGift(); }
+    });
+
+    // ============================
+    //  UPDATED: LOYALTY WALLET APPLY
+    //  Rule: 50 points = $1
+    //  Enforce: min 50, step 50, clamp to wallet balance
+    //  Also add Remove button to reverse UI state
+    // ============================
+    const walletPtsInput   = document.getElementById('wallet-points');
+    const walletApplyBtn   = document.getElementById('wallet-apply');
+    const walletRemoveBtn  = document.getElementById('wallet-remove');
+    const walletMsg        = document.getElementById('wallet-msg');
+    const walletBalanceEl  = document.getElementById('wallet-points-balance');
+    const walletAppliedEl  = document.getElementById('wallet-applied');
+    const orderDiscountEl  = document.getElementById('order-discount');
+
+    function clampToStep50(n){
+        n = Number(n || 0);
+        if (!Number.isFinite(n)) return 0;
+        return Math.floor(n / 50) * 50;
+    }
+
+    function currentWalletBalance(){
+        return parseInt(walletBalanceEl?.textContent || '0', 10) || 0;
+    }
+
+    async function applyWalletPoints(){
+        const raw = (walletPtsInput?.value || '').trim();
+        let pointsUsed = parseInt(raw, 10);
+
+        const maxBal = currentWalletBalance();
+
+        if (!pointsUsed || pointsUsed <= 0){
+            walletMsg.textContent = 'Please enter points.';
+            walletMsg.style.color = '#b91c1c';
+            return;
+        }
+
+        // normalize to multiples of 50
+        pointsUsed = clampToStep50(pointsUsed);
+
+        if (pointsUsed < 50){
+            walletMsg.textContent = 'Minimum redeem is 50 points ($1).';
+            walletMsg.style.color = '#b91c1c';
+            walletPtsInput.value = '50';
+            return;
+        }
+
+        if (pointsUsed > maxBal){
+            pointsUsed = clampToStep50(maxBal);
+        }
+
+        if (pointsUsed < 50){
+            walletMsg.textContent = 'Not enough points (need at least 50).';
+            walletMsg.style.color = '#b91c1c';
+            return;
+        }
+
+        // reflect normalized value in input
+        walletPtsInput.value = String(pointsUsed);
+
+        walletApplyBtn.disabled = true;
+        const oldText = walletApplyBtn.textContent;
+        walletApplyBtn.textContent = 'Applying…';
+
+        try{
+            const res = await fetch('/payment/loyalty/apply', {
+                method:'POST',
+                headers: withCsrf(),
+                body: JSON.stringify({ orderId: ORDER_ID, pointsUsed })
+            });
+            const data = await res.json();
+
+            if (!res.ok || data.status !== 'success'){
+                walletMsg.textContent = data.message || 'Unable to apply wallet points.';
+                walletMsg.style.color = '#b91c1c';
+                toast('Wallet not applied', false);
+                return;
+            }
+
+            const walletDiscountApplied = Number(data.walletDiscountApplied ?? data.loyaltyDiscountApplied ?? 0);
+            const walletPointsLeft      = Number(data.walletPointsLeft ?? 0);
+            const remaining             = Number(data.remainingToPay ?? 0);
+            const newOrderDiscount      = Number(data.orderDiscount ?? 0);
+
+            if (walletAppliedEl)  walletAppliedEl.textContent   = walletDiscountApplied.toFixed(2);
+            if (walletBalanceEl)  walletBalanceEl.textContent   = String(walletPointsLeft);
+            if (orderTotal)       orderTotal.textContent        = remaining.toFixed(2);
+            if (orderDiscountEl)  orderDiscountEl.textContent   = newOrderDiscount.toFixed(2);
+
+            updateCardPayAmount(remaining);
+
+            walletMsg.textContent = data.message || `Loyalty points applied successfully.`;
+            walletMsg.style.color = '#166534';
+            toast('Wallet applied', true);
+
+            // show remove button (UI reset only; remove API needs backend if you want true rollback)
+            if (walletRemoveBtn) walletRemoveBtn.style.display = 'inline-block';
+
+        } catch(e){
+            console.error(e);
+            walletMsg.textContent = 'Something went wrong. Please try again.';
+            walletMsg.style.color = '#b91c1c';
+            toast('Error applying wallet', false);
+        } finally {
+            walletApplyBtn.disabled = false;
+            walletApplyBtn.textContent = oldText;
+        }
+    }
+
+    walletApplyBtn?.addEventListener('click', applyWalletPoints);
+    walletPtsInput?.addEventListener('keydown', e => {
+        if (e.key === 'Enter'){ e.preventDefault(); applyWalletPoints(); }
+    });
+
+    // UI-only remove (resets input + message; does NOT restore points server-side)
+    walletRemoveBtn?.addEventListener('click', () => {
+        if (walletPtsInput) walletPtsInput.value = '';
+        if (walletAppliedEl) walletAppliedEl.textContent = '0.00';
+        walletMsg.textContent = 'Loyalty wallet removed.';
+        walletMsg.style.color = '#6b7280';
+        walletRemoveBtn.style.display = 'none';
     });
 
     // ---------- PayPal ----------
@@ -823,7 +1024,6 @@
     cardClose?.addEventListener('click', hideCardForm);
     cardCancel?.addEventListener('click', hideCardForm);
 
-    // MUST return { clientSecret, paymentIntentId, paymentId }
     async function createPaymentIntent(){
         const res = await fetch('/payment/stripe/start', {
             method:'POST',
@@ -838,7 +1038,6 @@
         return data;
     }
 
-    // NEW: confirm on server so DB becomes SUCCEEDED and refunds work
     async function confirmStripePaymentOnServer(orderId, paymentId, paymentIntentId){
         const res = await fetch('/payment/stripe/confirm', {
             method: 'POST',
@@ -864,20 +1063,14 @@
         cardSubmit.textContent = 'Processing…';
 
         try {
-            // 1) Create PI + DB Payment row (paymentId)
             const { clientSecret, paymentId } = await createPaymentIntent();
             if (!clientSecret) throw new Error('No clientSecret from server');
             if (!paymentId) throw new Error('No paymentId from server');
 
-            // 2) Confirm payment
             const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
                 payment_method: {
                     card: cardElement,
-                    billing_details: {
-                        name,
-                        email,
-                        address: { postal_code: zip }
-                    }
+                    billing_details: { name, email, address: { postal_code: zip } }
                 }
             });
 
@@ -890,9 +1083,7 @@
             }
 
             if (paymentIntent?.status === 'succeeded') {
-                // 3) CONFIRM on server => mark payment SUCCEEDED + transaction_id=pi_
                 await confirmStripePaymentOnServer(ORDER_ID, paymentId, paymentIntent.id);
-
                 toast('Payment successful! Redirecting…', true);
                 window.location.href = '/payment/success?orderId=' + ORDER_ID + '&paymentId=' + paymentId;
                 return;
@@ -910,9 +1101,6 @@
         }
     });
 
-    // =============================
-    //       APPLE / GOOGLE PAY
-    // =============================
     async function canUseWallet(){
         if(!stripe) return null;
         const pr = stripe.paymentRequest({
@@ -934,7 +1122,6 @@
                 return;
             }
 
-            // reuse stripe/start so we get paymentId in DB
             const { clientSecret, paymentId } = await createPaymentIntent();
             if(!clientSecret) throw new Error('No client secret returned');
             if(!paymentId) throw new Error('No paymentId returned');

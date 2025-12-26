@@ -14,6 +14,8 @@
             --accent:#b7410e;
             --dark:#111827;
             --bg:#f0f8f0;
+            --card:#ffffff;
+            --ring:rgba(15,23,42,.08);
         }
 
         *{box-sizing:border-box;}
@@ -27,16 +29,17 @@
 
         /* NAVBAR ---------------------------------------------------------------- */
         .navbar{
-            background:#ffffffdd;
-            padding:6px 6%;
-            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            background:rgba(255,255,255,0.96);
+            padding:8px 6%;
+            box-shadow:0 2px 8px rgba(15,23,42,.06);
             display:flex;
             justify-content:space-between;
             align-items:center;
             position:sticky;
             top:0;
             z-index:1000;
-            height:60px;
+            height:64px;
+            gap:14px;
             backdrop-filter:blur(10px);
         }
         .brand-logo{
@@ -45,29 +48,44 @@
             gap:8px;
             text-decoration:none;
             color:var(--green);
-            font-weight:700;
+            font-weight:800;
             font-size:20px;
+            letter-spacing:.02em;
         }
         .brand-logo video{
             width:36px;
-            height:auto;
-            border-radius:4px;
+            height:36px;
+            object-fit:cover;
+            border-radius:8px;
+            box-shadow:0 4px 12px rgba(0,0,0,0.12);
         }
 
         .nav-links{
             display:flex;
             align-items:center;
             gap:18px;
+            flex-wrap:wrap;
         }
         .nav-links a{
             text-decoration:none;
             color:#374151;
-            font-weight:500;
-            font-size:15px;
+            font-weight:600;
+            font-size:14px;
+            position:relative;
+            padding:4px 0;
         }
-        .nav-links a:hover{
-            color:var(--green);
+        .nav-links a::after{
+            content:"";
+            position:absolute;
+            left:0;
+            bottom:-3px;
+            width:0;
+            height:2px;
+            background:var(--green);
+            border-radius:999px;
+            transition:width .18s ease;
         }
+        .nav-links a:hover::after{ width:100%; }
 
         /* Dropdown */
         .dropdown{position:relative}
@@ -75,72 +93,99 @@
             background:none;
             border:none;
             cursor:pointer;
-            font-size:15px;
-            color:#374151;
+            font-size:14px;
+            color:#111827;
             display:flex;
             align-items:center;
             gap:6px;
+            padding:6px 10px;
+            border-radius:999px;
+            font-weight:800;
+            transition:background .15s ease, box-shadow .15s ease;
+        }
+        .dropdown-toggle:hover{
+            background:#f3f4f6;
+            box-shadow:0 0 0 1px rgba(148,163,184,0.3);
         }
         .dropdown-menu{
             display:none;
             position:absolute;
             right:0;
-            top:100%;
-            margin-top:4px;
+            top:calc(100% + 8px);
             background:#fff;
-            box-shadow:0 4px 10px rgba(0,0,0,.12);
-            border-radius:8px;
+            box-shadow:0 10px 28px rgba(15,23,42,0.18);
+            border-radius:12px;
             overflow:hidden;
-            min-width:180px;
+            min-width:200px;
+            border:1px solid #e5e7eb;
         }
         .dropdown:hover .dropdown-menu{display:block;}
         .dropdown-menu a,
         .dropdown-menu span{
             display:block;
-            padding:10px 16px;
+            padding:10px 14px;
             text-decoration:none;
             color:#111827;
             white-space:nowrap;
             font-size:14px;
+            font-weight:500;
         }
-        .dropdown-menu a:hover{background:#f3f4f6;}
+        .dropdown-menu a:hover{background:#f7faf7;}
 
         /* Cart badge */
         .cart-icon-container{
             position:relative;
-            display:inline-block;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
         }
         .cart-count-badge{
             position:absolute;
-            top:-8px;
-            right:-8px;
+            top:-6px;
+            right:-10px;
             background-color:var(--accent);
             color:#fff;
             border-radius:999px;
-            padding:2px 6px;
+            padding:1px 7px;
             font-size:11px;
-            font-weight:700;
+            font-weight:800;
+            min-width:18px;
+            height:18px;
             display:flex;
             align-items:center;
             justify-content:center;
-            min-width:18px;
-            height:18px;
-            text-align:center;
+            line-height:1;
+            box-shadow:0 0 0 2px #fff;
         }
 
         /* LAYOUT ----------------------------------------------------------------- */
         .wrap{
-            max-width:1100px;
-            margin:28px auto 40px;
+            max-width:1160px;
+            margin:22px auto 44px;
             padding:0 6%;
         }
 
+        /* Hero banner */
+        .hero{
+            background:linear-gradient(135deg, rgba(34,197,94,.14), rgba(183,65,14,.08));
+            border:1px solid rgba(209,213,219,0.9);
+            border-radius:18px;
+            padding:18px 18px;
+            box-shadow:0 12px 30px var(--ring);
+        }
+        .hero-row{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:16px;
+            flex-wrap:wrap;
+        }
         .success-head{
             display:flex;
             flex-wrap:wrap;
             align-items:center;
-            gap:16px;
-            margin:4px 0 8px;
+            gap:14px;
+            margin:0;
         }
         .success-icon{
             width:56px;
@@ -154,22 +199,45 @@
             box-shadow:0 10px 24px rgba(0,0,0,.18);
         }
         .title{
-            font-size:32px;
-            line-height:1.1;
-            color:var(--green);
+            font-size:30px;
+            line-height:1.12;
+            color:var(--dark);
             margin:0;
+            font-weight:900;
         }
         .subtitle{
-            margin:6px 0 22px;
+            margin:6px 0 0;
             color:#4b5563;
             font-size:14px;
+            max-width:62ch;
         }
 
+        .hero-actions{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            align-items:center;
+        }
+        .chip{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding:8px 12px;
+            border-radius:999px;
+            border:1px solid rgba(209,213,219,0.9);
+            background:#fff;
+            font-size:12px;
+            font-weight:800;
+            color:#111827;
+        }
+        .chip i{ color:var(--green); }
+
+        /* Cards grid */
         .grid-cards{
             display:grid;
             grid-template-columns:repeat(4,1fr);
-            gap:16px;
-            margin-bottom:18px;
+            gap:14px;
+            margin:16px 0 16px;
         }
         @media (max-width:1000px){
             .grid-cards{grid-template-columns:repeat(2,1fr);}
@@ -178,82 +246,111 @@
             .grid-cards{grid-template-columns:1fr;}
         }
 
-        .info{
-            background:#ffffff;
-            border-radius:12px;
-            box-shadow:0 4px 12px rgba(0,0,0,.06);
+        .card{
+            background:var(--card);
+            border-radius:14px;
+            box-shadow:0 10px 26px var(--ring);
             padding:14px 16px;
+            border:1px solid rgba(209,213,219,0.85);
         }
-        .info .label{
+        .card .label{
             font-size:11px;
-            font-weight:700;
+            font-weight:800;
             color:#6b7280;
-            letter-spacing:.08em;
+            letter-spacing:.10em;
             margin-bottom:6px;
             text-transform:uppercase;
         }
-        .info .value{
-            font-weight:700;
+        .card .value{
+            font-weight:800;
             color:#111827;
             font-size:15px;
             word-break:break-word;
         }
 
-        /* SHIPPING + TIMELINE ---------------------------------------------------- */
-        .two-col{
+        /* Shipping + Support banner row */
+        .bar{
             display:grid;
-            grid-template-columns:1.1fr 1.2fr;
-            gap:16px;
-            margin:4px 0 18px;
+            grid-template-columns:1fr 1fr 1fr;
+            gap:14px;
+            margin:0 0 16px;
         }
-        @media (max-width:860px){
-            .two-col{grid-template-columns:1fr;}
+        @media (max-width:980px){
+            .bar{grid-template-columns:1fr;}
         }
-
-        .shipping-info{
+        .bar-item{
             background:#fff;
+            border-radius:14px;
+            border:1px solid rgba(209,213,219,0.85);
+            box-shadow:0 10px 26px var(--ring);
+            padding:14px 16px;
+            display:flex;
+            gap:12px;
+            align-items:flex-start;
+        }
+        .bar-icon{
+            width:38px;
+            height:38px;
             border-radius:12px;
-            box-shadow:0 4px 12px rgba(0,0,0,.06);
-            padding:16px 18px;
-            text-align:center;
+            display:grid;
+            place-items:center;
+            background:#ecfdf3;
+            color:#166534;
+            font-size:16px;
+            flex:0 0 auto;
         }
-        .shipping-info .label{
-            font-size:11px;
-            font-weight:700;
-            color:#6b7280;
-            text-transform:uppercase;
-            letter-spacing:.08em;
-            margin-bottom:4px;
+        .bar-title{
+            margin:0;
+            font-size:14px;
+            font-weight:900;
+            color:#111827;
         }
-        .shipping-info .value{
-            font-weight:700;
-            color:var(--accent);
-            font-size:18px;
-        }
-        .shipping-info .hint{
+        .bar-text{
+            margin:4px 0 0;
             font-size:12px;
             color:#6b7280;
-            margin-top:4px;
+            line-height:1.45;
+        }
+        .bar-link{
+            display:inline-block;
+            margin-top:6px;
+            color:var(--green);
+            font-weight:900;
+            font-size:12px;
+            text-decoration:none;
+        }
+        .bar-link:hover{text-decoration:underline;}
+
+        /* Main content grid (timeline + items/totals) */
+        .main-grid{
+            display:grid;
+            grid-template-columns:1fr 1.2fr;
+            gap:14px;
+        }
+        @media (max-width:980px){
+            .main-grid{grid-template-columns:1fr;}
         }
 
+        /* Timeline */
         .timeline{
             background:#fff;
-            border-radius:12px;
-            box-shadow:0 4px 12px rgba(0,0,0,.06);
-            padding:18px 20px;
+            border-radius:14px;
+            box-shadow:0 10px 26px var(--ring);
+            padding:16px 18px;
             position:relative;
             overflow:hidden;
+            border:1px solid rgba(209,213,219,0.85);
         }
         .timeline h3{
             font-size:16px;
-            font-weight:700;
+            font-weight:900;
             margin:0 0 12px;
             color:#111827;
         }
         .timeline-item{
             display:flex;
             align-items:flex-start;
-            margin-bottom:18px;
+            margin-bottom:16px;
             position:relative;
         }
         .timeline-item:last-child{margin-bottom:0;}
@@ -274,14 +371,15 @@
         }
         .timeline-content h4{
             font-size:14px;
-            font-weight:600;
+            font-weight:800;
             margin:0;
             color:#111827;
         }
         .timeline-content p{
-            font-size:13px;
+            font-size:12px;
             color:#6b7280;
             margin:4px 0 0;
+            line-height:1.4;
         }
         .timeline-item.active .timeline-icon{
             background:var(--green);
@@ -292,21 +390,41 @@
         }
         .timeline-line{
             position:absolute;
-            left:14px;
-            top:36px;
-            bottom:8px;
+            left:28px;
+            top:52px;
+            bottom:16px;
             width:2px;
             background:#e5e7eb;
         }
 
-        /* ITEMS TABLE ------------------------------------------------------------ */
+        /* Items card */
         .table-card{
             background:#fff;
-            border-radius:12px;
-            box-shadow:0 4px 12px rgba(0,0,0,.06);
+            border-radius:14px;
+            box-shadow:0 10px 26px var(--ring);
             overflow:hidden;
-            margin-top:8px;
+            border:1px solid rgba(209,213,219,0.85);
         }
+        .table-head{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:14px 16px;
+            border-bottom:1px solid #f3f4f6;
+            background:#f9fafb;
+        }
+        .table-head h3{
+            margin:0;
+            font-size:16px;
+            font-weight:900;
+            color:#111827;
+        }
+        .table-head .small{
+            font-size:12px;
+            color:#6b7280;
+            font-weight:700;
+        }
+
         table{
             width:100%;
             border-collapse:collapse;
@@ -317,31 +435,34 @@
             border-bottom:1px solid #f3f4f6;
         }
         thead th{
-            background:#f9fafb;
-            font-weight:700;
+            background:#fff;
+            font-weight:900;
             color:#4b5563;
-            font-size:13px;
+            font-size:12px;
             text-align:left;
         }
-        tbody td{vertical-align:middle;}
+        tbody td{vertical-align:middle; font-size:13px;}
         .th-item{width:50%;}
         .td-item{
             white-space:normal;
             overflow-wrap:break-word;
             word-break:break-word;
+            font-weight:700;
+            color:#111827;
         }
         .num{text-align:right;}
         @media (max-width:560px){
             .num{text-align:left;}
         }
 
-        /* TOTALS ----------------------------------------------------------------- */
+        /* Totals (inside right column) */
         .totals{
             background:#fff;
-            border-radius:12px;
-            box-shadow:0 4px 12px rgba(0,0,0,.06);
+            border-radius:14px;
+            box-shadow:0 10px 26px var(--ring);
             padding:14px 16px;
-            margin-top:16px;
+            margin-top:14px;
+            border:1px solid rgba(209,213,219,0.85);
         }
         .row{
             display:flex;
@@ -353,22 +474,22 @@
         .row .value{
             min-width:120px;
             text-align:right;
-            font-weight:600;
+            font-weight:800;
         }
         .row.total{
-            font-weight:800;
+            font-weight:900;
             font-size:17px;
             margin-top:10px;
             border-top:1px dashed #e5e7eb;
             padding-top:8px;
         }
 
-        /* ACTION LINKS ----------------------------------------------------------- */
+        /* Action buttons */
         .links{
             display:flex;
             flex-wrap:wrap;
             gap:10px;
-            margin-top:20px;
+            margin-top:16px;
         }
         .btn{
             display:inline-flex;
@@ -379,12 +500,58 @@
             text-decoration:none;
             padding:11px 18px;
             border-radius:999px;
-            font-weight:600;
+            font-weight:800;
             font-size:14px;
-            box-shadow:0 6px 14px rgba(0,0,0,.12);
+            box-shadow:0 10px 22px rgba(0,0,0,.12);
+            border:0;
+            cursor:pointer;
         }
-        .btn:hover{
-            background:var(--accent);
+        .btn:hover{ background:var(--accent); }
+        .btn.secondary{
+            background:#fff;
+            color:#111827;
+            border:1px solid rgba(209,213,219,0.95);
+            box-shadow:none;
+        }
+        .btn.secondary:hover{
+            background:#f9fafb;
+            color:#111827;
+        }
+
+        /* Pro note */
+        .note-card{
+            margin-top:14px;
+            background:#fff;
+            border-radius:14px;
+            border:1px solid rgba(209,213,219,0.85);
+            box-shadow:0 10px 26px var(--ring);
+            padding:14px 16px;
+            display:flex;
+            gap:12px;
+            align-items:flex-start;
+        }
+        .note-ic{
+            width:38px;
+            height:38px;
+            border-radius:12px;
+            display:grid;
+            place-items:center;
+            background:#fff7ed;
+            color:#9a3412;
+            font-size:16px;
+            flex:0 0 auto;
+        }
+        .note-card h4{
+            margin:0;
+            font-size:14px;
+            font-weight:900;
+            color:#111827;
+        }
+        .note-card p{
+            margin:4px 0 0;
+            color:#6b7280;
+            font-size:12px;
+            line-height:1.45;
         }
 
         /* FOOTER ----------------------------------------------------------------- */
@@ -408,37 +575,34 @@
         .footer-column h3{
             color:#fff;
             margin-bottom:14px;
-            font-weight:600;
+            font-weight:700;
             border-bottom:2px solid var(--green);
             padding-bottom:6px;
             display:inline-block;
+            font-size:15px;
         }
         .footer-column p{
             line-height:1.6;
             font-size:14px;
         }
-        .footer-column ul{
-            list-style:none;
-            padding:0;
-            margin:0;
-        }
+        .footer-column ul{list-style:none;padding:0;margin:0;}
         .footer-column ul li a{
             text-decoration:none;
             color:#d1d5db;
             display:block;
             padding:5px 0;
             font-size:14px;
-            transition:color .25s;
+            transition:color .25s, transform .15s;
         }
-        .footer-column ul li a:hover{color:#fff;}
+        .footer-column ul li a:hover{color:#fff; transform:translateX(2px);}
         .social-links a{
             color:#9ca3af;
             text-decoration:none;
             font-size:20px;
             margin-right:15px;
-            transition:color .25s;
+            transition:color .25s, transform .15s;
         }
-        .social-links a:hover{color:var(--green);}
+        .social-links a:hover{color:var(--green); transform:translateY(-1px);}
         .footer-bottom{
             text-align:center;
             padding-top:18px;
@@ -446,10 +610,7 @@
             font-size:13px;
         }
         @media (max-width:768px){
-            .footer-container{
-                flex-direction:column;
-                text-align:center;
-            }
+            .footer-container{flex-direction:column;text-align:center;}
             .footer-column{margin-bottom:18px;}
         }
     </style>
@@ -469,7 +630,7 @@
 
         <a th:href="@{/cart/view}" class="nav-link">
             <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
-                <i class="fas fa-shopping-cart" style="font-size:22px"></i>
+                <i class="fas fa-shopping-cart" style="font-size:20px"></i>
                 <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
             </div>
         </a>
@@ -498,34 +659,55 @@
 </nav>
 
 <div class="wrap">
-    <div class="success-head">
-        <div class="success-icon"><i class="fa-solid fa-check"></i></div>
-        <div>
-            <h1 class="title">Order placed successfully!</h1>
-            <p class="subtitle">
-                We’ve received your order and will email you a confirmation shortly.
-            </p>
-        </div>
-    </div>
 
-    <!-- Top summary cards -->
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-row">
+            <div class="success-head">
+                <div class="success-icon"><i class="fa-solid fa-check"></i></div>
+                <div>
+                    <h1 class="title">Order confirmed</h1>
+                    <p class="subtitle">
+                        Thanks for shopping with The Spice Jar — your order is now in our system.
+                        We’ll email you updates as it moves through packing and shipping.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <span class="chip">
+                    <i class="fa-solid fa-envelope"></i>
+                    Confirmation email: <span style="font-weight:900" th:text="${order.email} ?: 'on the way'">on the way</span>
+                </span>
+                <span class="chip">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Secure checkout
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key cards -->
     <section class="grid-cards">
-        <div class="info">
+        <div class="card">
             <div class="label">Order ID</div>
             <div class="value" th:text="${order.id}">12345</div>
         </div>
-        <div class="info">
+
+        <div class="card">
             <div class="label">Placed On</div>
             <div class="value"
                  th:text="${#temporals.format(order.createdAt, 'MMM d, yyyy • h:mm a')}">
                 Aug 29, 2025 • 9:33 AM
             </div>
         </div>
-        <div class="info">
+
+        <div class="card">
             <div class="label">Customer</div>
             <div class="value" th:text="${order.customerName}">Customer Name</div>
         </div>
-        <div class="info">
+
+        <div class="card">
             <div class="label">Shipping Address</div>
             <div class="value"
                  th:text="${(order.street != null ? order.street + ', ' : '') +
@@ -537,135 +719,177 @@
         </div>
     </section>
 
-    <!-- Shipping ETA + Timeline -->
-    <section class="two-col">
-        <div class="shipping-info">
-            <div class="label">Estimated Delivery</div>
-            <div class="value">Within 5–7 business days</div>
-            <div class="hint">You’ll receive tracking details by email once your order ships.</div>
+    <!-- Helpful banners (fills space professionally) -->
+    <section class="bar">
+        <div class="bar-item">
+            <div class="bar-icon"><i class="fa-solid fa-truck-fast"></i></div>
+            <div>
+                <p class="bar-title">Estimated delivery</p>
+                <p class="bar-text">Within <strong>5–7 business days</strong>. Tracking details will appear in your email when the order ships.</p>
+            </div>
         </div>
 
+        <div class="bar-item">
+            <div class="bar-icon"><i class="fa-solid fa-location-dot"></i></div>
+            <div>
+                <p class="bar-title">Delivery to</p>
+                <p class="bar-text" th:text="${order.fullAddress} ?: 'Your saved address'">Your saved address</p>
+            </div>
+        </div>
+
+        <div class="bar-item">
+            <div class="bar-icon"><i class="fa-solid fa-headset"></i></div>
+            <div>
+                <p class="bar-title">Need help?</p>
+                <p class="bar-text">Have a question or need to update your address? Contact us and include your order ID.</p>
+                <a class="bar-link" th:href="@{/contact}">Contact support →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN GRID -->
+    <section class="main-grid">
+        <!-- Timeline -->
         <div class="timeline">
-            <h3>Order Status</h3>
+            <h3>Order status</h3>
             <div class="timeline-line"></div>
 
             <div class="timeline-item active">
-                <div class="timeline-icon">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
+                <div class="timeline-icon"><i class="fa-solid fa-circle-check"></i></div>
                 <div class="timeline-content">
-                    <h4>Order Placed</h4>
-                    <p>We’ve received your order and it’s being processed.</p>
+                    <h4>Order placed</h4>
+                    <p>We received your order and started processing.</p>
                 </div>
             </div>
 
             <div class="timeline-item">
-                <div class="timeline-icon">
-                    <i class="fa-solid fa-box"></i>
+                <div class="timeline-icon"><i class="fa-solid fa-box"></i></div>
+                <div class="timeline-content">
+                    <h4>Packed</h4>
+                    <p>Your items are packed with care for safe delivery.</p>
                 </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-icon"><i class="fa-solid fa-truck-fast"></i></div>
                 <div class="timeline-content">
                     <h4>Shipped</h4>
-                    <p>Your items will be carefully packed and handed over to the courier.</p>
+                    <p>We’ll email your tracking number once the courier picks it up.</p>
                 </div>
             </div>
 
             <div class="timeline-item">
-                <div class="timeline-icon">
-                    <i class="fa-solid fa-truck-fast"></i>
-                </div>
-                <div class="timeline-content">
-                    <h4>Out for Delivery</h4>
-                    <p>The package is with the delivery partner and on the way to you.</p>
-                </div>
-            </div>
-
-            <div class="timeline-item">
-                <div class="timeline-icon">
-                    <i class="fa-solid fa-house-chimney"></i>
-                </div>
+                <div class="timeline-icon"><i class="fa-solid fa-house-chimney"></i></div>
                 <div class="timeline-content">
                     <h4>Delivered</h4>
-                    <p>Enjoy your fresh spices! We hope they add magic to your meals.</p>
+                    <p>Enjoy your spices! We’d love your feedback after delivery.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items + totals -->
+        <div>
+            <section class="table-card">
+                <div class="table-head">
+                    <h3>Order items</h3>
+                    <div class="small">
+                        Items: <span th:text="${order.items != null ? order.items.size() : 0}">0</span>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="th-item">Item</th>
+                        <th style="width:90px;">Qty</th>
+                        <th style="width:120px;" class="num">Price</th>
+                        <th style="width:140px;" class="num">Line Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="it : ${order.items}">
+                        <td class="td-item" th:text="${it.productName}">Spice</td>
+                        <td th:text="${it.quantity}">1</td>
+                        <td class="num"
+                            th:text="'$ ' + ${#numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">
+                            $ 10.00
+                        </td>
+                        <td class="num"
+                            th:text="'$ ' + ${#numbers.formatDecimal(it.lineTotal,1,'COMMA',2,'POINT')}">
+                            $ 10.00
+                        </td>
+                    </tr>
+
+                    <tr th:if="${order.items == null or #lists.isEmpty(order.items)}">
+                        <td colspan="4" style="padding:18px 14px; color:#6b7280; font-weight:700;">
+                            No items found for this order.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="totals">
+                <div class="row">
+                    <span class="label">Subtotal</span>
+                    <span class="value"
+                          th:text="'$ ' + ${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">
+                        $ 0.00
+                    </span>
+                </div>
+
+                <div class="row" th:if="${order.discount != null && order.discount > 0}">
+                    <span class="label">Discount</span>
+                    <span class="value"
+                          th:text="'- $ ' + ${#numbers.formatDecimal(order.discount,1,'COMMA',2,'POINT')}">
+                        - $ 0.00
+                    </span>
+                </div>
+
+                <div class="row">
+                    <span class="label">Tax (8%)</span>
+                    <span class="value"
+                          th:text="'$ ' + ${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">
+                        $ 0.00
+                    </span>
+                </div>
+
+                <div class="row total">
+                    <span class="label">Total paid</span>
+                    <span class="value"
+                          th:text="'$ ' + ${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">
+                        $ 0.00
+                    </span>
+                </div>
+            </section>
+
+            <div class="links">
+                <a class="btn" th:href="@{/}">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Back to home</span>
+                </a>
+                <a class="btn secondary" th:href="@{/orders}">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span>View my orders</span>
+                </a>
+                <button class="btn secondary" type="button" onclick="shareOrder()">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <span>Share</span>
+                </button>
+            </div>
+
+            <div class="note-card">
+                <div class="note-ic"><i class="fa-solid fa-lightbulb"></i></div>
+                <div>
+                    <h4>Pro tip</h4>
+                    <p>
+                        You can track your full order history under <strong>My Orders</strong>.
+                        If you need help, share your <strong>Order ID</strong> with support for faster assistance.
+                    </p>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- Items table -->
-    <section class="table-card">
-        <table>
-            <thead>
-            <tr>
-                <th class="th-item">Item</th>
-                <th style="width:90px;">Qty</th>
-                <th style="width:120px;">Price</th>
-                <th style="width:140px;">Line Total</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="it : ${order.items}">
-                <td class="td-item" th:text="${it.productName}">Spice</td>
-                <td th:text="${it.quantity}">1</td>
-                <td class="num"
-                    th:text="'$ ' + ${#numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">
-                    $ 10.00
-                </td>
-                <td class="num"
-                    th:text="'$ ' + ${#numbers.formatDecimal(it.lineTotal,1,'COMMA',2,'POINT')}">
-                    $ 10.00
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
-
-    <!-- Totals -->
-    <section class="totals">
-        <div class="row">
-            <span class="label">Subtotal</span>
-            <span class="value"
-                  th:text="'$ ' + ${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">
-                $ 0.00
-            </span>
-        </div>
-        <div class="row">
-            <span class="label">Tax (8%)</span>
-            <span class="value"
-                  th:text="'$ ' + ${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">
-                $ 0.00
-            </span>
-        </div>
-        <div class="row" th:if="${order.discount != null && order.discount > 0}">
-            <span class="label">Discount</span>
-            <span class="value"
-                  th:text="'- $ ' + ${#numbers.formatDecimal(order.discount,1,'COMMA',2,'POINT')}">
-                - $ 0.00
-            </span>
-        </div>
-        <div class="row total">
-            <span class="label">Total Paid</span>
-            <span class="value"
-                  th:text="'$ ' + ${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">
-                $ 0.00
-            </span>
-        </div>
-    </section>
-
-    <!-- Action buttons -->
-    <div class="links">
-        <a class="btn" th:href="@{/}">
-            <i class="fa-solid fa-house"></i>
-            <span>Back to Home</span>
-        </a>
-        <a class="btn" th:href="@{/orders}">
-            <i class="fa-solid fa-receipt"></i>
-            <span>View My Orders</span>
-        </a>
-        <a class="btn" href="javascript:void(0)" onclick="shareOrder()">
-            <i class="fa-solid fa-share-nodes"></i>
-            <span>Share Order</span>
-        </a>
-    </div>
 </div>
 
 <footer class="site-footer">
@@ -703,12 +927,13 @@
 
 <script>
     function shareOrder() {
+        const text = 'I just placed an order at The Spice Jar!';
         if (navigator.share) {
             navigator.share({
                 title: 'My Spice Jar Order',
-                text: 'I just placed an order at The Spice Jar! Check out their amazing spices.',
+                text,
                 url: window.location.href
-            }).catch(console.error);
+            }).catch(()=>{});
         } else {
             prompt("Copy this link to share your order:", window.location.href);
         }

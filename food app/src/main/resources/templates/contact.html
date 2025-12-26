@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Contact Us • The Spice Jar</title>
 
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml"
           href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
 
-    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
-    <!-- Font (optional but keeps it consistent with other pages) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -28,19 +25,15 @@
             --ring:0 10px 30px rgba(0,0,0,.06);
             --radius:14px;
         }
-
         *{box-sizing:border-box}
-
         body{
             margin:0;
             font-family:"Inter", ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;
             background:var(--bg);
             color:var(--ink);
         }
-
         a{color:inherit}
 
-        /* Navbar */
         .navbar{
             background:#fff;
             padding:6px 6%;
@@ -54,7 +47,6 @@
             height:60px;
             gap:14px;
         }
-
         .brand-logo{
             display:flex;
             align-items:center;
@@ -64,14 +56,8 @@
             font-weight:700;
             font-size:20px;
         }
+        .brand-logo video{ width:36px; height:auto; border-radius:4px; }
 
-        .brand-logo video{
-            width:36px;
-            height:auto;
-            border-radius:4px;
-        }
-
-        /* compact navbar search */
         .nav-search{
             flex:1;
             max-width:520px;
@@ -126,15 +112,9 @@
             border-radius:999px;
             transition:width .18s ease;
         }
-        .nav-links a:hover::after{
-            width:100%;
-        }
+        .nav-links a:hover::after{ width:100%; }
 
-        /* Cart count badge */
-        .cart-icon-container {
-            position: relative;
-            display: inline-block;
-        }
+        .cart-icon-container { position: relative; display: inline-block; }
         .cart-count-badge {
             position: absolute;
             top: -8px;
@@ -150,10 +130,8 @@
             justify-content: center;
             min-width: 20px;
             height: 20px;
-            text-align: center;
         }
 
-        /* Dropdowns */
         .dropdown{position:relative}
         .dropdown-toggle{
             background:none;
@@ -167,9 +145,7 @@
             padding:6px 10px;
             border-radius:999px;
         }
-        .dropdown-toggle:hover{
-            background:#f3f4f6;
-        }
+        .dropdown-toggle:hover{ background:#f3f4f6; }
         .dropdown-menu{
             display:none;
             position:absolute;
@@ -192,7 +168,6 @@
         }
         .dropdown-menu a:hover{background:#f4f4f4}
 
-        /* Hero */
         .hero{
             position:relative;
             display:grid;
@@ -212,18 +187,9 @@
                     url('https://images.unsplash.com/photo-1514517220033-e61b1c541b1a?q=80&w=2400&auto=format&fit=crop')
                     center/cover no-repeat;
         }
-        .hero-inner{
-            position:relative;
-            max-width:900px;
-        }
-        .hero h1{
-            margin:.2rem 0 .3rem;
-            font-size:clamp(28px,4.4vw,40px);
-        }
-        .hero p{
-            opacity:.97;
-            font-weight:500;
-        }
+        .hero-inner{ position:relative; max-width:900px; }
+        .hero h1{ margin:.2rem 0 .3rem; font-size:clamp(28px,4.4vw,40px); }
+        .hero p{ opacity:.97; font-weight:500; }
 
         .wrap{
             max-width:1180px;
@@ -235,9 +201,7 @@
             grid-template-columns:1.1fr .9fr;
             gap:26px;
         }
-        @media (max-width: 980px){
-            .grid{grid-template-columns:1fr}
-        }
+        @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
 
         .card{
             background:var(--card);
@@ -254,16 +218,13 @@
             gap:8px;
         }
 
-        /* Quick support cards */
         .support{
             display:grid;
             grid-template-columns:repeat(3,minmax(0,1fr));
             gap:16px;
             margin-bottom:20px;
         }
-        @media (max-width: 900px){
-            .support{grid-template-columns:1fr}
-        }
+        @media (max-width: 900px){ .support{grid-template-columns:1fr} }
         .scard{
             background:#fff;
             border:1px solid #eef2ef;
@@ -274,8 +235,7 @@
         .scard h3{margin:0 0 6px}
         .scard p{margin:0; color:var(--muted); font-size:14px}
         .scard .icon{
-            width:42px;
-            height:42px;
+            width:42px; height:42px;
             border-radius:10px;
             display:grid;
             place-items:center;
@@ -284,7 +244,6 @@
             margin-bottom:10px;
         }
 
-        /* Form */
         .form-grid{
             display:grid;
             grid-template-columns:1fr 1fr;
@@ -312,10 +271,7 @@
             border-color:var(--green);
             box-shadow:0 0 0 2px rgba(34,197,94,0.20);
         }
-        textarea{
-            min-height:140px;
-            resize:vertical;
-        }
+        textarea{ min-height:140px; resize:vertical; }
 
         .btn{
             display:inline-flex;
@@ -328,13 +284,8 @@
             cursor:pointer;
             text-decoration:none;
         }
-        .btn-primary{
-            background:var(--green);
-            color:#fff;
-        }
-        .btn-primary:hover{
-            background:var(--accent);
-        }
+        .btn-primary{ background:var(--green); color:#fff; }
+        .btn-primary:hover{ background:var(--accent); }
 
         .banner{
             padding:12px 14px;
@@ -343,26 +294,15 @@
             margin-bottom:12px;
             font-size:14px;
         }
-        .ok{
-            background:#e7f7ec;
-            color:#146c2e;
-            border:1px solid #cdebd6;
-        }
-        .err{
-            background:#fde8e8;
-            color:#9b1c1c;
-            border:1px solid #facdcd;
-        }
+        .ok{ background:#e7f7ec; color:#146c2e; border:1px solid #cdebd6; }
+        .err{ background:#fde8e8; color:#9b1c1c; border:1px solid #facdcd; }
 
-        /* Details + map + FAQ */
         .detail-list{
             display:grid;
             grid-template-columns:1fr 1fr;
             gap:12px;
         }
-        @media (max-width: 700px){
-            .detail-list{grid-template-columns:1fr}
-        }
+        @media (max-width: 700px){ .detail-list{grid-template-columns:1fr} }
         .detail{
             background:#fafdfb;
             border:1px solid #eef2ef;
@@ -370,10 +310,7 @@
             padding:14px;
             font-size:14px;
         }
-        .detail b{
-            display:block;
-            margin-bottom:6px;
-        }
+        .detail b{ display:block; margin-bottom:6px; }
 
         .map{
             border:0;
@@ -382,9 +319,7 @@
             border-radius:14px;
         }
 
-        .faq{
-            margin-top:20px;
-        }
+        .faq{ margin-top:20px; }
         .faq details{
             background:#fff;
             border:1px solid #eef2ef;
@@ -392,18 +327,9 @@
             padding:12px 14px;
             margin-bottom:10px;
         }
-        .faq summary{
-            cursor:pointer;
-            font-weight:800;
-            color:#1f2937;
-        }
-        .faq p{
-            margin:8px 0 0;
-            color:#475569;
-            font-size:14px;
-        }
+        .faq summary{ cursor:pointer; font-weight:800; color:#1f2937; }
+        .faq p{ margin:8px 0 0; color:#475569; font-size:14px; }
 
-        /* Footer */
         .site-footer{
             background:#222;
             color:#ccc;
@@ -417,10 +343,7 @@
             gap:30px;
             margin-bottom:30px;
         }
-        .footer-column{
-            flex:1;
-            min-width:220px;
-        }
+        .footer-column{ flex:1; min-width:220px; }
         .footer-column h3{
             color:#fff;
             margin-bottom:15px;
@@ -429,15 +352,8 @@
             padding-bottom:8px;
             display:inline-block;
         }
-        .footer-column p{
-            line-height:1.6;
-            font-size:14px;
-        }
-        .footer-column ul{
-            list-style:none;
-            padding:0;
-            margin:0;
-        }
+        .footer-column p{ line-height:1.6; font-size:14px; }
+        .footer-column ul{ list-style:none; padding:0; margin:0; }
         .footer-column ul li a{
             text-decoration:none;
             color:#ccc;
@@ -446,9 +362,7 @@
             font-size:14px;
             transition:color 0.3s;
         }
-        .footer-column ul li a:hover{
-            color:#fff;
-        }
+        .footer-column ul li a:hover{ color:#fff; }
         .social-links a{
             color:#ccc;
             text-decoration:none;
@@ -465,27 +379,20 @@
         }
 
         @media (max-width:768px){
-            .navbar{
-                flex-wrap:wrap;
-                height:auto;
-            }
+            .navbar{ flex-wrap:wrap; height:auto; }
             .nav-search{
                 order:3;
                 width:100%;
                 max-width:none;
                 margin-top:6px;
             }
-            .footer-container{
-                flex-direction:column;
-                text-align:center;
-            }
-            .footer-column{margin-bottom:20px;}
+            .footer-container{ flex-direction:column; text-align:center; }
+            .footer-column{ margin-bottom:20px; }
         }
     </style>
 </head>
 <body>
 
-<!-- Navbar -->
 <nav class="navbar">
     <a href="/" class="brand-logo">
         <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
@@ -510,7 +417,6 @@
         </a>
         <a th:href="@{/contact}">Contact Us</a>
 
-        <!-- Account -->
         <div class="dropdown">
             <button class="dropdown-toggle" type="button">
                 <i class="fas fa-user"></i>
@@ -531,42 +437,45 @@
     </div>
 </nav>
 
-<!-- Hero -->
 <header class="hero">
     <div class="hero-inner">
         <h1>We’d love to hear from you</h1>
-        <p>Questions, feedback, wholesale, or partnerships—drop us a line.</p>
+        <p>Questions, feedback, wholesale, or help with an order—send a ticket and we’ll get back to you.</p>
     </div>
 </header>
 
 <main class="wrap">
-    <!-- Quick support cards -->
+
     <section class="support">
         <div class="scard">
             <div class="icon"><i class="fa-solid fa-headset"></i></div>
             <h3>Customer Support</h3>
-            <p>support@spicejar.example<br/>Mon–Fri · 9am–6pm (ET)</p>
+            <p>
+                <b>Email:</b> support@spicejar.example<br/>
+                <b>Phone:</b> +1 (201) 555-0199<br/>
+                Mon–Fri · 9am–6pm (ET)
+            </p>
         </div>
         <div class="scard">
             <div class="icon"><i class="fa-solid fa-truck"></i></div>
             <h3>Order & Shipping</h3>
-            <p>Track orders or report delivery issues.</p>
+            <p>Include your Order ID in the form for faster help.</p>
         </div>
         <div class="scard">
             <div class="icon"><i class="fa-solid fa-store"></i></div>
             <h3>Wholesale & Retail</h3>
-            <p>Looking to stock our spices? Let’s talk.</p>
+            <p>Looking to stock our spices? Choose “Wholesale” in the topic.</p>
         </div>
     </section>
 
     <div class="grid">
-        <!-- Contact Form -->
         <section class="card">
-            <h2><i class="fa-regular fa-envelope"></i> Send us a message</h2>
+            <h2><i class="fa-regular fa-envelope"></i> Create a support ticket</h2>
 
-            <div th:if="${msg}" class="banner ok" th:text="${msg}">Thanks! We’ll reply soon.</div>
+            <div th:if="${msg}" class="banner ok" th:text="${msg}">Thanks! We received your ticket.</div>
             <div th:if="${error}" class="banner err" th:text="${error}">Please fix the errors and try again.</div>
 
+            <!-- This single form = your ticket creation -->
             <form th:action="@{/contact}" method="post" class="form-grid" novalidate>
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
@@ -590,9 +499,15 @@
                     <select id="topic" name="topic" th:value="${form?.topic}">
                         <option value="GENERAL">General</option>
                         <option value="ORDER">Order / Shipping</option>
+                        <option value="PAYMENT">Payment / Refund</option>
                         <option value="WHOLESALE">Wholesale</option>
                         <option value="PARTNERSHIP">Partnership</option>
                     </select>
+                </div>
+
+                <div class="full">
+                    <label for="orderId">Order ID (optional)</label>
+                    <input id="orderId" name="orderId" th:value="${form?.orderId}" placeholder="e.g., 217"/>
                 </div>
 
                 <div class="full">
@@ -607,13 +522,12 @@
 
                 <div class="full" style="display:flex; gap:10px; justify-content:flex-end">
                     <button class="btn btn-primary" type="submit">
-                        <i class="fa-solid fa-paper-plane"></i> Send Message
+                        <i class="fa-solid fa-paper-plane"></i> Submit Ticket
                     </button>
                 </div>
             </form>
         </section>
 
-        <!-- Details, Map & FAQ -->
         <aside class="card">
             <h2><i class="fa-solid fa-circle-info"></i> Store details</h2>
             <div class="detail-list">
@@ -636,7 +550,6 @@
             </div>
 
             <h2 style="margin-top:14px"><i class="fa-solid fa-map"></i> Find us</h2>
-            <!-- Replace with your real address embed if you want -->
             <iframe class="map"
                     src="https://maps.google.com/maps?q=Jersey%20City%20NJ&t=&z=12&ie=UTF8&iwloc=&output=embed"
                     loading="lazy"></iframe>

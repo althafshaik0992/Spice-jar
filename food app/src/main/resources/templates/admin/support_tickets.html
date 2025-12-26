@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Admin • Support Tickets</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root{color-scheme:dark}
+        body{background:#020617;color:#e2e8f0}
+        .card{background:#020617;border:1px solid #1f2937;border-radius:16px}
+        .soft{box-shadow:0 16px 40px rgba(0,0,0,.55)}
+        .chip{background:#020617;border:1px solid #273447;border-radius:999px}
+        .dropdown-group:hover .dropdown-menu{display:block}
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+<!-- Reuse your admin navbar (paste your Global Nav here if you want) -->
+<header class="sticky top-0 z-40 border-b border-[#1f2937] bg-[#020617]/90 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a th:href="@{/admin}" class="flex items-center gap-2 group">
+                <div class="h-9 w-9 grid place-items-center rounded-xl bg-emerald-600 text-white font-black">SJ</div>
+                <div>
+                    <div class="text-sm text-slate-200 font-semibold">SpiceJar</div>
+                    <div class="text-[13px] text-slate-400 -mt-0.5">Admin Console</div>
+                </div>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-1 ml-4 text-sm">
+                <a th:href="@{/admin}" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5">Dashboard</a>
+                <a th:href="@{/admin/orders}" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5">Orders</a>
+                <a th:href="@{/admin/catalog}" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5">Menu</a>
+                <a th:href="@{/admin/support}" class="px-3 py-2 rounded-lg text-white bg-white/10">Support</a>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-5 py-8 space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-xl font-semibold text-slate-100">Support Tickets</h1>
+            <p class="text-sm text-slate-400 mt-1">Track and close customer issues</p>
+        </div>
+    </div>
+
+    <div class="card soft p-6 overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead>
+            <tr class="text-slate-300">
+                <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Ticket</th>
+                <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Customer</th>
+                <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Topic</th>
+                <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Status</th>
+                <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Created</th>
+                <th class="py-2 text-left border-b border-[#1f2937]"></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="t : ${tickets}" class="border-b border-[#1f2937]">
+                <td class="py-3 pr-4 font-mono text-slate-200" th:text="${t.ticketId}">SJ-XXXX</td>
+                <td class="py-3 pr-4 text-slate-200">
+                    <div class="font-medium" th:text="${t.name}">Name</div>
+                    <div class="text-xs text-slate-400" th:text="${t.email}">email</div>
+                </td>
+                <td class="py-3 pr-4 text-slate-300" th:text="${t.topic}">ORDER</td>
+
+                <td class="py-3 pr-4">
+          <span class="px-2 py-1 rounded-full text-[11px] font-medium"
+                th:classappend="${t.status=='OPEN'} ? ' bg-amber-600/20 text-amber-300' :
+                                (${t.status=='IN_PROGRESS'} ? ' bg-blue-600/20 text-blue-300' :
+                                                           ' bg-emerald-600/20 text-emerald-300')"
+                th:text="${t.status}">
+            OPEN
+          </span>
+                </td>
+
+                <td class="py-3 pr-4 text-slate-400"
+                    th:text="${#temporals.format(t.createdAt,'MMM d, yyyy h:mm a')}">Date</td>
+
+                <td class="py-3">
+                    <a th:href="@{/admin/support/{id}(id=${t.id})}"
+                       class="text-emerald-400 hover:underline">Open</a>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(tickets)}">
+                <td colspan="6" class="py-6 text-center text-slate-400">No tickets yet.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>
