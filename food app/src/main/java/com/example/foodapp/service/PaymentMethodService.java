@@ -28,6 +28,12 @@ public class PaymentMethodService {
         return repo.save(p);
     }
 
+    public PaymentMethod findByCode(String code) {
+        if (code == null) return null;
+        return repo.findFirstByCodeIgnoreCase(code).orElse(null);
+    }
+
+
     @Transactional
     public void delete(PaymentMethod p) { repo.delete(p); }
 
@@ -38,4 +44,7 @@ public class PaymentMethodService {
             repo.save(x);
         });
     }
+
+
+
 }

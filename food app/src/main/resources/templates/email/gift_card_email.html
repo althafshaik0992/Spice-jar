@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${subject}">Your SpiceJar Gift Card</title>
+    <style>
+        /* basic email-safe styling */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        .wrapper {
+            width: 100%;
+            background-color: #f3f4f6;
+            padding: 24px 0;
+        }
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+        }
+        .header {
+            background: radial-gradient(circle at top left, #22c55e, #16a34a, #14532d);
+            padding: 24px 32px;
+            color: #ecfdf5;
+            text-align: left;
+        }
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .header-logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+        }
+        .header-title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .header-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .body {
+            padding: 28px 32px 24px;
+            color: #111827;
+            background-color: #f9fafb;
+        }
+        .greeting {
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+        .intro {
+            font-size: 14px;
+            margin-bottom: 20px;
+            color: #4b5563;
+        }
+
+        .giftcard-box {
+            background: linear-gradient(145deg, #ecfdf5, #ffffff);
+            border-radius: 14px;
+            padding: 18px 18px 20px;
+            border: 1px solid #bbf7d0;
+            margin-bottom: 20px;
+        }
+        .giftcard-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #16a34a;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .giftcard-code {
+            font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 20px;
+            font-weight: 700;
+            background-color: #022c22;
+            color: #bbf7d0;
+            padding: 10px 14px;
+            border-radius: 999px;
+            display: inline-block;
+            letter-spacing: 0.18em;
+        }
+        .giftcard-amount {
+            margin-top: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #064e3b;
+        }
+        .giftcard-meta {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .giftcard-img {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1px solid #f5c07a;
+            padding: 6px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            background: #fff linear-gradient(
+                    110deg,
+                    #fff8e1 25%,
+                    #fff3cd 37%,
+                    #fff8e1 63%
+            );
+            background-size: 400% 100%;
+            animation: shimmer 2s infinite linear;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .giftcard-img:hover {
+            transform: scale(1.04);
+            box-shadow: 0 6px 16px rgba(183, 65, 14, 0.3);
+        }
+
+        .steps {
+            margin-top: 18px;
+            margin-bottom: 18px;
+        }
+        .steps-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .steps ol {
+            padding-left: 20px;
+            margin: 0;
+        }
+        .steps li {
+            font-size: 13px;
+            color: #4b5563;
+            margin-bottom: 4px;
+        }
+
+        .cta {
+            margin-top: 18px;
+            margin-bottom: 10px;
+        }
+        .cta a {
+            display: inline-block;
+            background-color: #16a34a;
+            color: #ecfdf5;
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .cta a:hover {
+            background-color: #22c55e;
+        }
+
+        .share-note {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 12px;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+            margin: 18px 0;
+        }
+
+        .footer {
+            padding: 16px 32px 24px;
+            font-size: 11px;
+            color: #9ca3af;
+            text-align: center;
+            background-color: #111827;
+        }
+        .footer a {
+            color: #a7f3d0;
+            text-decoration: none;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 0% 0;
+            }
+            100% {
+                background-position: 100% 0;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-logo">
+                <img th:src="${logoUrl}" alt="SpiceJar logo"/>
+                <div>
+                    <div class="header-title">SpiceJar Gift Card</div>
+                    <div class="header-subtitle" th:text="${subject}">Your digital gift card is ready</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="body">
+            <p class="greeting" th:text="'Hi ' + ${buyerName} + ','">Hi there,</p>
+            <p class="intro">
+                Thank you for purchasing a <strong>SpiceJar gift card</strong>!
+                Here are your gift card details:
+            </p>
+
+            <!-- GIFT CARD BOX -->
+            <div class="giftcard-box">
+                <div class="giftcard-label">Gift card code</div>
+                <div class="giftcard-code" th:text="${code}">SJ-XXXX-1234</div>
+
+                <div style="margin-top:12px; display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+                    <!-- Gift card image -->
+                    <img th:src="${giftImageUrl}" alt="SpiceJar gift card" class="giftcard-img"/>
+
+
+                    <!-- Amount + status -->
+                    <div>
+                        <div class="giftcard-amount">
+                            <span th:text="'Amount: $' + ${amount}">$10.00</span>
+                        </div>
+                        <div class="giftcard-meta">
+                            <span th:text="'Status: ' + ${status}">Status: Active</span>
+                            <span th:if="${expiresOn != null}">
+                                &nbsp;•&nbsp;
+                                <span th:text="'Expires: ' + ${expiresOn}">Expires: 2025-12-31</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HOW TO USE -->
+            <div class="steps">
+                <div class="steps-title">How to use this gift card</div>
+                <ol>
+                    <li>
+                        Go to
+                        <a th:href="${siteUrl}" th:text="${siteUrl}">SpiceJar</a>
+                        and sign in or create an account.
+                    </li>
+                    <li>Open the <strong>“Gift Cards”</strong> section under your account.</li>
+                    <li>Enter the code above in the <strong>“Redeem a Gift Card”</strong> box.</li>
+                    <li>The balance will be added to your account and automatically applied at checkout.</li>
+                </ol>
+            </div>
+
+            <!-- CTA -->
+            <div class="cta">
+                <a th:href="${giftCardsUrl}">Redeem or manage gift cards</a>
+            </div>
+
+            <p class="share-note">
+                You can share this code with a friend or family member.
+                Once redeemed, it will be permanently attached to their account.
+            </p>
+
+            <div class="divider"></div>
+
+            <p style="font-size:12px;color:#6b7280;margin:0 0 6px;">
+                If you didn’t make this purchase, please contact our support team immediately.
+            </p>
+            <p style="font-size:12px;color:#374151;margin:0;">
+                Warm regards,<br/>
+                <strong>SpiceJar Support</strong>
+            </p>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <div th:text="'© ' + ${year} + ' SpiceJar. All rights reserved.'">
+                © 2025 SpiceJar. All rights reserved.
+            </div>
+            <div style="margin-top:4px;">
+                <a th:href="${siteUrl}">Visit website</a>
+                &nbsp;•&nbsp;
+                <a th:href="${supportUrl}">Contact support</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

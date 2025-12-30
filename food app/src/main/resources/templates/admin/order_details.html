@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Admin • Order Details</title>
+
+    <link rel="icon" type="image/svg+xml"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23218838'/%3E%3Cpath fill='%23fff' d='M10 21c0-4.2 5-4.2 5-8 0-1.4-.8-2.6-2-3.5 3 .3 5 2.2 5 4.7 0 3.6-4 4.6-4 7.8h6v1.5H10V21z'/%3E%3C/svg%3E">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root { color-scheme: dark; }
+        body { background:#020617; color:#e2e8f0; }
+        .card { background:#020617; border:1px solid #1f2937; border-radius:16px; }
+        .soft { box-shadow:0 16px 40px rgba(0,0,0,.55); }
+        .chip { background:#020617; border:1px solid #273447; border-radius:999px; }
+        .ring-subtle { box-shadow:0 0 0 1px rgba(39,52,71,.7) inset; }
+        .dropdown-group:hover .dropdown-menu { display:block; }
+        ::-webkit-scrollbar { height:10px; width:10px; }
+        ::-webkit-scrollbar-thumb { background:#223049; border-radius:999px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+<!-- Global Nav (same style) -->
+<header class="sticky top-0 z-40 border-b border-[#1f2937] bg-[#020617]/90 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a th:href="@{/admin}" class="flex items-center gap-2 group">
+                <div class="h-9 w-9 grid place-items-center rounded-xl bg-emerald-600 text-white font-black shadow-lg shadow-emerald-900/40 ring-1 ring-emerald-400/40 group-hover:scale-[1.03] transition">
+                    SJ
+                </div>
+                <div>
+                    <div class="text-sm text-slate-200 font-semibold">SpiceJar</div>
+                    <div class="text-[13px] text-slate-400 -mt-0.5">Admin Console</div>
+                </div>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-1 ml-4 text-sm">
+                <a th:href="@{/admin}" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition">Dashboard</a>
+                <a th:href="@{/admin/orders}" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition">Orders</a>
+                <a th:href="@{/admin/catalog}" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition">Menu</a>
+                <a th:href="@{/admin/categories}" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition">Categories</a>
+                <a th:href="@{/admin/gift-cards}" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition">Gift Cards</a>
+                <a th:href="@{/admin/coupons}" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition">Coupons</a>
+                <a th:href="@{/admin/refunds}" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition">Refunds</a>
+            </nav>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a th:href="@{/}" class="hidden sm:inline-flex items-center gap-2 px-3 h-10 rounded-xl text-sm text-slate-200 hover:bg-white/5 transition">
+                <i class="fa-solid fa-up-right-from-square text-slate-300"></i>
+                <span>View site</span>
+            </a>
+
+            <div class="relative dropdown-group text-sm">
+                <button type="button"
+                        class="inline-flex items-center gap-2 px-3 h-10 rounded-xl bg-emerald-600/15 text-emerald-300 hover:bg-emerald-600/25 transition">
+                    <i class="fa-solid fa-circle-user text-lg"></i>
+                    <span th:text="${session.ADMIN_USER != null ? session.ADMIN_USER.username : 'Admin'}">Admin</span>
+                    <i class="fa-solid fa-chevron-down text-[11px] opacity-70"></i>
+                </button>
+
+                <div class="dropdown-menu absolute right-0 mt-2 hidden w-56 rounded-xl border border-[#1f2937] bg-[#020617] shadow-2xl">
+                    <div class="px-3 py-2 text-[12px] text-slate-400 border-b border-[#1f2937]">
+                        Signed in
+                        <span th:if="${session.ADMIN_USER != null}"
+                              th:text="${session.ADMIN_USER.username}"
+                              class="font-semibold ml-1 text-slate-200">Admin</span>
+                    </div>
+
+                    <a th:href="@{/admin}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5">
+                        <i class="fa-solid fa-chart-line text-slate-300"></i> Overview
+                    </a>
+                    <a th:href="@{/admin/orders}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-white/5">
+                        <i class="fa-solid fa-receipt text-slate-300"></i> Orders
+                    </a>
+
+                    <div class="h-px bg-[#1f2937] my-1"></div>
+
+                    <form th:action="@{/admin/logout}" method="get" class="px-3 py-2">
+                        <button type="submit"
+                                class="w-full flex items-center gap-2 text-left text-sm text-rose-300 hover:text-rose-100 hover:bg-rose-600/10 px-2 py-2 rounded-lg">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="border-t border-[#1f2937]">
+        <div class="max-w-7xl mx-auto px-5 h-11 flex items-center justify-between text-xs sm:text-sm">
+            <div class="text-slate-400 flex items-center gap-1">
+                <a th:href="@{/admin}" class="hover:text-slate-200">Admin</a>
+                <span class="opacity-50">/</span>
+                <a th:href="@{/admin/orders}" class="hover:text-slate-200">Orders</a>
+                <span class="opacity-50">/</span>
+                <span class="text-slate-200 font-medium">Order Details</span>
+            </div>
+
+            <a th:href="@{/admin/orders}"
+               class="chip px-3 py-1 text-slate-200 hover:bg-white/5 text-xs transition">
+                ← Back to Orders
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-5 py-8 space-y-6">
+
+    <!-- Order Summary -->
+    <section class="card soft p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+                <h1 class="text-xl font-semibold text-slate-100">
+                    Order #<span th:text="${order.id}">217</span>
+                </h1>
+                <p class="text-sm text-slate-400 mt-1">
+                    <span th:text="${order.customerName}">Customer</span>
+                    <span class="mx-2 opacity-50">•</span>
+                    <span th:text="${order.email}">email</span>
+                </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span class="chip px-3 py-1 text-xs text-slate-200 ring-subtle"
+                      th:text="${order.status}">PAID</span>
+
+                <span class="chip px-3 py-1 text-xs text-slate-300"
+                      th:text="${#temporals.format(order.createdAt,'MMM d, yyyy h:mm a')}">
+                    Dec 15, 2025 10:08 AM
+                </span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5 text-sm">
+            <div>
+                <div class="text-slate-400">Address</div>
+                <div class="text-slate-200 mt-1"  th:text="${(order.street != null && !#strings.isEmpty(order.street) ? order.street + ', ' : '') +
+              (order.city   != null ? order.city   + ', ' : '') +
+              (order.state  != null ? order.state  + ' '  : '') +
+              (order.zip    != null ? order.zip           : '')}">
+                   Address line : </div>
+            </div>
+
+            <div>
+                <div class="text-slate-400">Totals</div>
+                <div class="mt-1 text-slate-200">
+                    Total:
+                    <span class="font-semibold"
+                          th:text="'$ ' + ${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">$0.00</span>
+                </div>
+                <div class="mt-1 text-slate-400" th:if="${order.refundTotal != null}">
+                    Refund Total:
+                    <span class="text-emerald-300 font-semibold"
+                          th:text="'$ ' + ${#numbers.formatDecimal(order.refundTotal,1,'COMMA',2,'POINT')}">$0.00</span>
+                </div>
+            </div>
+
+            <div>
+                <div class="text-slate-400">Return</div>
+                <div class="mt-1 text-slate-200">
+                    Return Requested:
+                    <span class="font-semibold" th:text="${order.status == 'RETURN_REQUESTED' ? 'Yes' : 'No'}">No</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Items -->
+    <section class="card soft p-6">
+        <h2 class="text-lg font-semibold text-slate-100 mb-4">Items</h2>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                <tr class="text-slate-300">
+                    <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Item</th>
+                    <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Qty</th>
+                    <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Price</th>
+                    <th class="py-2 text-left border-b border-[#1f2937]">Line Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="it : ${order.items}" class="border-b border-[#1f2937]">
+                    <td class="py-3 pr-4 text-slate-100 font-medium" th:text="${it.productName}">Product</td>
+                    <td class="py-3 pr-4 text-slate-300" th:text="${it.quantity}">1</td>
+                    <td class="py-3 pr-4 text-slate-300"
+                        th:text="'$ ' + ${#numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">$0.00</td>
+                    <td class="py-3 text-emerald-300 font-semibold"
+                        th:text="'$ ' + ${#numbers.formatDecimal(it.lineTotal,1,'COMMA',2,'POINT')}">$0.00</td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(order.items)}">
+                    <td colspan="4" class="py-6 text-center text-slate-400">No items found.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Payments + Refunds -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Original Payment -->
+        <div class="card soft p-6">
+            <h2 class="text-lg font-semibold text-slate-100 mb-4">Original Payment</h2>
+
+            <div th:if="${originalPayment != null}" class="space-y-3 text-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400">Amount</span>
+                    <span class="font-semibold text-emerald-300"
+                          th:text="'$ ' + ${#numbers.formatDecimal(originalPayment.amount,1,'COMMA',2,'POINT')}">$0.00</span>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400">Provider</span>
+                    <span class="font-semibold" th:text="${originalPayment.provider}">STRIPE</span>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400">Transaction ID</span>
+                    <span class="font-mono text-xs text-slate-300" th:text="${originalPayment.transactionId}">pi_...</span>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400">Paid At</span>
+                    <span class="text-slate-300"
+                          th:text="${#temporals.format(originalPayment.createdAt,'MMM d, yyyy h:mm a')}">Date</span>
+                </div>
+            </div>
+
+            <div th:if="${originalPayment == null}" class="text-slate-400 text-sm">
+                No successful online payment found (COD/manual).
+            </div>
+        </div>
+
+        <!-- Refund Transactions -->
+        <div class="card soft p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-slate-100">Refund Transactions</h2>
+                <a th:href="@{/admin/refunds/{orderId}(orderId=${order.id})}"
+                   class="chip px-3 py-1 text-xs text-slate-200 hover:bg-white/5 transition">
+                    Open refund details →
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                    <tr class="text-slate-300">
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Amount</th>
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Provider</th>
+                        <th class="py-2 pr-4 text-left border-b border-[#1f2937]">Gateway Refund ID</th>
+                        <th class="py-2 text-left border-b border-[#1f2937]">Date</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r : ${refundRows}" class="border-b border-[#1f2937]">
+                        <td class="py-3 pr-4 font-semibold text-emerald-300"
+                            th:text="'$ ' + ${#numbers.formatDecimal(r.amount,1,'COMMA',2,'POINT')}">$0.00</td>
+                        <td class="py-3 pr-4 text-slate-200" th:text="${r.provider}">STRIPE</td>
+                        <td class="py-3 pr-4 font-mono text-xs text-slate-300"
+                            th:text="${r.refundExternalId}">re_...</td>
+                        <td class="py-3 text-slate-400"
+                            th:text="${#temporals.format(r.createdAt,'MMM d, yyyy h:mm a')}">Date</td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(refundRows)}">
+                        <td colspan="4" class="py-6 text-center text-slate-400">No refund records found.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>

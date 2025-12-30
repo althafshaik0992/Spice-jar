@@ -3,8 +3,10 @@ package com.example.foodapp.controller;
 
 import com.example.foodapp.model.Address;
 import com.example.foodapp.model.User;
+import com.example.foodapp.repository.LoyaltyLedgerRepository;
 import com.example.foodapp.service.AddressService;
 import com.example.foodapp.service.EmailServiceWelcome;
+import com.example.foodapp.service.LoyaltyService;
 import com.example.foodapp.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,10 +23,17 @@ public class AddressController {
     private final UserService userService;
     private final EmailServiceWelcome emailService;
 
-    public AddressController(AddressService addressService, UserService userService, EmailServiceWelcome emailService) {
+    private final LoyaltyService loyaltyService;
+
+    private final LoyaltyLedgerRepository loyaltyLedgerRepository;
+
+
+    public AddressController(AddressService addressService, UserService userService, EmailServiceWelcome emailService, LoyaltyService loyaltyService, LoyaltyLedgerRepository loyaltyLedgerRepository) {
         this.addressService = addressService;
         this.userService = userService;
         this.emailService = emailService;
+        this.loyaltyService = loyaltyService;
+        this.loyaltyLedgerRepository = loyaltyLedgerRepository;
     }
 
     // ===== Helpers ============================================================
@@ -119,6 +128,9 @@ public class AddressController {
         addressService.delete(a);
         return "redirect:/addresses";
     }
+
+
+
 
 
 

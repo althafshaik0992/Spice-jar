@@ -1,0 +1,38 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Welcome to SpiceJar</title>
+    <style>
+        body{margin:0;background:#f6fbf6;font-family:Segoe UI,Roboto,Arial,sans-serif;color:#222}
+        .card{max-width:620px;margin:24px auto;background:#fff;border-radius:12px;overflow:hidden;
+            box-shadow:0 8px 24px rgba(0,0,0,.06)}
+        .hero{background:#1b5e20 url('https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?q=80&w=1200&auto=format') center/cover no-repeat;color:#fff;padding:36px}
+        .content{padding:24px}
+        .coupon{background:#eef6f0;border:1px dashed #1e7e34;padding:12px;border-radius:10px;
+            display:inline-block;font-weight:800}
+        .footer{padding:16px 24px;color:#777;font-size:12px;text-align:center}
+        .btn{display:inline-block;background:#218838;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:700}
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="hero">
+        <h1 style="margin:0">Welcome to SpiceJar! 🌿</h1>
+        <p style="margin:6px 0 0">Fresh spices, straight to your kitchen.</p>
+    </div>
+    <div class="content">
+        <p>Thanks for joining! Here’s a little gift for your first order:</p>
+        <p class="coupon">WELCOME10 — 10% OFF</p>
+        <p style="margin:16px 0">
+            <a class="btn" href="{{your-site}}/menu">Shop bestsellers</a>
+        </p>
+        <p style="color:#666;font-size:13px">Tip: store ground spices cool &amp; dark; whole spices last even longer.</p>
+    </div>
+    <div class="footer">
+        You’re receiving this because you subscribed on our site.
+        <br><a th:href="${unsubLink}">Unsubscribe</a> any time.
+    </div>
+</div>
+</body>
+</html>

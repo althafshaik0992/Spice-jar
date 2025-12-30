@@ -1,19 +1,17 @@
 package com.example.foodapp.controller;
 
-import com.example.foodapp.model.Product;
+import com.example.foodapp.model.User;
 import com.example.foodapp.service.CouponService;
 import com.example.foodapp.service.OrderService;
 import com.example.foodapp.util.CartSession;
 import com.example.foodapp.util.CouponApplyResponse;
 import com.example.foodapp.util.SessionCart;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -24,9 +22,11 @@ public class CartCouponApi {
     private final CouponService couponService;
     private final SessionCart sessionCart;
     private final OrderService orderService;
-    // <-- keep name clear
 
-    public CartCouponApi(CartSession cartSession, CouponService couponService, SessionCart sessionCart, OrderService orderService) {
+    public CartCouponApi(CartSession cartSession,
+                         CouponService couponService,
+                         SessionCart sessionCart,
+                         OrderService orderService) {
         this.cartSession = cartSession;
         this.couponService = couponService;
         this.sessionCart = sessionCart;
@@ -35,15 +35,16 @@ public class CartCouponApi {
 
     /** Make sure SessionCart has real lines (qty + unit price) before math. */
     private void ensureCartHydrated(HttpServletRequest req) {
-        // If already has lines, nothing to do
         if (!sessionCart.getItems().isEmpty()) {
             return;
         }
 
-        // 1) If you keep orderId in session (or pass as request param), load from order
+        // 1) Try from order id (CHECKOUT_ORDER_ID in session or request param)
         Long orderId = null;
         Object o = req.getSession().getAttribute("CHECKOUT_ORDER_ID");
-        if (o instanceof Long) orderId = (Long) o;
+        if (o instanceof Long) {
+            orderId = (Long) o;
+        }
         if (orderId == null) {
             String p = req.getParameter("orderId");
             if (p != null && !p.isBlank()) {
@@ -68,10 +69,8 @@ public class CartCouponApi {
             return;
         }
 
-        // If we reach here, it’s truly empty
         sessionCart.recalc();
     }
-
 
     @PostMapping(
             path = "/apply",
@@ -83,8 +82,25 @@ public class CartCouponApi {
             @RequestBody(required = false) Map<String, Object> json,
             HttpServletRequest req
     ) {
-        ensureCartHydrated(req); // <-- fills sessionCart items when empty
+        ensureCartHydrated(req);
 
+        // 🚫 1) Block coupons when cart contains any gift card item
+        boolean cartHasGiftCard = sessionCart.getItems() != null &&
+                sessionCart.getItems().stream().anyMatch(i ->
+                        (i.getProductId() != null && i.getProductId() < 0L) ||
+                                (i.getName() != null &&
+                                        i.getName().toLowerCase().contains("gift card"))
+                );
+
+        if (cartHasGiftCard) {
+            sessionCart.setAppliedCoupon(null);
+            sessionCart.recalc();
+            return ResponseEntity.ok(
+                    payload("error", "Coupons can’t be applied to gift card purchases.")
+            );
+        }
+
+        // 2) Resolve code from form or JSON
         String code = (formCode != null && !formCode.isBlank()) ? formCode : null;
         if (code == null && json != null && json.get("code") != null) {
             code = String.valueOf(json.get("code"));
@@ -93,7 +109,10 @@ public class CartCouponApi {
             return ResponseEntity.ok(payload("error", "Please enter a code."));
         }
 
-        var v = couponService.validate(code.trim(), sessionCart.getSubtotal());
+        // 👤 current user from session (for one-time usage)
+        User user = (User) req.getSession().getAttribute("USER");
+
+        var v = couponService.validate(code.trim(), user, sessionCart.getSubtotal());
         if (v.error() != null) {
             sessionCart.setAppliedCoupon(null);
             sessionCart.recalc();
@@ -102,9 +121,11 @@ public class CartCouponApi {
 
         sessionCart.setAppliedCoupon(v.coupon());
         sessionCart.recalc();
-        sessionCart.debugPrint(); // should show items & non-zero subtotal
+        sessionCart.debugPrint();
 
-        return ResponseEntity.ok(payload("success", "Applied " + v.coupon().getCode() + "."));
+        return ResponseEntity.ok(
+                payload("success", "Applied " + v.coupon().getCode() + ".")
+        );
     }
 
     @PostMapping(
@@ -133,7 +154,6 @@ public class CartCouponApi {
         m.put("applied",    sessionCart.getAppliedCouponCode());
         return m;
     }
-
 
     // (kept in case something else in your app still calls it)
     private CouponApplyResponse toResp(String status, String msg){

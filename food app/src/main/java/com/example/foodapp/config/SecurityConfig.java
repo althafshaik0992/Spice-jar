@@ -208,7 +208,7 @@ public class SecurityConfig {
                                 // ✅ allow the coupon API
                                 "/api/cart/coupon/**",
                                 "/css/**", "/js/**", "/images/**", "/uploads/**", "/webjars/**",
-                                "/menu", "/menu/**"
+                                "/menu", "/menu/**","/subscribe","/newsletter/**","/gift-cards/**"
                         ).permitAll()
                         .anyRequest().permitAll()
                 )

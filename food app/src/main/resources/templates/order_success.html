@@ -1,290 +1,623 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Order Placed • The Spice Jar</title>
+
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
     <style>
-        :root{ --green:#218838; --accent:#b7410e; --dark:#111; --bg:#f0f8f0; }
-        *{ box-sizing:border-box; }
-        body{ margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:var(--bg); color:#222; }
+        :root {
+            --green:#218838;
+            --accent:#b7410e;
+            --dark:#111827;
+            --bg:#f0f8f0;
+            --card:#ffffff;
+            --ring:rgba(15,23,42,.08);
+        }
 
+        *{box-sizing:border-box;}
+
+        body{
+            margin:0;
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:radial-gradient(circle at top,#dff5e6 0,#f6fbf6 40%,#f0f8f0 100%);
+            color:#111827;
+        }
+
+        /* NAVBAR ---------------------------------------------------------------- */
         .navbar{
-            background:#fff; padding:8px 6%;
-            box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex; justify-content:space-between; align-items:center;
-            position:sticky; top:0; z-index:10; height:60px;
+            background:rgba(255,255,255,0.96);
+            padding:8px 6%;
+            box-shadow:0 2px 8px rgba(15,23,42,.06);
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            position:sticky;
+            top:0;
+            z-index:1000;
+            height:64px;
+            gap:14px;
+            backdrop-filter:blur(10px);
         }
-        .brand-logo{ display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px; }
-        .brand-logo video{ width:36px; border-radius:4px; }
+        .brand-logo{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            text-decoration:none;
+            color:var(--green);
+            font-weight:800;
+            font-size:20px;
+            letter-spacing:.02em;
+        }
+        .brand-logo video{
+            width:36px;
+            height:36px;
+            object-fit:cover;
+            border-radius:8px;
+            box-shadow:0 4px 12px rgba(0,0,0,0.12);
+        }
 
-        .wrap{ max-width:1100px; margin:24px auto; padding:0 6%; }
+        .nav-links{
+            display:flex;
+            align-items:center;
+            gap:18px;
+            flex-wrap:wrap;
+        }
+        .nav-links a{
+            text-decoration:none;
+            color:#374151;
+            font-weight:600;
+            font-size:14px;
+            position:relative;
+            padding:4px 0;
+        }
+        .nav-links a::after{
+            content:"";
+            position:absolute;
+            left:0;
+            bottom:-3px;
+            width:0;
+            height:2px;
+            background:var(--green);
+            border-radius:999px;
+            transition:width .18s ease;
+        }
+        .nav-links a:hover::after{ width:100%; }
 
-        .success-head{ display:flex; align-items:center; gap:14px; margin:8px 0 10px; }
+        /* Dropdown */
+        .dropdown{position:relative}
+        .dropdown-toggle{
+            background:none;
+            border:none;
+            cursor:pointer;
+            font-size:14px;
+            color:#111827;
+            display:flex;
+            align-items:center;
+            gap:6px;
+            padding:6px 10px;
+            border-radius:999px;
+            font-weight:800;
+            transition:background .15s ease, box-shadow .15s ease;
+        }
+        .dropdown-toggle:hover{
+            background:#f3f4f6;
+            box-shadow:0 0 0 1px rgba(148,163,184,0.3);
+        }
+        .dropdown-menu{
+            display:none;
+            position:absolute;
+            right:0;
+            top:calc(100% + 8px);
+            background:#fff;
+            box-shadow:0 10px 28px rgba(15,23,42,0.18);
+            border-radius:12px;
+            overflow:hidden;
+            min-width:200px;
+            border:1px solid #e5e7eb;
+        }
+        .dropdown:hover .dropdown-menu{display:block;}
+        .dropdown-menu a,
+        .dropdown-menu span{
+            display:block;
+            padding:10px 14px;
+            text-decoration:none;
+            color:#111827;
+            white-space:nowrap;
+            font-size:14px;
+            font-weight:500;
+        }
+        .dropdown-menu a:hover{background:#f7faf7;}
+
+        /* Cart badge */
+        .cart-icon-container{
+            position:relative;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+        }
+        .cart-count-badge{
+            position:absolute;
+            top:-6px;
+            right:-10px;
+            background-color:var(--accent);
+            color:#fff;
+            border-radius:999px;
+            padding:1px 7px;
+            font-size:11px;
+            font-weight:800;
+            min-width:18px;
+            height:18px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            line-height:1;
+            box-shadow:0 0 0 2px #fff;
+        }
+
+        /* LAYOUT ----------------------------------------------------------------- */
+        .wrap{
+            max-width:1160px;
+            margin:22px auto 44px;
+            padding:0 6%;
+        }
+
+        /* Hero banner */
+        .hero{
+            background:linear-gradient(135deg, rgba(34,197,94,.14), rgba(183,65,14,.08));
+            border:1px solid rgba(209,213,219,0.9);
+            border-radius:18px;
+            padding:18px 18px;
+            box-shadow:0 12px 30px var(--ring);
+        }
+        .hero-row{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:16px;
+            flex-wrap:wrap;
+        }
+        .success-head{
+            display:flex;
+            flex-wrap:wrap;
+            align-items:center;
+            gap:14px;
+            margin:0;
+        }
         .success-icon{
-            width:52px; height:52px; border-radius:50%; background:var(--green);
-            display:grid; place-items:center; color:#fff; font-size:22px;
-            box-shadow:0 8px 18px rgba(0,0,0,.15);
+            width:56px;
+            height:56px;
+            border-radius:50%;
+            background:var(--green);
+            display:grid;
+            place-items:center;
+            color:#fff;
+            font-size:24px;
+            box-shadow:0 10px 24px rgba(0,0,0,.18);
         }
-        .title{ font-size:36px; line-height:1.1; color:var(--green); margin:0; }
-        .subtitle{ margin:6px 0 22px; color:#4b4b4b; }
+        .title{
+            font-size:30px;
+            line-height:1.12;
+            color:var(--dark);
+            margin:0;
+            font-weight:900;
+        }
+        .subtitle{
+            margin:6px 0 0;
+            color:#4b5563;
+            font-size:14px;
+            max-width:62ch;
+        }
 
-        .grid-cards{ display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:18px; }
-        @media (max-width: 1000px){ .grid-cards{ grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 560px){ .grid-cards{ grid-template-columns: 1fr; } }
+        .hero-actions{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            align-items:center;
+        }
+        .chip{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding:8px 12px;
+            border-radius:999px;
+            border:1px solid rgba(209,213,219,0.9);
+            background:#fff;
+            font-size:12px;
+            font-weight:800;
+            color:#111827;
+        }
+        .chip i{ color:var(--green); }
 
-        .info{ background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.06); padding:14px 16px; }
-        .info .label{ font-size:12px; font-weight:700; color:#6c757d; letter-spacing:.04em; margin-bottom:6px; text-transform:uppercase; }
-        .info .value{ font-weight:700; color:#222; }
+        /* Cards grid */
+        .grid-cards{
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:14px;
+            margin:16px 0 16px;
+        }
+        @media (max-width:1000px){
+            .grid-cards{grid-template-columns:repeat(2,1fr);}
+        }
+        @media (max-width:640px){
+            .grid-cards{grid-template-columns:1fr;}
+        }
 
-        .table-card{ background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.06); overflow:hidden; margin-top:8px; }
-        table{ width:100%; border-collapse:collapse; table-layout:fixed; }
-        th, td{ padding:12px 14px; border-bottom:1px solid #eee; }
-        thead th{ background:#fafafa; font-weight:700; color:#333; font-size:14px; text-align:left; }
-        tbody td{ vertical-align:middle; }
-        .th-item{ width:50%; }
-        .td-item{ white-space:normal; overflow-wrap:break-word; word-break:break-word; }
-        .num{ text-align:right; }
-        @media (max-width: 560px){ .num{ text-align:left; } }
-        /* Footer */
+        .card{
+            background:var(--card);
+            border-radius:14px;
+            box-shadow:0 10px 26px var(--ring);
+            padding:14px 16px;
+            border:1px solid rgba(209,213,219,0.85);
+        }
+        .card .label{
+            font-size:11px;
+            font-weight:800;
+            color:#6b7280;
+            letter-spacing:.10em;
+            margin-bottom:6px;
+            text-transform:uppercase;
+        }
+        .card .value{
+            font-weight:800;
+            color:#111827;
+            font-size:15px;
+            word-break:break-word;
+        }
+
+        /* Shipping + Support banner row */
+        .bar{
+            display:grid;
+            grid-template-columns:1fr 1fr 1fr;
+            gap:14px;
+            margin:0 0 16px;
+        }
+        @media (max-width:980px){
+            .bar{grid-template-columns:1fr;}
+        }
+        .bar-item{
+            background:#fff;
+            border-radius:14px;
+            border:1px solid rgba(209,213,219,0.85);
+            box-shadow:0 10px 26px var(--ring);
+            padding:14px 16px;
+            display:flex;
+            gap:12px;
+            align-items:flex-start;
+        }
+        .bar-icon{
+            width:38px;
+            height:38px;
+            border-radius:12px;
+            display:grid;
+            place-items:center;
+            background:#ecfdf3;
+            color:#166534;
+            font-size:16px;
+            flex:0 0 auto;
+        }
+        .bar-title{
+            margin:0;
+            font-size:14px;
+            font-weight:900;
+            color:#111827;
+        }
+        .bar-text{
+            margin:4px 0 0;
+            font-size:12px;
+            color:#6b7280;
+            line-height:1.45;
+        }
+        .bar-link{
+            display:inline-block;
+            margin-top:6px;
+            color:var(--green);
+            font-weight:900;
+            font-size:12px;
+            text-decoration:none;
+        }
+        .bar-link:hover{text-decoration:underline;}
+
+        /* Main content grid (timeline + items/totals) */
+        .main-grid{
+            display:grid;
+            grid-template-columns:1fr 1.2fr;
+            gap:14px;
+        }
+        @media (max-width:980px){
+            .main-grid{grid-template-columns:1fr;}
+        }
+
+        /* Timeline */
+        .timeline{
+            background:#fff;
+            border-radius:14px;
+            box-shadow:0 10px 26px var(--ring);
+            padding:16px 18px;
+            position:relative;
+            overflow:hidden;
+            border:1px solid rgba(209,213,219,0.85);
+        }
+        .timeline h3{
+            font-size:16px;
+            font-weight:900;
+            margin:0 0 12px;
+            color:#111827;
+        }
+        .timeline-item{
+            display:flex;
+            align-items:flex-start;
+            margin-bottom:16px;
+            position:relative;
+        }
+        .timeline-item:last-child{margin-bottom:0;}
+        .timeline-icon{
+            width:30px;
+            height:30px;
+            border-radius:999px;
+            background:#e5e7eb;
+            color:#6b7280;
+            display:grid;
+            place-items:center;
+            font-size:14px;
+            z-index:1;
+        }
+        .timeline-content{
+            margin-left:12px;
+            flex:1;
+        }
+        .timeline-content h4{
+            font-size:14px;
+            font-weight:800;
+            margin:0;
+            color:#111827;
+        }
+        .timeline-content p{
+            font-size:12px;
+            color:#6b7280;
+            margin:4px 0 0;
+            line-height:1.4;
+        }
+        .timeline-item.active .timeline-icon{
+            background:var(--green);
+            color:#fff;
+        }
+        .timeline-item.active h4{
+            color:var(--green);
+        }
+        .timeline-line{
+            position:absolute;
+            left:28px;
+            top:52px;
+            bottom:16px;
+            width:2px;
+            background:#e5e7eb;
+        }
+
+        /* Items card */
+        .table-card{
+            background:#fff;
+            border-radius:14px;
+            box-shadow:0 10px 26px var(--ring);
+            overflow:hidden;
+            border:1px solid rgba(209,213,219,0.85);
+        }
+        .table-head{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:14px 16px;
+            border-bottom:1px solid #f3f4f6;
+            background:#f9fafb;
+        }
+        .table-head h3{
+            margin:0;
+            font-size:16px;
+            font-weight:900;
+            color:#111827;
+        }
+        .table-head .small{
+            font-size:12px;
+            color:#6b7280;
+            font-weight:700;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            table-layout:fixed;
+        }
+        th,td{
+            padding:12px 14px;
+            border-bottom:1px solid #f3f4f6;
+        }
+        thead th{
+            background:#fff;
+            font-weight:900;
+            color:#4b5563;
+            font-size:12px;
+            text-align:left;
+        }
+        tbody td{vertical-align:middle; font-size:13px;}
+        .th-item{width:50%;}
+        .td-item{
+            white-space:normal;
+            overflow-wrap:break-word;
+            word-break:break-word;
+            font-weight:700;
+            color:#111827;
+        }
+        .num{text-align:right;}
+        @media (max-width:560px){
+            .num{text-align:left;}
+        }
+
+        /* Totals (inside right column) */
+        .totals{
+            background:#fff;
+            border-radius:14px;
+            box-shadow:0 10px 26px var(--ring);
+            padding:14px 16px;
+            margin-top:14px;
+            border:1px solid rgba(209,213,219,0.85);
+        }
+        .row{
+            display:flex;
+            justify-content:space-between;
+            margin:6px 0;
+            font-size:14px;
+        }
+        .row .label{color:#4b5563;}
+        .row .value{
+            min-width:120px;
+            text-align:right;
+            font-weight:800;
+        }
+        .row.total{
+            font-weight:900;
+            font-size:17px;
+            margin-top:10px;
+            border-top:1px dashed #e5e7eb;
+            padding-top:8px;
+        }
+
+        /* Action buttons */
+        .links{
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+            margin-top:16px;
+        }
+        .btn{
+            display:inline-flex;
+            align-items:center;
+            gap:10px;
+            background:var(--green);
+            color:#fff;
+            text-decoration:none;
+            padding:11px 18px;
+            border-radius:999px;
+            font-weight:800;
+            font-size:14px;
+            box-shadow:0 10px 22px rgba(0,0,0,.12);
+            border:0;
+            cursor:pointer;
+        }
+        .btn:hover{ background:var(--accent); }
+        .btn.secondary{
+            background:#fff;
+            color:#111827;
+            border:1px solid rgba(209,213,219,0.95);
+            box-shadow:none;
+        }
+        .btn.secondary:hover{
+            background:#f9fafb;
+            color:#111827;
+        }
+
+        /* Pro note */
+        .note-card{
+            margin-top:14px;
+            background:#fff;
+            border-radius:14px;
+            border:1px solid rgba(209,213,219,0.85);
+            box-shadow:0 10px 26px var(--ring);
+            padding:14px 16px;
+            display:flex;
+            gap:12px;
+            align-items:flex-start;
+        }
+        .note-ic{
+            width:38px;
+            height:38px;
+            border-radius:12px;
+            display:grid;
+            place-items:center;
+            background:#fff7ed;
+            color:#9a3412;
+            font-size:16px;
+            flex:0 0 auto;
+        }
+        .note-card h4{
+            margin:0;
+            font-size:14px;
+            font-weight:900;
+            color:#111827;
+        }
+        .note-card p{
+            margin:4px 0 0;
+            color:#6b7280;
+            font-size:12px;
+            line-height:1.45;
+        }
+
+        /* FOOTER ----------------------------------------------------------------- */
         .site-footer{
-            background:#222;
-            color:#ccc;
+            background:#111827;
+            color:#9ca3af;
             padding:40px 6%;
             margin-top:40px;
         }
-        .footer-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            gap: 30px;
-            margin-bottom: 30px;
+        .footer-container{
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:space-between;
+            gap:30px;
+            margin-bottom:24px;
         }
-        .navbar{
-            background:#fff; padding:6px 6%;
-            box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex; justify-content:space-between; align-items:center;
-            position:sticky; top:0; z-index:1000; height:60px;
+        .footer-column{
+            flex:1;
+            min-width:220px;
         }
-        .brand-logo{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px}
-        .brand-logo video{width:36px; height:auto; border-radius:4px}
-        .nav-links{display:flex; align-items:center; gap:18px}
-        .nav-links a{text-decoration:none; color:#333; font-weight:500; font-size:15px}
-        .nav-links a:hover{color:var(--green)}
-
-        /* Dropdowns */
-        .dropdown{position:relative}
-        .dropdown-toggle{
-            background:none; border:none; cursor:pointer; font-size:15px; color:#333;
-            display:flex; align-items:center; gap:6px
+        .footer-column h3{
+            color:#fff;
+            margin-bottom:14px;
+            font-weight:700;
+            border-bottom:2px solid var(--green);
+            padding-bottom:6px;
+            display:inline-block;
+            font-size:15px;
         }
-        .dropdown-menu{
-            display:none; position:absolute; right:0; top:100%;
-            background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.1);
-            border-radius:6px; overflow:hidden; min-width:180px
+        .footer-column p{
+            line-height:1.6;
+            font-size:14px;
         }
-        .dropdown:hover .dropdown-menu{display:block}
-        .dropdown-menu a, .dropdown-menu span{
-            display:block; padding:10px 16px; text-decoration:none; color:#333; white-space:nowrap
+        .footer-column ul{list-style:none;padding:0;margin:0;}
+        .footer-column ul li a{
+            text-decoration:none;
+            color:#d1d5db;
+            display:block;
+            padding:5px 0;
+            font-size:14px;
+            transition:color .25s, transform .15s;
         }
-        .dropdown-menu a:hover{background:#f4f4f4}
-        /* Cart count badge style */
-        .cart-icon-container {
-            position: relative;
-            display: inline-block;
+        .footer-column ul li a:hover{color:#fff; transform:translateX(2px);}
+        .social-links a{
+            color:#9ca3af;
+            text-decoration:none;
+            font-size:20px;
+            margin-right:15px;
+            transition:color .25s, transform .15s;
         }
-        .cart-count-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background-color: var(--accent);
-            color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 20px;
-            height: 20px;
-            text-align: center;
+        .social-links a:hover{color:var(--green); transform:translateY(-1px);}
+        .footer-bottom{
+            text-align:center;
+            padding-top:18px;
+            border-top:1px solid #374151;
+            font-size:13px;
         }
-        .footer-column {
-            flex: 1;
-            min-width: 220px;
-        }
-        .footer-column h3 {
-            color: #fff;
-            margin-bottom: 15px;
-            font-weight: 600;
-            border-bottom: 2px solid var(--green);
-            padding-bottom: 8px;
-            display: inline-block;
-        }
-        .footer-column p {
-            line-height: 1.6;
-            font-size: 14px;
-        }
-        .footer-column ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .footer-column ul li a {
-            text-decoration: none;
-            color: #ccc;
-            display: block;
-            padding: 5px 0;
-            font-size: 14px;
-            transition: color 0.3s;
-        }
-        .footer-column ul li a:hover {
-            color: #fff;
-        }
-        .social-links a {
-            color: #ccc;
-            text-decoration: none;
-            font-size: 20px;
-            margin-right: 15px;
-            transition: color 0.3s;
-        }
-        .social-links a:hover {
-            color: var(--green);
-        }
-        .footer-bottom {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #444;
-            font-size: 14px;
-        }
-
-        /* Responsive footer */
-        @media (max-width: 768px) {
-            .footer-container {
-                flex-direction: column;
-                text-align: center;
-            }
-            .footer-column h3 {
-                border-bottom: none;
-                padding-bottom: 0;
-                margin-bottom: 10px;
-            }
-            .footer-column {
-                margin-bottom: 20px;
-            }
-        }
-
-        .totals{
-            background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.06);
-            padding:14px 16px; margin-top:16px;
-        }
-        .row{ display:flex; justify-content:space-between; margin:8px 0; }
-        .row.total{ font-weight:800; font-size:18px; }
-        .row .label{ color:#444; }
-        .row .value{ min-width:120px; text-align:right; }
-
-        .links{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
-        .btn{
-            display:inline-flex; align-items:center; gap:10px; background:var(--green); color:#fff; text-decoration:none;
-            padding:12px 18px; border-radius:12px; font-weight:700; box-shadow:0 6px 14px rgba(0,0,0,.12);
-        }
-        .btn:hover{ background:var(--accent); }
-
-        /* New styles for the added content */
-        .shipping-info {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,.06);
-            padding: 14px 16px;
-            margin-bottom: 18px;
-            text-align: center;
-        }
-        .shipping-info .label {
-            font-size: 12px;
-            font-weight: 700;
-            color: #6c757d;
-            letter-spacing: .04em;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-        }
-        .shipping-info .value {
-            font-weight: 700;
-            color: var(--accent);
-            font-size: 20px;
-        }
-
-        .timeline {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,.06);
-            padding: 20px 24px;
-            margin-bottom: 18px;
-        }
-        .timeline h3 {
-            font-size: 18px;
-            font-weight: 700;
-            margin: 0 0 16px;
-            color: #333;
-        }
-        .timeline-item {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 20px;
-            position: relative;
-        }
-        .timeline-item:last-child {
-            margin-bottom: 0;
-        }
-        .timeline-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #eee;
-            color: #888;
-            display: grid;
-            place-items: center;
-            font-size: 14px;
-            z-index: 1;
-        }
-        .timeline-item.active .timeline-icon {
-            background: var(--green);
-            color: #fff;
-        }
-        .timeline-item.active h4 {
-            color: var(--green);
-        }
-        .timeline-content {
-            margin-left: 12px;
-            flex: 1;
-        }
-        .timeline-content h4 {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0;
-        }
-        .timeline-content p {
-            font-size: 14px;
-            color: #666;
-            margin: 4px 0 0;
-        }
-        .timeline-line {
-            position: absolute;
-            left: 15px;
-            top: 32px;
-            bottom: 0;
-            width: 2px;
-            background: #e0e0e0;
+        @media (max-width:768px){
+            .footer-container{flex-direction:column;text-align:center;}
+            .footer-column{margin-bottom:18px;}
         }
     </style>
 </head>
 <body>
 
-
-<<!-- Navbar -->
+<!-- Navbar -->
 <nav class="navbar">
     <a href="/" class="brand-logo">
         <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
@@ -294,172 +627,279 @@
     <div class="nav-links">
         <a th:href="@{/menu}">Menu</a>
         <a th:href="@{/about}">About Us</a>
-        <a class="nav-link" th:href="@{/cart/view}">
+
+        <a th:href="@{/cart/view}" class="nav-link">
             <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
-                <i class="fas fa-shopping-cart" style="font-size:24px"></i>
+                <i class="fas fa-shopping-cart" style="font-size:20px"></i>
                 <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
             </div>
         </a>
+
         <a th:href="@{/contact}">Contact Us</a>
-
-
 
         <!-- Account -->
         <div class="dropdown">
-            <button class="dropdown-toggle">
-                <i class="fas fa-user"></i>  Account
+            <button class="dropdown-toggle" type="button">
+                <i class="fas fa-user"></i>
+                <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">Account</span>
             </button>
             <div class="dropdown-menu">
                 <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
                 <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+
                 <span th:if="${session.USER != null}">
-                 Welcome, <span th:text="${session.USER.firstName}">user</span>
+                    Welcome, <span th:text="${session.USER.firstName}">User</span>
                 </span>
-                <a  th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
+                <a th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
+                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
                 <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
             </div>
         </div>
     </div>
 </nav>
 
-
-
 <div class="wrap">
-    <div class="success-head">
-        <div class="success-icon"><i class="fa-solid fa-check"></i></div>
-        <h1 class="title">Order placed successfully!</h1>
-    </div>
-    <p class="subtitle">We’ve received your order and will email you a confirmation shortly.</p>
 
-    <!-- Summary cards -->
-    <section class="grid-cards">
-        <div class="info">
-            <div class="label">Order ID</div>
-            <div class="value" th:text="${order.id}">12345</div>
-        </div>
-        <div class="info">
-            <div class="label">Placed On</div>
-            <div class="value" th:text="${#temporals.format(order.createdAt, 'MMM d, yyyy • h:mm a')}">Aug 29, 2025 • 9:33 AM</div>
-        </div>
-        <div class="info">
-            <div class="label">Customer</div>
-            <div class="value" th:text="${order.customerName}">Customer Name</div>
-        </div>
-        <div class="info">
-            <div class="label">Shipping Address</div>
-            <div class="value" th:text="${order.address}">123 Main St</div>
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-row">
+            <div class="success-head">
+                <div class="success-icon"><i class="fa-solid fa-check"></i></div>
+                <div>
+                    <h1 class="title">Order confirmed</h1>
+                    <p class="subtitle">
+                        Thanks for shopping with The Spice Jar — your order is now in our system.
+                        We’ll email you updates as it moves through packing and shipping.
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <span class="chip">
+                    <i class="fa-solid fa-envelope"></i>
+                    Confirmation email: <span style="font-weight:900" th:text="${order.email} ?: 'on the way'">on the way</span>
+                </span>
+                <span class="chip">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Secure checkout
+                </span>
+            </div>
         </div>
     </section>
 
-    <!-- Shipping & Timeline -->
-    <section class="grid-cards" style="grid-template-columns: 1fr 1fr;">
-        <div class="shipping-info">
-            <div class="label">Estimated Delivery</div>
-            <!-- This is a placeholder value. In a real application, this would be calculated dynamically. -->
-            <div class="value">Within 5-7 business days</div>
+    <!-- Key cards -->
+    <section class="grid-cards">
+        <div class="card">
+            <div class="label">Order ID</div>
+            <div class="value" th:text="${order.id}">12345</div>
         </div>
+
+        <div class="card">
+            <div class="label">Placed On</div>
+            <div class="value"
+                 th:text="${#temporals.format(order.createdAt, 'MMM d, yyyy • h:mm a')}">
+                Aug 29, 2025 • 9:33 AM
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="label">Customer</div>
+            <div class="value" th:text="${order.customerName}">Customer Name</div>
+        </div>
+
+        <div class="card">
+            <div class="label">Shipping Address</div>
+            <div class="value"
+                 th:text="${(order.street != null ? order.street + ', ' : '') +
+                           (order.city   != null ? order.city   + ', ' : '') +
+                           (order.state  != null ? order.state  + ' '  : '') +
+                           (order.zip    != null ? order.zip           : '')}">
+                123 Main St, City, ST 12345
+            </div>
+        </div>
+    </section>
+
+    <!-- Helpful banners (fills space professionally) -->
+    <section class="bar">
+        <div class="bar-item">
+            <div class="bar-icon"><i class="fa-solid fa-truck-fast"></i></div>
+            <div>
+                <p class="bar-title">Estimated delivery</p>
+                <p class="bar-text">Within <strong>5–7 business days</strong>. Tracking details will appear in your email when the order ships.</p>
+            </div>
+        </div>
+
+        <div class="bar-item">
+            <div class="bar-icon"><i class="fa-solid fa-location-dot"></i></div>
+            <div>
+                <p class="bar-title">Delivery to</p>
+                <p class="bar-text" th:text="${order.fullAddress} ?: 'Your saved address'">Your saved address</p>
+            </div>
+        </div>
+
+        <div class="bar-item">
+            <div class="bar-icon"><i class="fa-solid fa-headset"></i></div>
+            <div>
+                <p class="bar-title">Need help?</p>
+                <p class="bar-text">Have a question or need to update your address? Contact us and include your order ID.</p>
+                <a class="bar-link" th:href="@{/contact}">Contact support →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN GRID -->
+    <section class="main-grid">
+        <!-- Timeline -->
         <div class="timeline">
-            <h3>Order Status</h3>
+            <h3>Order status</h3>
             <div class="timeline-line"></div>
+
             <div class="timeline-item active">
                 <div class="timeline-icon"><i class="fa-solid fa-circle-check"></i></div>
                 <div class="timeline-content">
-                    <h4>Order Placed</h4>
-                    <p>We've received your order and it's being processed.</p>
+                    <h4>Order placed</h4>
+                    <p>We received your order and started processing.</p>
                 </div>
             </div>
+
             <div class="timeline-item">
                 <div class="timeline-icon"><i class="fa-solid fa-box"></i></div>
                 <div class="timeline-content">
-                    <h4>Shipped</h4>
-                    <p>Your order is on its way to you.</p>
+                    <h4>Packed</h4>
+                    <p>Your items are packed with care for safe delivery.</p>
                 </div>
             </div>
+
             <div class="timeline-item">
                 <div class="timeline-icon"><i class="fa-solid fa-truck-fast"></i></div>
                 <div class="timeline-content">
-                    <h4>Out for Delivery</h4>
-                    <p>Your package is with the delivery driver.</p>
+                    <h4>Shipped</h4>
+                    <p>We’ll email your tracking number once the courier picks it up.</p>
                 </div>
             </div>
+
             <div class="timeline-item">
                 <div class="timeline-icon"><i class="fa-solid fa-house-chimney"></i></div>
                 <div class="timeline-content">
                     <h4>Delivered</h4>
-                    <p>Your order has been delivered!</p>
+                    <p>Enjoy your spices! We’d love your feedback after delivery.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items + totals -->
+        <div>
+            <section class="table-card">
+                <div class="table-head">
+                    <h3>Order items</h3>
+                    <div class="small">
+                        Items: <span th:text="${order.items != null ? order.items.size() : 0}">0</span>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                    <tr>
+                        <th class="th-item">Item</th>
+                        <th style="width:90px;">Qty</th>
+                        <th style="width:120px;" class="num">Price</th>
+                        <th style="width:140px;" class="num">Line Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="it : ${order.items}">
+                        <td class="td-item" th:text="${it.productName}">Spice</td>
+                        <td th:text="${it.quantity}">1</td>
+                        <td class="num"
+                            th:text="'$ ' + ${#numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">
+                            $ 10.00
+                        </td>
+                        <td class="num"
+                            th:text="'$ ' + ${#numbers.formatDecimal(it.lineTotal,1,'COMMA',2,'POINT')}">
+                            $ 10.00
+                        </td>
+                    </tr>
+
+                    <tr th:if="${order.items == null or #lists.isEmpty(order.items)}">
+                        <td colspan="4" style="padding:18px 14px; color:#6b7280; font-weight:700;">
+                            No items found for this order.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="totals">
+                <div class="row">
+                    <span class="label">Subtotal</span>
+                    <span class="value"
+                          th:text="'$ ' + ${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">
+                        $ 0.00
+                    </span>
+                </div>
+
+                <div class="row" th:if="${order.discount != null && order.discount > 0}">
+                    <span class="label">Discount</span>
+                    <span class="value"
+                          th:text="'- $ ' + ${#numbers.formatDecimal(order.discount,1,'COMMA',2,'POINT')}">
+                        - $ 0.00
+                    </span>
+                </div>
+
+                <div class="row">
+                    <span class="label">Tax (8%)</span>
+                    <span class="value"
+                          th:text="'$ ' + ${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">
+                        $ 0.00
+                    </span>
+                </div>
+
+                <div class="row total">
+                    <span class="label">Total paid</span>
+                    <span class="value"
+                          th:text="'$ ' + ${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">
+                        $ 0.00
+                    </span>
+                </div>
+            </section>
+
+            <div class="links">
+                <a class="btn" th:href="@{/}">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Back to home</span>
+                </a>
+                <a class="btn secondary" th:href="@{/orders}">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span>View my orders</span>
+                </a>
+                <button class="btn secondary" type="button" onclick="shareOrder()">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <span>Share</span>
+                </button>
+            </div>
+
+            <div class="note-card">
+                <div class="note-ic"><i class="fa-solid fa-lightbulb"></i></div>
+                <div>
+                    <h4>Pro tip</h4>
+                    <p>
+                        You can track your full order history under <strong>My Orders</strong>.
+                        If you need help, share your <strong>Order ID</strong> with support for faster assistance.
+                    </p>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- Items -->
-    <section class="table-card">
-        <table>
-            <thead>
-            <tr>
-                <th class="th-item">Item</th>
-                <th style="width:90px;">Qty</th>
-                <th style="width:120px;">Price</th>
-                <th style="width:140px;">Line Total</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="it : ${order.items}">
-                <td class="td-item" th:text="${it.productName}">Spice</td>
-                <td th:text="${it.quantity}">1</td>
-                <td class="num"
-                    th:text="${#numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">10.00</td>
-                <td class="num"
-                    th:text="${#numbers.formatDecimal(it.lineTotal,1,'COMMA',2,'POINT')}">10.00</td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
-
-    <!-- Totals -->
-    <section class="totals">
-        <div class="row">
-            <span class="label">Subtotal</span>
-            <span class="value"
-                  th:text="${#numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">
-        $0.00
-      </span>
-        </div>
-        <div class="row">
-            <span class="label">Tax (8%)</span>
-            <span class="value"
-                  th:text="${#numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">
-        $0.00
-      </span>
-        </div>
-        <div class="row total">
-            <span class="label">Total</span>
-            <span class="value"
-                  th:text="${#numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">
-        $0.00
-      </span>
-        </div>
-    </section>
-
-    <!-- Actions -->
-    <div class="links">
-        <a class="btn" th:href="@{/}">
-            <i class="fa-solid fa-house"></i> Back to Home
-        </a>
-        <a class="btn" th:href="@{/orders}">
-            <i class="fa-solid fa-receipt"></i> View My Orders
-        </a>
-        <a class="btn" href="javascript:void(0)" onclick="shareOrder()">
-            <i class="fa-solid fa-share-nodes"></i> Share Order
-        </a>
-    </div>
 </div>
 
 <footer class="site-footer">
     <div class="footer-container">
         <div class="footer-column">
             <h3>About Spice Jar</h3>
-            <p>Bringing the world's finest spices to your kitchen. Quality, aroma, and flavor guaranteed in every jar.</p>
+            <p>
+                Bringing the world's finest spices to your kitchen.
+                Quality, aroma, and flavor guaranteed in every jar.
+            </p>
         </div>
         <div class="footer-column">
             <h3>Quick Links</h3>
@@ -487,16 +927,14 @@
 
 <script>
     function shareOrder() {
+        const text = 'I just placed an order at The Spice Jar!';
         if (navigator.share) {
             navigator.share({
                 title: 'My Spice Jar Order',
-                text: 'I just placed an order at The Spice Jar! Check out their amazing spices.',
-                url: window.location.href,
-            }).then(() => {
-                console.log('Thanks for sharing!');
-            }).catch(console.error);
+                text,
+                url: window.location.href
+            }).catch(()=>{});
         } else {
-            // Fallback for browsers that don't support the Web Share API
             prompt("Copy this link to share your order:", window.location.href);
         }
     }

@@ -22,10 +22,12 @@ public class OrderService {
 
     private static final String CONF_PREFIX = "TSJ-";
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private final LoyaltyService loyaltyService;
 
     private final OrderRepository repo;
 
-    public OrderService(OrderRepository repo) {
+    public OrderService(LoyaltyService loyaltyService, OrderRepository repo) {
+        this.loyaltyService = loyaltyService;
         this.repo = repo;
     }
 
@@ -110,9 +112,21 @@ public class OrderService {
     public Order markPaid(Long orderId) {
         Order o = findById(orderId);
         if (o == null) return null;
+
         o.setStatus("PAID");
+
+        // ✅ FIX: use userId directly
+        if (o.getUserId() != null) {
+            loyaltyService.earn(
+                    o.getUserId(),
+                    o.getId(),
+                    o.getGrandTotal()
+            );
+        }
+
         return repo.save(o);
     }
+
 
     public void markPendingCod(Long orderId) {
         Order o = findById(orderId);

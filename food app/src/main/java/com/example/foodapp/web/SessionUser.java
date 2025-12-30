@@ -1,7 +1,13 @@
 // src/main/java/com/example/foodapp/security/SessionUser.java
 package com.example.foodapp.web;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
+
+
+
 
 public record SessionUser(
         Long id,

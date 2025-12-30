@@ -59,6 +59,29 @@ public class OrderItem {
     @Setter
     private Long variantId;
 
+    // --- NEW FIELDS FOR RETURNS ---
+    @Setter
+    @Getter
+    private Boolean returned = false;
+
+    @Setter
+    @Getter
+    // item was successfully returned
+    private Boolean returnRequested = false;   // user requested return
+
+    // Optional: status string
+    @Getter
+    @Setter
+    private String returnStatus; // REQUESTED, APPROVED, REJECTED, REFUNDED
+    public Boolean isReturned() {
+        return returned != null && returned;
+    }
+
+    public Boolean isReturnRequested() {
+        return returnRequested != null && returnRequested;
+    }
+
+
     public OrderItem() {}
 
     /** Line total = price * quantity */

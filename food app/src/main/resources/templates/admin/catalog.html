@@ -14,20 +14,138 @@
         :root { --green:#218838; --accent:#b7410e; --dark:#111; }
         * { box-sizing: border-box; }
         body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; background:#f0f8f0; color:#222; }
+        .min-h-screen { min-height:100vh; }
 
-        /* Navbar */
-        header.navbar {
-            background:#fff; padding:6px 6%;
-            box-shadow:0 2px 6px rgba(0,0,0,.05);
-            display:flex; justify-content:space-between; align-items:center;
-            position:sticky; top:0; z-index:1000; height:60px;
+        /* ===== Admin navbar ===== */
+        .admin-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: #020617;
+            border-bottom: 1px solid #1f2637;
+            box-shadow: 0 4px 16px rgba(0,0,0,.45);
         }
-        .brand-logo { display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--green); font-weight:700; font-size:20px; }
-        .brand-logo video { width:36px; height:auto; border-radius:4px; }
-        header.navbar nav a { margin-left:14px; text-decoration:none; color:#333; font-weight:500; font-size:15px; }
-        header.navbar nav a:hover { color: var(--green); }
+        .admin-navbar-inner{
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 6%;
+            height: 60px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+        }
+        .brand-logo{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            text-decoration:none;
+            color:#e5e7eb;
+        }
+        .brand-mark{
+            width:34px;
+            height:34px;
+            border-radius:12px;
+            background:linear-gradient(135deg,#22c55e,#16a34a);
+            display:grid;
+            place-items:center;
+            font-weight:900;
+            font-size:16px;
+            color:#fff;
+            box-shadow:0 4px 10px rgba(16,185,129,.5);
+        }
+        .brand-text-title{
+            font-size:14px;
+            font-weight:600;
+            color:#e5e7eb;
+        }
+        .brand-text-sub{
+            font-size:12px;
+            color:#9ca3af;
+        }
 
-        /* Layout */
+        .admin-nav-links{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            margin-left:24px;
+        }
+        .admin-nav-links a{
+            text-decoration:none;
+            color:#cbd5f5;
+            font-size:13px;
+            padding:6px 12px;
+            border-radius:999px;
+            transition:background .2s,color .2s;
+        }
+        .admin-nav-links a:hover{
+            background:rgba(255,255,255,.06);
+            color:#fff;
+        }
+        .admin-nav-links a.active{
+            background:rgba(34,197,94,.16);
+            color:#bbf7d0;
+        }
+
+        .admin-nav-right{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            color:#e5e7eb;
+            font-size:13px;
+        }
+        .admin-user-pill{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            padding:6px 10px;
+            border-radius:999px;
+            background:rgba(16,185,129,.15);
+            border:1px solid rgba(16,185,129,.4);
+            color:#a7f3d0;
+        }
+        .admin-user-pill i{
+            font-size:14px;
+        }
+        .admin-logout-btn{
+            border:none;
+            background:transparent;
+            color:#fca5a5;
+            font-size:12px;
+            display:flex;
+            align-items:center;
+            gap:4px;
+            padding:6px 8px;
+            border-radius:999px;
+            cursor:pointer;
+        }
+        .admin-logout-btn:hover{
+            background:rgba(239,68,68,.12);
+            color:#fecaca;
+        }
+
+        .admin-subnav{
+            background:#020617;
+            border-top:1px solid #1f2637;
+        }
+        .admin-subnav-inner{
+            max-width:1200px;
+            margin:0 auto;
+            padding:6px 6% 8px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            font-size:13px;
+            color:#94a3b8;
+        }
+        .admin-subnav-inner a{
+            color:#e5e7eb;
+            text-decoration:none;
+        }
+        .admin-subnav-inner a:hover{
+            color:#fff;
+        }
+
+        /* ===== Main layout ===== */
         .container { padding: 24px 6%; max-width: 1200px; margin: 0 auto; }
         h1 { color: var(--green); margin: 0 0 16px; font-size: 26px; }
 
@@ -63,6 +181,77 @@
         .edit-panel{ display:none; padding:12px; background:#f8faf8; border-top:1px dashed #dfe7df; }
         .edit-open .edit-panel{ display:block; }
 
+        /* ===== Variant rows (add + edit) ===== */
+        .variant-panel,
+        #variantSection {
+            border-radius: 12px;
+            background:#f7fbf7;
+            border:1px solid #d7eadf;
+            padding:12px 14px;
+        }
+
+        .variant-header-row{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-end;
+            margin-bottom:6px;
+        }
+        .variant-header-row label{
+            font-weight:600;
+            font-size:13px;
+            color:#444;
+            margin:0;
+        }
+        .variant-header-row small{
+            font-size:12px;
+            color:#666;
+        }
+
+        .variant-row{
+            display:grid;
+            grid-template-columns: minmax(0,0.8fr) minmax(0,0.8fr) minmax(0,0.6fr) auto;
+            gap:8px;
+            align-items:end;
+        }
+        .variant-row input[type="number"]{
+            width:100%;
+            padding:8px 10px;
+            border-radius:8px;
+            border:1px solid #d0d7cf;
+            font-size:13px;
+        }
+        .variant-row [data-remove-variant]{
+            padding:8px 10px;
+            font-size:13px;
+        }
+
+        .variant-columns-head{
+            display:grid;
+            grid-template-columns: minmax(0,0.8fr) minmax(0,0.8fr) minmax(0,0.6fr) auto;
+            gap:8px;
+            font-size:11px;
+            color:#555;
+            margin-bottom:4px;
+        }
+        .variant-columns-head span:last-child{
+            text-align:center;
+        }
+
+        @media (max-width: 768px){
+            .variant-row,
+            .variant-columns-head{
+                grid-template-columns:1fr;
+            }
+        }
+
+        /* Fix alignment inside narrow card edit drawer */
+        .card .variant-row{
+            grid-template-columns:1fr;
+        }
+        .card .variant-columns-head{
+            display:none;
+        }
+
         /* Footer */
         .site-footer{ background:#222; color:#ccc; padding:40px 6%; margin-top:40px; }
         .footer-container { display:flex; flex-wrap:wrap; justify-content:space-between; gap:30px; margin-bottom:30px; }
@@ -75,18 +264,51 @@
         .footer-bottom { text-align:center; padding-top:20px; border-top:1px solid #444; font-size:14px; }
     </style>
 </head>
-<body>
+<body class="min-h-screen">
 
-<header class="navbar">
-    <a th:href="@{/}" class="brand-logo">
-        <video th:src="@{/images/Spice-Jar.mp4}" autoplay muted loop playsinline></video>
-        SpiceJar Admin
-    </a>
-    <nav>
-        <a th:href="@{/admin}">Dashboard</a>
-        <a th:href="@{/admin/catalog}">Catalog</a>
-        <a th:href="@{/admin/orders}">Orders</a>
-    </nav>
+<!-- ===== NAVBAR ===== -->
+<header class="admin-navbar">
+    <div class="admin-navbar-inner">
+        <div style="display:flex; align-items:center; gap:24px;">
+            <a th:href="@{/admin}" class="brand-logo">
+                <div class="brand-mark">SJ</div>
+                <div>
+                    <div class="brand-text-title">SpiceJar</div>
+                    <div class="brand-text-sub">Admin Console</div>
+                </div>
+            </a>
+
+            <nav class="admin-nav-links">
+                <a th:href="@{/admin}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Dashboard</a>
+                <a th:href="@{/admin/orders}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Orders</a>
+                <a th:href="@{/admin/catalog}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Menu</a>
+                <a th:href="@{/admin/categories}" class="px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-white/5">Categories</a>
+            </nav>
+        </div>
+
+        <div class="admin-nav-right">
+            <div class="admin-user-pill">
+                <i class="fa-solid fa-circle-user"></i>
+                <span th:text="${session.ADMIN_USER != null ? session.ADMIN_USER.username : 'Admin'}">Admin</span>
+            </div>
+            <form th:action="@{/admin/logout}" method="get">
+                <button type="submit" class="admin-logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="admin-subnav">
+        <div class="admin-subnav-inner">
+            <div>
+                <a th:href="@{/admin}">Admin</a>
+                <span class="mx-2" style="opacity:.5;">/</span>
+                <span style="color:#e5e7eb;">Catalog</span>
+            </div>
+        </div>
+    </div>
 </header>
 
 <main class="container">
@@ -98,7 +320,7 @@
             <h3 style="margin-top:0">Add Product</h3>
 
             <form th:action="@{/admin/products}" method="post" enctype="multipart/form-data" class="form-grid" id="addProductForm">
-                <!-- ✅ CSRF must be present -->
+                <!-- CSRF -->
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <input type="hidden" id="variantsJson" name="variantsJson"/>
 
@@ -122,7 +344,7 @@
                     <small class="muted">e.g., 50g / $2.49 / stock 100</small>
                 </div>
 
-                <!-- Base fields (required only when NOT using variants) -->
+                <!-- Base fields -->
                 <div class="form-grid-3 variant-base" style="grid-column:1/-1">
                     <div>
                         <label for="pprice">Price</label>
@@ -138,11 +360,18 @@
                     </div>
                 </div>
 
-                <!-- Variants (hidden by default; shown when checkbox ON) -->
+                <!-- Variants (ADD) -->
                 <div id="variantSection" class="panel" style="display:none; grid-column:1/-1">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
-                        <label style="margin:0">Weight, Price & Stock Variants</label>
+                    <div class="variant-header-row">
+                        <label>Weight, Price & Stock Variants</label>
                         <small class="muted">Add at least one variant</small>
+                    </div>
+
+                    <div class="variant-columns-head">
+                        <span>Weight (g)</span>
+                        <span>Price</span>
+                        <span>Stock</span>
+                        <span></span>
                     </div>
 
                     <div id="variantList" style="display:flex; flex-direction:column; gap:10px"></div>
@@ -151,19 +380,18 @@
                         + Add variant
                     </button>
 
-                    <!-- Template for a variant row (ADD) -->
                     <template id="variantRowTpl">
-                        <div class="form-grid" data-variant-row>
+                        <div class="variant-row" data-variant-row>
                             <div>
-                                <input type="number" min="1" placeholder="Weight (g)" required name="__REPLACE__.weight"/>
+                                <input type="number" min="1" placeholder="e.g., 200" required name="__REPLACE__.weight"/>
                             </div>
                             <div>
-                                <input type="number" step="0.01" min="0" placeholder="Price" required name="__REPLACE__.price"/>
+                                <input type="number" step="0.01" min="0" placeholder="e.g., 4.59" required name="__REPLACE__.price"/>
                             </div>
                             <div>
                                 <input type="number" min="0" placeholder="Stock" required name="__REPLACE__.stock"/>
                             </div>
-                            <div style="display:flex; align-items:center; gap:8px">
+                            <div style="display:flex; align-items:center; justify-content:center;">
                                 <button type="button" class="btn btn-danger" data-remove-variant>Remove</button>
                             </div>
                         </div>
@@ -177,7 +405,6 @@
 
                 <div style="grid-column:1/-1">
                     <label for="pimg">Image</label>
-                    <!-- made required to match controller expectations -->
                     <input id="pimg" type="file" name="imageFile" accept="image/*" required/>
                 </div>
 
@@ -188,12 +415,11 @@
             </form>
         </div>
 
-        <!-- Manage Categories -->
+        <!-- Categories -->
         <div class="panel">
             <h3 style="margin-top:0">Categories</h3>
 
             <form th:action="@{/admin/categories}" method="post" class="form-grid" style="margin-bottom:12px">
-                <!-- ✅ CSRF -->
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <div>
                     <label for="cname">Name</label>
@@ -216,7 +442,6 @@
                         <span class="muted" th:if="${c.description != null}"> — <span th:text="${c.description}">desc</span></span>
                     </div>
                     <form th:action="@{/admin/categories/delete}" method="post" onsubmit="return confirm('Delete this category?')">
-                        <!-- ✅ CSRF -->
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <input type="hidden" name="id" th:value="${c.id}"/>
                         <button class="btn btn-danger" type="submit" formnovalidate><i class="fa-solid fa-trash"></i></button>
@@ -247,16 +472,16 @@
 
                     <!-- variants -->
                     <div class="meta" th:if="${!#lists.isEmpty(p.variants)}">
-            <span class="pill" th:each="v : ${p.variants}"
-                  th:text="${#numbers.formatInteger(v.weight,1,'COMMA') + ' g / $' + #numbers.formatDecimal(v.price,1,'COMMA',2,'POINT') + ' • Stock: ' + (v.stock != null ? #numbers.formatInteger(v.stock,1,'COMMA') : '—')}">
-              50 g / $2.49 • Stock: 100
-            </span>
+                        <span class="pill" th:each="v : ${p.variants}"
+                              th:text="${#numbers.formatInteger(v.weight,1,'COMMA') + ' g / $' + #numbers.formatDecimal(v.price,1,'COMMA',2,'POINT') + ' • Stock: ' + (v.stock != null ? #numbers.formatInteger(v.stock,1,'COMMA') : '—')}">
+                          50 g / $2.49 • Stock: 100
+                        </span>
                     </div>
 
                     <!-- base meta -->
                     <div class="meta" th:if="${#lists.isEmpty(p.variants)}">
-            <span class="pill" th:if="${p.weight != null}"
-                  th:text="${#numbers.formatInteger(p.weight, 1, 'COMMA') + ' g'}">250 g</span>
+                        <span class="pill" th:if="${p.weight != null}"
+                              th:text="${#numbers.formatInteger(p.weight, 1, 'COMMA') + ' g'}">250 g</span>
                         <span class="pill" th:if="${p.stock != null}"
                               th:text="${'Stock: ' + #numbers.formatInteger(p.stock, 1, 'COMMA')}">Stock: 100</span>
                         <span class="pill" th:if="${p.category != null}" th:text="${p.category.name}">Category</span>
@@ -269,7 +494,6 @@
 
                         <form th:action="@{/admin/products/delete}" method="post"
                               onsubmit="return confirm('Delete this product?')">
-                            <!-- ✅ CSRF -->
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                             <input type="hidden" name="id" th:value="${p.id}"/>
                             <button class="btn btn-danger" type="submit" formnovalidate>
@@ -281,12 +505,9 @@
 
                 <!-- Inline Edit Panel -->
                 <div class="edit-panel">
-                    <!-- added enctype for multipart compatibility -->
                     <form th:action="@{/admin/products/update}" method="post" enctype="multipart/form-data" class="form-grid">
-                        <!-- ✅ CSRF -->
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <input type="hidden" name="id" th:value="${p.id}"/>
-                        <!-- keep a hidden variantsJson for edit as well -->
                         <input type="hidden" name="variantsJson" class="variantsJsonEdit"/>
 
                         <div>
@@ -330,13 +551,21 @@
                         <!-- Variants list (edit) -->
                         <div class="panel variant-panel"
                              th:style="${!#lists.isEmpty(p.variants)} ? '' : 'display:none'">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
-                                <label style="margin:0">Weight, Price & Stock Variants</label>
+
+                            <div class="variant-header-row">
+                                <label>Weight, Price & Stock Variants</label>
                                 <small class="muted">Edit or add new</small>
                             </div>
 
+                            <div class="variant-columns-head">
+                                <span>Weight (g)</span>
+                                <span>Price</span>
+                                <span>Stock</span>
+                                <span></span>
+                            </div>
+
                             <div class="variant-list-edit" style="display:flex; flex-direction:column; gap:10px">
-                                <div class="form-grid" data-variant-row th:each="v,vi : ${p.variants}">
+                                <div class="variant-row" data-variant-row th:each="v,vi : ${p.variants}">
                                     <div>
                                         <input type="hidden" th:name="${'variants['+vi.index+'].id'}" th:value="${v.id}"/>
                                         <input type="number" min="1" placeholder="Weight (g)" required
@@ -350,17 +579,18 @@
                                         <input type="number" min="0" placeholder="Stock" required
                                                th:name="${'variants['+vi.index+'].stock'}" th:value="${v.stock}"/>
                                     </div>
-                                    <div style="display:flex; align-items:center; gap:8px">
+                                    <div style="display:flex; align-items:center; justify-content:center;">
                                         <button type="button" class="btn btn-danger" data-remove-variant>Remove</button>
                                     </div>
                                 </div>
                             </div>
 
-                            <button type="button" class="btn btn-primary add-variant-edit" style="margin-top:10px">+ Add variant</button>
+                            <button type="button" class="btn btn-primary add-variant-edit" style="margin-top:10px">
+                                + Add variant
+                            </button>
 
-                            <!-- Per-card template (EDIT) -->
                             <template class="variantRowTplEdit">
-                                <div class="form-grid" data-variant-row>
+                                <div class="variant-row" data-variant-row>
                                     <div>
                                         <input type="number" min="1" placeholder="Weight (g)" required name="__REPLACE__.weight"/>
                                     </div>
@@ -370,7 +600,7 @@
                                     <div>
                                         <input type="number" min="0" placeholder="Stock" required name="__REPLACE__.stock"/>
                                     </div>
-                                    <div style="display:flex; align-items:center; gap:8px">
+                                    <div style="display:flex; align-items:center; justify-content:center;">
                                         <button type="button" class="btn btn-danger" data-remove-variant>Remove</button>
                                     </div>
                                 </div>
@@ -416,7 +646,6 @@
 
 <script>
     (function(){
-        // Helpers
         const $  = s => document.querySelector(s);
         const $$ = s => Array.from(document.querySelectorAll(s));
 
@@ -482,18 +711,15 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Init variants toggle
             const cb = $('#useVariants');
             toggleVariantSection(cb.checked);
             cb.addEventListener('change', e => toggleVariantSection(e.target.checked));
 
-            // Add/remove variant rows
             $('#btnAddVariant')?.addEventListener('click', addVariantRow);
             document.body.addEventListener('click', (e)=>{
                 if (e.target && e.target.matches('[data-remove-variant]')) removeVariantRow(e.target);
             });
 
-            // Serialize variants + set base fallbacks before submit (ADD)
             $('#addProductForm').addEventListener('submit', (e) => {
                 const useVariants = $('#useVariants').checked;
                 const hidden = $('#variantsJson');
@@ -507,10 +733,8 @@
                         return;
                     }
 
-                    // Send variants JSON (even if backend ignores it today).
                     hidden.value = JSON.stringify(variants);
 
-                    // Derive base fields so controller gets required params:
                     const minPrice = Math.min(...variants.map(v => v.price));
                     const firstWeight = variants[0].weight;
                     const totalStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
@@ -518,11 +742,8 @@
                     $('#pprice').value  = Number.isFinite(minPrice) ? minPrice : 0;
                     $('#pweight').value = Number.isFinite(firstWeight) ? firstWeight : 0;
                     $('#pstock').value  = Number.isFinite(totalStock) ? totalStock : 0;
-
-                    // Base fields are hidden via CSS when variants ON, but still submitted.
                 } else {
-                    hidden.value = ''; // no variants
-                    // Guard for backend rule
+                    hidden.value = '';
                     if (!$('#pprice').value) {
                         e.preventDefault();
                         alert('Price is required when no variants are provided.');
@@ -549,9 +770,10 @@
                 const tpl   = card.querySelector('.variantRowTplEdit');
                 const addBtn= card.querySelector('.add-variant-edit');
                 const variantsJsonHidden = card.querySelector('.variantsJsonEdit');
-                const form = card.querySelector('form[th\\:action], form[action]'); // current edit form
 
-                // compute starting index from existing inputs
+                // 🔧 pick the edit form, not the delete form
+                const form = card.querySelector('.edit-panel form');
+
                 let localIdx = (()=>{
                     const existing = list ? list.querySelectorAll('input[name^="variants["]') : [];
                     let max = -1;
@@ -585,7 +807,6 @@
                 }
                 addBtn?.addEventListener('click', addRowEdit);
 
-                // Remove buttons inside edit panel
                 card.addEventListener('click', (e)=>{
                     if (e.target && e.target.matches('[data-remove-variant]')) {
                         const row = e.target.closest('[data-variant-row]');
@@ -593,14 +814,12 @@
                     }
                 });
 
-                // Before submit (EDIT): serialize variants + set base fallbacks
                 form?.addEventListener('submit', (e)=>{
                     if (!useCb || !useCb.checked) {
                         if (variantsJsonHidden) variantsJsonHidden.value = '';
                         return;
                     }
 
-                    // collect variants in this card
                     const rows = Array.from(list.querySelectorAll('[data-variant-row]'));
                     const variants = rows.map(r => {
                         const w = r.querySelector('input[name$=".weight"]')?.value;
@@ -621,7 +840,6 @@
 
                     if (variantsJsonHidden) variantsJsonHidden.value = JSON.stringify(variants);
 
-                    // find base inputs inside this form
                     const priceInput  = form.querySelector('input[name="price"]');
                     const weightInput = form.querySelector('input[name="weight"]');
                     const stockInput  = form.querySelector('input[name="stock"]');

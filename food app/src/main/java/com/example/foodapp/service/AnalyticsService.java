@@ -2,6 +2,7 @@ package com.example.foodapp.service;
 
 import com.example.foodapp.model.DashboardMetrics;
 import com.example.foodapp.model.DayBucket;
+import com.example.foodapp.model.Product;
 import com.example.foodapp.model.RecentOrderDTO;
 import org.springframework.stereotype.Service;
 
@@ -46,4 +47,8 @@ public interface AnalyticsService {
     default java.util.LinkedHashMap<String, java.math.BigDecimal> revenueLast7Days() {
         return revenueByDay(7);
     }
+
+    public List<Product> topSellers(int limit, int daysBack) ;
+
+
 }

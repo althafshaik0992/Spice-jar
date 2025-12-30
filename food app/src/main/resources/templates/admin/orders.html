@@ -105,6 +105,14 @@
 
 <main class="max-w-7xl mx-auto px-5 py-8 space-y-6">
 
+  <!-- 🔔 Flash alert for survey send etc. -->
+  <div th:if="${alertMsg != null}"
+       th:class="'mb-4 px-4 py-3 rounded-xl text-sm flex items-center gap-2 border ' + (alertType == 'success' ? 'bg-emerald-900/40 text-emerald-200 border-emerald-500/40' : 'bg-rose-900/40 text-rose-200 border-rose-500/40')">
+    <i class="fa-solid"
+       th:classappend="${alertType == 'success'} ? ' fa-circle-check' : ' fa-circle-exclamation'"></i>
+    <span th:text="${alertMsg}">Message</span>
+  </div>
+
   <!-- Filters -->
   <form id="ordersFilter" class="card soft p-4 md:p-5" th:action="@{/admin/orders}" method="get">
     <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
@@ -178,7 +186,7 @@
           <th class="py-2 pr-4 text-left border-b border-[#1f2637]">SubTotal</th>
           <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Tax</th>
           <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Total</th>
-          <th class="py-2 pr-0 text-left border-b border-[#1f2637]">Status</th>
+          <th class="py-2 pr-4 text-left border-b border-[#1f2637]">Status</th>
           <th class="py-2 text-left border-b border-[#1f2637]"></th>
         </tr>
         </thead>
@@ -207,7 +215,26 @@
                     th:text="${o.status}">PAID</span>
           </td>
           <td class="py-3">
-            <a th:href="@{/admin/orders/{id}(id=${o.id})}" class="text-emerald-400 hover:underline">Details</a>
+            <div class="flex items-center gap-3">
+              <!-- Existing details link -->
+              <a th:href="@{/admin/orders/{id}(id=${o.id})}"
+                 class="text-emerald-400 hover:text-emerald-300 hover:underline">
+                Details
+              </a>
+
+
+              <!-- ✉️ Send survey email button -->
+              <form th:action="@{/admin/orders/{id}/send-survey(id=${o.id})}"
+                    method="post"
+                    th:if="${o.email != null and !#strings.isEmpty(o.email)}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit"
+                        class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-emerald-600/15 text-emerald-300 hover:bg-emerald-600/30 hover:text-emerald-100"
+                        title="Send survey email">
+                  <i class="fa-solid fa-envelope-open-text text-sm"></i>
+                </button>
+              </form>
+            </div>
           </td>
         </tr>
         <tr th:if="${#lists.isEmpty(orders)}">

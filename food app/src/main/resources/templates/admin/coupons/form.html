@@ -37,7 +37,6 @@
 <header class="sticky top-0 z-40 border-b border-[#1f2637] bg-[#0b1220]/85 backdrop-blur">
   <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
     <div class="flex items-center gap-4">
-      <!-- ✅ use real admin dashboard route -->
       <a th:href="@{/admin}" class="flex items-center gap-2 group">
         <div class="h-9 w-9 grid place-items-center rounded-xl bg-emerald-600 text-white font-black shadow-lg shadow-emerald-900/40 ring-1 ring-emerald-400/30 group-hover:scale-[1.02] transition">SJ</div>
         <div>
@@ -61,7 +60,6 @@
         <span class="text-xs text-slate-500 hidden lg:inline">/ to focus</span>
       </div>
 
-      <!-- ✅ public site root -->
       <a th:href="@{ / }" class="hidden sm:inline-flex items-center gap-2 px-3 h-10 rounded-xl text-sm text-slate-200 hover:bg-white/5">
         <i class="fa-solid fa-up-right-from-square"></i>
         <span>Site</span>
@@ -92,13 +90,11 @@
     </div>
   </div>
 
-  <!-- Sub-header -->
   <div class="border-t border-[#1f2637]">
     <div class="max-w-7xl mx-auto px-5 h-12 flex items-center justify-between">
       <div class="text-sm text-slate-400">
         <a th:href="@{/admin}" class="hover:text-slate-200">Admin</a>
         <span class="mx-2 opacity-50">/</span>
-        <!-- ✅ coupons list route -->
         <a th:href="@{/admin/coupons}" class="hover:text-slate-200">Coupons</a>
         <span class="mx-2 opacity-50">/</span>
         <span class="text-slate-300" th:text="${coupon.id==null ? 'New' : 'Edit'}">New</span>
@@ -115,8 +111,8 @@
 <main class="max-w-7xl mx-auto px-5 py-8">
   <h1 class="text-2xl font-semibold mb-4" th:text="${coupon.id==null ? 'Create coupon' : 'Edit coupon'}">Create coupon</h1>
 
-  <!-- ✅ correct form action -->
-  <form class="card soft p-5" th:action="@{/admin/coupons}" method="post" th:object="${coupon}">
+  <!-- NOTE: added id="couponForm" for JS -->
+  <form id="couponForm" class="card soft p-5" th:action="@{/admin/coupons}" method="post" th:object="${coupon}">
     <div class="flex items-center justify-between border-b border-dashed border-[#1f2a44] pb-3 mb-3">
       <h2 class="text-base font-semibold">Coupon details</h2>
       <span class="status-pill">
@@ -159,9 +155,25 @@
         <input class="field-input" th:field="*{startsOn}" type="date"/>
       </div>
 
+      <!-- ✅ Expires on + No expiry toggle -->
       <div>
-        <label class="field-label">Expires on</label>
-        <input class="field-input" th:field="*{expiresOn}" type="date"/>
+        <div class="flex items-center justify-between mb-1">
+          <span class="field-label mb-0">Expires on</span>
+          <label class="inline-flex items-center gap-2 text-[12px] text-slate-400 cursor-pointer">
+            <input type="checkbox"
+                   id="noExpiryChk"
+                   class="h-4 w-4 rounded border-slate-600"
+                   th:checked="${coupon.expiresOn == null}"/>
+            <span>No expiry</span>
+          </label>
+        </div>
+        <input class="field-input"
+               id="expiresOnInput"
+               th:field="*{expiresOn}"
+               type="date"/>
+        <div class="text-[12px] text-slate-500 mt-1">
+          Leave empty or tick “No expiry” if this coupon should never expire.
+        </div>
       </div>
 
       <div class="md:col-span-2">
@@ -176,7 +188,6 @@
     </div>
 
     <div class="flex items-center justify-end gap-3 mt-5">
-      <!-- ✅ back to list route -->
       <a class="btn-link" th:href="@{/admin/coupons}">
         <i class="fa-solid fa-arrow-left"></i> Cancel
       </a>
@@ -190,6 +201,7 @@
 <script>
   const typeSel = document.getElementById('typeSelect');
   const lbl = document.getElementById('valueLabel');
+
   function setLabel(){
     if (!typeSel || !lbl) return;
     lbl.textContent = (typeSel.value === 'PERCENT')
@@ -198,6 +210,34 @@
   }
   typeSel?.addEventListener('change', setLabel);
   setLabel();
+
+  // === No expiry behaviour ===
+  const expiresInput = document.getElementById('expiresOnInput');
+  const noExpiryChk  = document.getElementById('noExpiryChk');
+  const form         = document.getElementById('couponForm');
+
+  function syncNoExpiry(){
+    if (!expiresInput || !noExpiryChk) return;
+    if (noExpiryChk.checked){
+      expiresInput.disabled = true;
+      expiresInput.classList.add('opacity-40','cursor-not-allowed');
+      expiresInput.value = ''; // visually clear
+    } else {
+      expiresInput.disabled = false;
+      expiresInput.classList.remove('opacity-40','cursor-not-allowed');
+    }
+  }
+
+  noExpiryChk?.addEventListener('change', syncNoExpiry);
+  syncNoExpiry();
+
+  // Before submit: if "No expiry" is checked, send empty value so backend gets null
+  form?.addEventListener('submit', () => {
+    if (noExpiryChk && noExpiryChk.checked && expiresInput){
+      expiresInput.disabled = false;
+      expiresInput.value = '';
+    }
+  });
 
   document.addEventListener('keydown', (e) => {
     if (e.key === '/' && !/input|textarea/i.test(document.activeElement.tagName)) {

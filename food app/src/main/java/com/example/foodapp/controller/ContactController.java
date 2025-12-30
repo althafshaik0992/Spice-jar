@@ -45,6 +45,8 @@ public class ContactController {
             m.addAttribute("error", "Please correct the highlighted fields.");
             return "contact";
         }
+        String ticketId = contactService.sendContact(form);
+
 
         contactService.sendContact(form);
         System.out.printf("CONTACT: %s <%s> [%s] topic=%s%n%s%n",
@@ -52,6 +54,6 @@ public class ContactController {
         System.out.println(" message " + new RuntimeException());
         System.out.println("email sent");
 
-        return "redirect:/contact?msg=Thanks!+We%E2%80%99ll+get+back+to+you+soon.";
+        return "redirect:/contact?msg=Thanks!+We%E2%80%99ll+get+back+to+you+soon.+And +Your+ticket+ID+is+ "+ ticketId;
     }
 }

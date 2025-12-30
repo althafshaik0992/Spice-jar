@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${product.name} + ' • SpiceJar'">Product • SpiceJar</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <style>
+        :root{
+            --green:#218838;
+            --accent:#b7410e;
+            --bg:#f3faf4;
+            --card:#fff;
+            --muted:#6b7280;
+        }
+        *{box-sizing:border-box;}
+        body{
+            margin:0;
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:var(--bg);
+            color:#111827;
+        }
+        .navbar{
+            background:#fff;
+            padding:6px 6%;
+            box-shadow:0 2px 6px rgba(0,0,0,.05);
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            position:sticky;
+            top:0;
+            z-index:1000;
+            height:60px;
+        }
+        .brand-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--green);font-weight:700;font-size:20px}
+        .brand-logo video{width:36px;height:auto;border-radius:4px}
+        .nav-links{display:flex;align-items:center;gap:18px}
+        .nav-links a{text-decoration:none;color:#333;font-weight:500;font-size:15px}
+        .nav-links a:hover{color:var(--green)}
+        .cart-icon-container{position:relative;display:inline-block;color:#333}
+        .cart-count-badge{
+            position:absolute;top:-8px;right:-8px;
+            background-color:var(--accent);color:#fff;
+            font-size:11px;font-weight:700;
+            border-radius:50%;width:20px;height:20px;
+            display:flex;justify-content:center;align-items:center;
+        }
+        .dropdown{position:relative}
+        .dropdown-toggle{background:none;border:none;cursor:pointer;font-size:15px;color:#333;display:flex;align-items:center;gap:6px}
+        .dropdown-menu{display:none;position:absolute;right:0;top:100%;background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.1);border-radius:6px;overflow:hidden;min-width:180px}
+        .dropdown:hover .dropdown-menu{display:block}
+        .dropdown-menu a,.dropdown-menu span{display:block;padding:10px 16px;text-decoration:none;color:#333;white-space:nowrap}
+        .dropdown-menu a:hover{background:#f4f4f4}
+
+        .container{max-width:1200px;margin:24px auto;padding:0 6%;}
+        .breadcrumbs{font-size:13px;color:var(--muted);margin-bottom:12px}
+        .breadcrumbs a{text-decoration:none;color:var(--green)}
+        .breadcrumbs span{margin:0 4px}
+
+        .product-layout{
+            display:grid;
+            grid-template-columns: minmax(0,1.2fr) minmax(0,1fr);
+            gap:24px;
+        }
+        @media(max-width:900px){
+            .product-layout{grid-template-columns:1fr;}
+        }
+
+        .product-image-card{
+            background:var(--card);
+            border-radius:18px;
+            box-shadow:0 16px 40px rgba(15,23,42,.09);
+            padding:16px;
+        }
+        .product-image-card img{
+            width:100%;
+            border-radius:12px;
+            object-fit:cover;
+            max-height:420px;
+        }
+
+        .product-info-card{
+            background:var(--card);
+            border-radius:18px;
+            box-shadow:0 16px 40px rgba(15,23,42,.09);
+            padding:24px 26px;
+        }
+        .product-name{font-size:28px;font-weight:800;margin:0 0 4px;}
+        .product-category{font-size:14px;color:var(--muted);margin-bottom:8px;}
+
+        .rating-summary{
+            display:flex;align-items:center;gap:6px;
+            font-size:14px;margin-bottom:14px;color:#374151;
+        }
+        .rating-stars{display:inline-flex;gap:2px;}
+        .rating-stars .fa-star,
+        .rating-stars .fa-star-half-stroke{color:#facc15;}
+        .rating-stars .fa-regular{color:#e5e7eb;}
+        .rating-count{font-size:12px;color:#6b7280;}
+
+        .price{
+            font-size:26px;
+            font-weight:800;
+            margin:6px 0;
+        }
+        .price small{
+            font-size:14px;
+            font-weight:500;
+            color:var(--muted);
+            margin-left:6px;
+        }
+
+        .pill{
+            display:inline-flex;align-items:center;justify-content:center;
+            padding:4px 12px;border-radius:999px;
+            border:1px solid #d1fae5;background:#ecfdf5;
+            font-size:13px;color:#047857;font-weight:600;
+        }
+
+        /* Variant chips on product page */
+        .variant-row{
+            margin:8px 0 10px;
+        }
+        .variant-label{
+            font-size:14px;
+            font-weight:600;
+            margin-right:6px;
+        }
+        .variant-buttons{
+            margin-top:8px;
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+        }
+        .variant-pill{
+            border-radius:999px;
+            border:1px solid #bbf7d0;
+            background:#ecfdf5;
+            padding:4px 14px;
+            font-size:13px;
+            font-weight:600;
+            color:#047857;
+            cursor:pointer;
+        }
+        .variant-pill.active{
+            background:#16a34a;
+            border-color:#15803d;
+            color:#fff;
+        }
+
+        .stock-text{margin:8px 0 12px;font-size:14px;font-weight:700;}
+        .stock-ok{color:#16a34a;}
+        .stock-low{color:#a16207;}
+        .stock-out{color:#b91c1c;}
+
+        .product-description{
+            font-size:14px;color:#4b5563;line-height:1.6;margin-bottom:18px;
+        }
+
+        .qty-row{display:flex;align-items:center;gap:10px;margin-top:6px;}
+        .qty-input{
+            width:70px;padding:8px 10px;border-radius:999px;
+            border:1px solid #d1d5db;font-size:14px;
+        }
+        .btn{
+            border:none;border-radius:999px;padding:10px 18px;
+            font-weight:700;cursor:pointer;display:inline-flex;
+            align-items:center;gap:8px;font-size:14px;
+        }
+        .btn-primary{background:var(--green);color:#fff;}
+        .btn-primary:hover{background:#166534;}
+        .btn-disabled{background:#9ca3af;color:#e5e7eb;cursor:not-allowed;}
+
+        /* Reviews */
+        .reviews-card{
+            margin-top:24px;
+            background:var(--card);
+            border-radius:18px;
+            box-shadow:0 10px 28px rgba(15,23,42,.07);
+            padding:22px 24px 26px;
+        }
+        .reviews-header{
+            display:flex;justify-content:space-between;align-items:center;
+            margin-bottom:12px;
+        }
+        .reviews-header h2{margin:0;font-size:18px;}
+        .review-item{border-top:1px solid #e5e7eb;padding-top:12px;margin-top:12px;}
+        .review-meta{font-size:12px;color:#6b7280;margin-bottom:4px;display:flex;gap:6px;align-items:center;}
+        .review-comment{font-size:14px;color:#374151;margin-top:4px;}
+
+        .review-form{margin-top:16px;border-top:1px solid #e5e7eb;padding-top:14px;}
+        .review-form h3{margin:0 0 8px;font-size:16px;}
+        .star-inputs{display:flex;flex-direction:row-reverse;gap:4px;font-size:18px;margin-bottom:8px;}
+        .star-inputs input{display:none;}
+        .star-inputs label{cursor:pointer;color:#e5e7eb;}
+        .star-inputs input:checked ~ label,
+        .star-inputs label:hover,
+        .star-inputs label:hover ~ label{color:#facc15;}
+        textarea{
+            width:100%;min-height:80px;padding:8px 10px;
+            border-radius:10px;border:1px solid #d1d5db;
+            font-family:inherit;font-size:14px;
+        }
+        .login-note{font-size:13px;color:#6b7280;margin-top:8px;}
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a href="/" class="brand-logo">
+        <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
+        <span>SpiceJar</span>
+    </a>
+
+    <div class="nav-links">
+        <a th:href="@{/menu}">Menu</a>
+        <a th:href="@{/about}">About Us</a>
+        <a class="nav-link" th:href="@{/cart/view}">
+            <div class="cart-icon-container" aria-live="polite" aria-label="Cart items">
+                <i class="fas fa-shopping-cart" style="font-size:24px"></i>
+                <span class="cart-count-badge" id="lblCartCount" th:text="${cartCount}">0</span>
+            </div>
+        </a>
+        <a th:href="@{/contact}">Contact Us</a>
+
+        <div class="dropdown">
+            <button class="dropdown-toggle">
+                <i class="fas fa-user"></i>
+                <span th:text="${session.USER != null ? session.USER.firstName : 'Account'}">Account</span>
+            </button>
+            <div class="dropdown-menu">
+                <a th:if="${session.USER == null}" th:href="@{/login}">Login</a>
+                <a th:if="${session.USER == null}" th:href="@{/register}">Register</a>
+                <span th:if="${session.USER != null}">
+                    Welcome, <strong th:text="${session.USER.firstName}">User</strong>
+                </span>
+                <a th:if="${session.USER != null}" th:href="@{/account}">Your Account</a>
+                <a th:if="${session.USER != null}" th:href="@{/orders}">My Orders</a>
+                <a th:if="${session.USER != null}" th:href="@{/logout}">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs">
+        <a th:href="@{/menu}">Menu</a>
+        <span>&gt;</span>
+        <span th:text="${product.name}">Product</span>
+    </div>
+
+    <div class="product-layout">
+        <!-- LEFT: IMAGE -->
+        <section class="product-image-card">
+            <img th:src="${#strings.isEmpty(product.imageUrl) ? '/images/chilli%20powder.jpeg' : product.imageUrl}"
+                 th:alt="${product.name}"/>
+        </section>
+
+        <!-- RIGHT: INFO -->
+        <section class="product-info-card">
+            <h1 class="product-name" th:text="${product.name}">Product name</h1>
+            <div class="product-category" th:text="${product.category != null ? product.category.name : 'Spices'}">
+                Category
+            </div>
+
+            <!-- Rating summary -->
+            <div class="rating-summary">
+                <div class="rating-stars" th:if="${avgRating != null and avgRating > 0}">
+                    <span th:each="i : ${#numbers.sequence(1,5)}">
+                        <i class="fa-star"
+                           th:classappend="${
+                                avgRating >= i        ? ' fa-solid' :
+                                (avgRating >= i-0.5 ? ' fa-solid fa-star-half-stroke' :
+                                                      ' fa-regular')
+                           }"></i>
+                    </span>
+                </div>
+                <span th:if="${avgRating == null or avgRating == 0}">No reviews yet</span>
+                <span th:if="${avgRating != null and avgRating > 0}"
+                      th:text="${#numbers.formatDecimal(avgRating,1,'COMMA',1,'POINT')} + ' / 5'"></span>
+                <span class="rating-count"
+                      th:if="${reviewCount != null and reviewCount > 0}"
+                      th:text="'(' + ${reviewCount} + ' reviews)'">(0 reviews)</span>
+            </div>
+
+            <!-- PRICE + VARIANTS -->
+            <!-- When product has variants -->
+            <div th:if="${!#lists.isEmpty(product.variants)}">
+                <div class="price">
+                    From
+                    $ <span id="variantPriceDisplay"
+                            th:text="${#numbers.formatDecimal(product.price,1,'COMMA',2,'POINT')}">
+                        0.00
+                    </span>
+                </div>
+
+                <!-- Weight chips -->
+                <div class="variant-row">
+                    <div class="variant-label">Choose weight</div>
+                    <div class="variant-buttons">
+                        <button type="button"
+                                class="variant-pill"
+                                th:each="v, idx : ${product.variants}"
+                                th:data-vid="${v.id}"
+                                th:data-price="${v.price}"
+                                th:data-weight="${v.weight}"
+                                th:classappend="${idx.index == 0} ? ' active' : ''"
+                                th:text="${v.weight + ' g'}">
+                            100 g
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- When NO variants: show single price/weight -->
+            <div th:if="${#lists.isEmpty(product.variants)}">
+                <div class="price">
+                    $ <span th:text="${#numbers.formatDecimal(product.price,1,'COMMA',2,'POINT')}">0.00</span>
+                </div>
+                <div>
+                    <span class="pill" th:if="${product.weight != null}"
+                          th:text="${product.weight} + ' g'">100 g</span>
+                </div>
+            </div>
+
+            <!-- Stock line (still product-level for now) -->
+            <div class="stock-text"
+                 th:classappend="${
+                     product.stock == null or product.stock == 0
+                        ? ' stock-out'
+                        : (product.stock != null and product.stock <= 5
+                            ? ' stock-low'
+                            : ' stock-ok')
+                 }">
+                <span th:if="${product.stock == null or product.stock == 0}">Out of stock</span>
+                <span th:if="${product.stock != null and product.stock > 0 and product.stock <= 5}"
+                      th:text="'Only ' + ${product.stock} + ' left — order soon'">
+                    Only 3 left — order soon
+                </span>
+                <span th:if="${product.stock != null and product.stock > 5}">In Stock</span>
+            </div>
+
+            <p class="product-description"
+               th:text="${product.description}">
+                Some long description…
+            </p>
+
+            <!-- Qty + Add to cart (normal POST, non-AJAX) -->
+            <form th:action="@{/cart/add}" method="post" id="productAddToCartForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="productId" th:value="${product.id}"/>
+
+                <!-- hidden variantId: will be filled by JS when product has variants -->
+                <input type="hidden" name="variantId" id="variantIdInput"/>
+
+                <div class="qty-row">
+                    <input type="number" class="qty-input" name="qty" min="1" value="1"/>
+                    <button class="btn btn-primary"
+                            th:disabled="${product.stock == null or product.stock == 0}"
+                            th:classappend="${product.stock == null or product.stock == 0} ? ' btn-disabled' : ''"
+                            type="submit">
+                        <i class="fa-solid fa-cart-plus"></i>
+                        <span th:text="${product.stock == null or product.stock == 0 ? 'Unavailable' : 'Add to Cart'}">
+                            Add to Cart
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <!-- REVIEWS -->
+    <section class="reviews-card">
+        <div class="reviews-header">
+            <h2>Reviews</h2>
+        </div>
+
+        <!-- Existing reviews list -->
+        <div th:if="${#lists.isEmpty(reviews)}">
+            <p class="login-note">No reviews yet. Be the first to review this product!</p>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(reviews)}">
+            <article class="review-item" th:each="r : ${reviews}">
+                <div class="review-meta">
+                    <div class="rating-stars">
+                        <span th:each="i : ${#numbers.sequence(1,5)}">
+                            <i class="fa-star"
+                               th:classappend="${r.rating >= i ? ' fa-solid' : ' fa-regular'}"></i>
+                        </span>
+                    </div>
+                    <span th:text="${r.user != null ? r.user.firstName : 'Guest'}">User</span>
+                    <span th:text="${#temporals.format(r.createdAt, 'MMM d, yyyy')}">Date</span>
+                </div>
+                <div class="review-comment" th:text="${r.comment}">Comment text…</div>
+            </article>
+        </div>
+
+        <!-- Write-review form -->
+        <div class="review-form">
+            <h3>Write a review</h3>
+
+            <div th:if="${session.USER == null}" class="login-note">
+                Please <a th:href="@{/login}">log in</a> to write a review.
+            </div>
+
+            <form th:if="${session.USER != null}"
+                  th:action="@{/reviews/add}"
+                  method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="productId" th:value="${product.id}"/>
+
+                <!-- Rating stars (1–5) -->
+                <div class="star-inputs">
+                    <input type="radio" id="star5" name="rating" value="5" checked/>
+                    <label for="star5"><i class="fa-solid fa-star"></i></label>
+
+                    <input type="radio" id="star4" name="rating" value="4"/>
+                    <label for="star4"><i class="fa-solid fa-star"></i></label>
+
+                    <input type="radio" id="star3" name="rating" value="3"/>
+                    <label for="star3"><i class="fa-solid fa-star"></i></label>
+
+                    <input type="radio" id="star2" name="rating" value="2"/>
+                    <label for="star2"><i class="fa-solid fa-star"></i></label>
+
+                    <input type="radio" id="star1" name="rating" value="1"/>
+                    <label for="star1"><i class="fa-solid fa-star"></i></label>
+                </div>
+
+                <textarea name="comment"
+                          placeholder="Share what you liked or didn’t like…"
+                          required></textarea>
+
+                <div style="margin-top:10px;">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Submit review
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Variant picker logic for the product page (non-AJAX add-to-cart)
+    document.addEventListener('DOMContentLoaded', () => {
+        const pills   = document.querySelectorAll('.variant-pill');
+        const hidden  = document.getElementById('variantIdInput');
+        const priceEl = document.getElementById('variantPriceDisplay');
+
+        if (!pills.length || !hidden) {
+            // No variants – nothing to wire
+            return;
+        }
+
+        // Default: select first variant
+        const first = pills[0];
+        hidden.value = first.dataset.vid;
+        if (priceEl && first.dataset.price) {
+            priceEl.textContent = parseFloat(first.dataset.price).toFixed(2);
+        }
+
+        pills.forEach(btn => {
+            btn.addEventListener('click', () => {
+                pills.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                hidden.value = btn.dataset.vid || '';
+
+                if (priceEl && btn.dataset.price) {
+                    priceEl.textContent = parseFloat(btn.dataset.price).toFixed(2);
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

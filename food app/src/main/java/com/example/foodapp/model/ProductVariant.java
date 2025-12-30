@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 @Table(name = "product_variants")
 public class ProductVariant {
 
-    // getters/setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,7 +28,6 @@ public class ProductVariant {
     @Column(nullable = false)
     private Integer stock;
 
-
     @Setter
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id")
@@ -43,6 +41,24 @@ public class ProductVariant {
         this.product = product;
     }
 
-    public ProductVariant(Integer w, BigDecimal p, int i) {
+    // ✅ actually set all fields
+    public ProductVariant(Integer weight, BigDecimal price, int stock) {
+        this.weight = weight;
+        this.price = price;
+        this.stock  = stock;
     }
+
+
+    @Transient
+    public String getLabel() {
+        // If you have a "weight" field in grams:
+        if (weight != null) {
+            return weight + " g";
+        }
+        // Or if you have a "name" or "size" field:
+        // if (name != null && !name.isBlank()) return name;
+
+        return id != null ? "Option #" + id : "Option";
+    }
+
 }

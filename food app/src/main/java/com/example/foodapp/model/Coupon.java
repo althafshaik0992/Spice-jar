@@ -8,8 +8,10 @@ import java.time.LocalDate;
 @Table(name = "coupons")
 public class Coupon {
 
-    public enum Type { PERCENT, FLAT,AMOUNT } // or PERCENT, AMOUNT
-
+    public enum Type {
+        PERCENT,
+        AMOUNT   // behaves like a flat dollar discount
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,21 +31,46 @@ public class Coupon {
     private BigDecimal minSubtotal = BigDecimal.ZERO;
 
     @Column(name = "starts_on")
-    private LocalDate startsOn;
+    private LocalDate startsOn;        // nullable = “starts immediately”
 
     @Column(name = "expires_on")
-    private LocalDate expiresOn;
+    private LocalDate expiresOn;       // nullable = “no expiry”
 
     @Column(nullable = false)
     private Boolean active = true;
 
+    // ---------- Convenience helpers ----------
 
+    /** Required for Thymeleaf `${c.active}` etc. */
+    public Boolean getActive() {
+        return active;
+    }
+    public Boolean isActive() {
+        return active;
+    }
 
-    // ✅ Add BOTH getters for compatibility
+    /** True when there is no expiry date set. */
+    @Transient
+    public boolean hasNoExpiry() {
+        return expiresOn == null;
+    }
 
-    public Boolean isActive() { return active; } // ← this makes Thymeleaf happy
+    /** True if the coupon is expired as of the given date. */
+    @Transient
+    public boolean isExpired(LocalDate today) {
+        return expiresOn != null && expiresOn.isBefore(today.plusDays(1));
+    }
 
-    // ✅ boolean + getter "getActive()" will now exist
+    /** True if the coupon is currently valid for the given subtotal. */
+    @Transient
+    public boolean isCurrentlyValid(LocalDate today, BigDecimal subtotal) {
+        if (!Boolean.TRUE.equals(active)) return false;
+        if (startsOn != null && today.isBefore(startsOn)) return false;
+        if (expiresOn != null && today.isAfter(expiresOn)) return false;
+        if (minSubtotal != null && subtotal != null &&
+                subtotal.compareTo(minSubtotal) < 0) return false;
+        return true;
+    }
 
     // ---------- Getters & Setters ----------
 
@@ -68,16 +95,17 @@ public class Coupon {
     public LocalDate getExpiresOn() { return expiresOn; }
     public void setExpiresOn(LocalDate expiresOn) { this.expiresOn = expiresOn; }
 
-    public Boolean getActive() { return active; }        // ✅ THIS fixes your error
     public void setActive(Boolean active) { this.active = active; }
 
-    // Convenience helpers
     @Override
     public String toString() {
         return "Coupon{" +
                 "code='" + code + '\'' +
                 ", type=" + type +
                 ", value=" + value +
+                ", minSubtotal=" + minSubtotal +
+                ", startsOn=" + startsOn +
+                ", expiresOn=" + expiresOn +
                 ", active=" + active +
                 '}';
     }

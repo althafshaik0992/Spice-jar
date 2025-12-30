@@ -4,7 +4,9 @@ package com.example.foodapp.util;
 import com.example.foodapp.model.Coupon;
 import com.example.foodapp.model.OrderItem;
 import com.example.foodapp.model.Product;
+import jakarta.servlet.http.HttpSession;
 import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -23,18 +25,39 @@ public class SessionCart {
     public static final BigDecimal TAX_RATE = new BigDecimal("0.08"); // 8%
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionCart.class);
-    /** Flip to true when you want verbose traces */
     private static final boolean DEBUG = true;
+
     private void log(String msg) {
         if (!DEBUG) return;
-        try { LOGGER.info(msg); } catch (Throwable t) { System.out.println(msg); }
+        try {
+            LOGGER.info(msg);
+        } catch (Throwable t) {
+            System.out.println(msg);
+        }
     }
 
+    /**
+     * Helper to detect if *any* line in the cart is a gift card.
+     * We rely on your convention:
+     *  - productId < 0  OR
+     *  - name contains "gift card"
+     */
+    public boolean containsGiftCard() {
+        if (items == null) return false;
+        return items.stream().anyMatch(i ->
+                (i.productId != null && i.productId < 0L) ||
+                        (i.name != null && i.name.toLowerCase().contains("gift card"))
+        );
+    }
+
+    @Getter
+    @Setter
     public static class Item {
         public Long productId;
         public String name;
         public BigDecimal unitPrice = BigDecimal.ZERO;
         public int qty = 1;
+
         public BigDecimal lineTotal() {
             return unitPrice.multiply(BigDecimal.valueOf(qty));
         }
@@ -63,6 +86,11 @@ public class SessionCart {
         this.appliedCouponCode = (coupon == null ? null : coupon.getCode());
         log("[CART] coupon -> " + (coupon == null ? "null"
                 : coupon.getCode() + " (" + coupon.getType() + " " + coupon.getValue() + ")"));
+    }
+
+    /** Actual Coupon object, used when saving CouponRedemption. */
+    public Coupon getAppliedCoupon() {
+        return appliedCoupon;
     }
 
     /* =========================
@@ -125,7 +153,7 @@ public class SessionCart {
     }
 
     /* =========================
-       Mutators (optional)
+       Mutators
        ========================= */
 
     public void addItem(Long productId, String name, BigDecimal unitPrice, int qty) {
@@ -149,7 +177,6 @@ public class SessionCart {
             items.add(it);
             log("  -> NEW line: unit=" + it.unitPrice + " qty=" + it.qty);
         } else {
-            // if existing price is 0, update it from incoming
             if (existing.unitPrice == null || existing.unitPrice.signum() == 0) {
                 if (incoming.signum() > 0) {
                     existing.unitPrice = incoming.setScale(2, RoundingMode.HALF_UP);
@@ -179,7 +206,7 @@ public class SessionCart {
         recalc();
     }
 
-    public void clear() {
+    public void clear(HttpSession session) {
         log("[CART] clear()");
         items.clear();
         setAppliedCoupon(null);
@@ -198,7 +225,6 @@ public class SessionCart {
                     " line=" + it.lineTotal());
         }
 
-        // Subtotal = sum(qty * unit)
         subtotal = items.stream()
                 .map(Item::lineTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
@@ -215,7 +241,7 @@ public class SessionCart {
             switch (appliedCoupon.getType()) {
                 case PERCENT -> d = subtotal.multiply(
                         val.divide(new BigDecimal("100"), 6, RoundingMode.HALF_UP));
-                case FLAT, AMOUNT -> d = val;
+                case AMOUNT -> d = val;
             }
         }
 
@@ -232,34 +258,11 @@ public class SessionCart {
                 subtotal, discount, tax, grandTotal));
     }
 
-//    // inside SessionCart
-//    public void syncFromCartItems(List<com.example.foodapp.util.CartItem> cartItems) {
-//        items.clear();
-//        if (cartItems != null) {
-//            for (com.example.foodapp.util.CartItem c : cartItems) {
-//                Item it = new Item();
-//                it.productId = c.getProductId();
-//                it.name      = c.getName();
-//                // prefer BigDecimal getters if present; fall back to Number
-//                BigDecimal up = c.getPrice() != null
-//                        ? c.getPrice()
-//                        : (c.getPrice() != null ? c.getPrice() : BigDecimal.ZERO);
-//                it.unitPrice = up;
-//                it.qty       = Math.max(1, c.getQty());
-//                items.add(it);
-//            }
-//        }
-//        recalc();
-//    }
-
-
-
-    // SessionCart.java
-    public void syncFromCartItems(java.util.List<com.example.foodapp.util.CartItem> cartItems) {
+    // Build from legacy CartItem list
+    public void syncFromCartItems(List<CartItem> cartItems) {
         items.clear();
         if (cartItems != null) {
-            for (com.example.foodapp.util.CartItem c : cartItems) {
-
+            for (CartItem c : cartItems) {
                 int qty = (c.getQty() <= 0) ? 1 : c.getQty();
 
                 BigDecimal unit = c.getPrice();
@@ -277,9 +280,6 @@ public class SessionCart {
         }
         recalc();
     }
-
-
-
 
     /* =========================
        API convenience
@@ -304,24 +304,36 @@ public class SessionCart {
         return x == null ? BigDecimal.ZERO : x;
     }
 
-    /** Tries several common getters/fields to extract a price from Product. */
     private BigDecimal extractPrice(Product p) {
         if (p == null) return BigDecimal.ZERO;
 
-        try { var m = p.getClass().getMethod("getUnitPrice");
-            var v = m.invoke(p); if (v instanceof BigDecimal bd) return bd;
-            if (v instanceof Number n) return BigDecimal.valueOf(n.doubleValue()); } catch (Exception ignore) {}
-        try { var m = p.getClass().getMethod("getPrice");
-            var v = m.invoke(p); if (v instanceof BigDecimal bd) return bd;
-            if (v instanceof Number n) return BigDecimal.valueOf(n.doubleValue()); } catch (Exception ignore) {}
-        try { var m = p.getClass().getMethod("getSellingPrice");
-            var v = m.invoke(p); if (v instanceof BigDecimal bd) return bd;
-            if (v instanceof Number n) return BigDecimal.valueOf(n.doubleValue()); } catch (Exception ignore) {}
-        try { var m = p.getClass().getMethod("getMrp");
-            var v = m.invoke(p); if (v instanceof BigDecimal bd) return bd;
-            if (v instanceof Number n) return BigDecimal.valueOf(n.doubleValue()); } catch (Exception ignore) {}
+        try {
+            var m = p.getClass().getMethod("getUnitPrice");
+            var v = m.invoke(p);
+            if (v instanceof BigDecimal bd) return bd;
+            if (v instanceof Number n) return BigDecimal.valueOf(n.doubleValue());
+        } catch (Exception ignore) {}
+        try {
+            var m = p.getClass().getMethod("getPrice");
+            var v = m.invoke(p);
+            if (v instanceof BigDecimal bd) return bd;
+            if (v instanceof Number n) return BigDecimal.valueOf(n.doubleValue());
+        } catch (Exception ignore) {}
+        try {
+            var m = p.getClass().getMethod("getSellingPrice");
+            var v = m.invoke(p);
+            if (v instanceof BigDecimal bd) return bd;
+            if (v instanceof Number n) return BigDecimal.valueOf(n.doubleValue());
+        } catch (Exception ignore) {}
+        try {
+            var m = p.getClass().getMethod("getMrp");
+            var v = m.invoke(p);
+            if (v instanceof BigDecimal bd) return bd;
+            if (v instanceof Number n) return BigDecimal.valueOf(n.doubleValue());
+        } catch (Exception ignore) {}
 
-        try { var f = p.getClass().getDeclaredField("price");
+        try {
+            var f = p.getClass().getDeclaredField("price");
             f.setAccessible(true);
             Object v = f.get(p);
             if (v instanceof BigDecimal bd) return bd;
@@ -331,7 +343,6 @@ public class SessionCart {
         return BigDecimal.ZERO;
     }
 
-    /** Quick manual dump if you want it in console without SLF4J formatting. */
     public void debugPrint() {
         System.out.println("========= SESSION CART DEBUG =========");
         if (items.isEmpty()) {

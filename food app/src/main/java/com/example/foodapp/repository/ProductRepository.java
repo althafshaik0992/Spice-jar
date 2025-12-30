@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
@@ -74,5 +75,34 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
        order by p.name asc
        """)
     List<Product> findLowStock(int threshold);
+
+
+   // List<Product> findByActiveTrueOrderByCreatedAtDesc(Pageable pageable);
+
+    Optional<Product> findByNameIgnoreCase(String name);
+
+    @Query("""
+           select distinct p
+           from Product p
+           left join fetch p.variants v
+           left join fetch p.category c
+           """)
+    List<Product> findAllWithVariantsAndCategory();
+
+
+    @Query("""
+           select distinct p
+           from Product p
+           left join fetch p.category c
+           left join fetch p.variants v
+           where (:q is null or trim(:q) = '' or lower(p.name) like lower(concat('%', :q, '%')))
+             and (:min is null or p.price >= :min)
+             and (:max is null or p.price <= :max)
+             and (:categoryId is null or c.id = :categoryId)
+           """)
+    List<Product> searchWithVariants(@Param("q") String q,
+                                     @Param("min") BigDecimal min,
+                                     @Param("max") BigDecimal max,
+                                     @Param("categoryId") Long categoryId);
 }
 

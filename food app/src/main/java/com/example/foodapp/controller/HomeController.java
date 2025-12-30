@@ -1,20 +1,11 @@
 package com.example.foodapp.controller;
 
-import com.example.foodapp.model.ChatProductDTO;
-import com.example.foodapp.model.Coupon;
-import com.example.foodapp.model.Product;
-import com.example.foodapp.model.ProductVariant;
+import com.example.foodapp.model.*;
+import com.example.foodapp.repository.CouponRedemptionRepository;
 import com.example.foodapp.repository.CouponRepository;
-import com.example.foodapp.service.CategoryService;
-import com.example.foodapp.service.CouponService;
-import com.example.foodapp.service.ProductService;
-import com.example.foodapp.service.ReviewService;
+import com.example.foodapp.service.*;
 import com.example.foodapp.util.Cart;
-import com.example.foodapp.util.CartUtils;
-import com.example.foodapp.util.GlobalData;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +16,6 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @Controller
 
@@ -43,17 +32,26 @@ public class HomeController {
 
     private final CategoryService categoryService;
 
+    private final CouponRedemptionRepository couponRedemptionRepository;
 
+private final UserService userService;
 
     private final CouponRepository couponRepository;
 
+    private final AnalyticsService analyticsService;
+    private final InventoryService inventoryService;
 
 
-    public HomeController(ProductService productService, ReviewService reviewService, CategoryService categoryService,  CouponRepository couponRepository) {
+
+    public HomeController(ProductService productService, ReviewService reviewService, CategoryService categoryService, CouponRedemptionRepository couponRedemptionRepository, UserService userService, CouponRepository couponRepository, AnalyticsService analyticsService, InventoryService inventoryService) {
         this.productService = productService;
         this.reviewService = reviewService;
         this.categoryService = categoryService;
+        this.couponRedemptionRepository = couponRedemptionRepository;
+        this.userService = userService;
         this.couponRepository = couponRepository;
+        this.analyticsService = analyticsService;
+        this.inventoryService = inventoryService;
     }
 
 
@@ -66,38 +64,69 @@ public class HomeController {
 
     @GetMapping("/")
     public String index(Model m, HttpSession session) {
-        var today = java.time.LocalDate.now();
 
-        java.util.List<com.example.foodapp.model.Coupon> coupons;
+        var today = java.time.LocalDate.now();
+        User user = currentUser(session);   // from BaseController
+
+        // 1) Base set: active + date-valid coupons
+        java.util.List<com.example.foodapp.model.Coupon> base;
         try {
-            coupons = couponRepository.findAll(); // or your typed finder
+            // if you have this query, use it (already in CouponRepository)
+            base = couponRepository.findActiveCurrentlyValid(today);
         } catch (Exception e) {
-            coupons = java.util.Collections.emptyList();
+            // fallback: manual filtering from findAll()
+            base = couponRepository.findAll().stream()
+                    .filter(c -> java.lang.Boolean.TRUE.equals(c.getActive()))
+                    .filter(c -> c.getStartsOn() == null || !today.isBefore(c.getStartsOn()))
+                    .filter(c -> c.getExpiresOn() == null || !today.isAfter(c.getExpiresOn()))
+                    .sorted(java.util.Comparator
+                            .comparing((com.example.foodapp.model.Coupon c) ->
+                                    c.getStartsOn() == null
+                                            ? java.time.LocalDate.MIN
+                                            : c.getStartsOn())
+                            .thenComparing(com.example.foodapp.model.Coupon::getCode,
+                                    String.CASE_INSENSITIVE_ORDER))
+                    .toList();
         }
 
-        coupons = coupons.stream()
-                .filter(c -> Boolean.TRUE.equals(c.getActive()))
-                .filter(c -> c.getStartsOn() == null || !today.isBefore(c.getStartsOn()))
-                .filter(c -> c.getExpiresOn() == null || !today.isAfter(c.getExpiresOn()))
-                .sorted(java.util.Comparator
-                        .comparing((com.example.foodapp.model.Coupon c) ->
-                                c.getStartsOn() == null ? java.time.LocalDate.MIN : c.getStartsOn())
-                        .thenComparing(com.example.foodapp.model.Coupon::getCode,
-                                String.CASE_INSENSITIVE_ORDER))
-                .toList();
+        // 2) Filter by user: remove coupons already redeemed by this user
+        java.util.List<com.example.foodapp.model.Coupon> coupons;
+
+        if (user != null) {
+            java.util.Set<Long> redeemedIds = couponRedemptionRepository.findByUser(user)
+                    .stream()
+                    .map(cr -> cr.getCoupon() != null ? cr.getCoupon().getId() : null)
+                    .filter(java.util.Objects::nonNull)
+                    .collect(java.util.stream.Collectors.toSet());
+
+            coupons = base.stream()
+                    .filter(c -> c.getId() != null && !redeemedIds.contains(c.getId()))
+                    .toList();
+        } else {
+            // guest: show all active/date-valid coupons
+            coupons = base;
+        }
 
         System.out.println(">>> availableCoupons size = " + coupons.size()); // DEBUG
 
-        m.addAttribute("availableCoupons", coupons);
-        m.addAttribute("couponCount", coupons.size()); // DEBUG helper
+        // 3) Best sellers (variants are handled in your index.html)
+        var bestSellers = analyticsService.topSellers(4, 90); // 4 items, last 90 days
 
-        m.addAttribute("products", productService.findAll());
+        // 4) Model attributes
+        m.addAttribute("availableCoupons", coupons);
+        m.addAttribute("couponCount", coupons.size());
+        m.addAttribute("bestSellers", bestSellers);
+        m.addAttribute("latestReviews", reviewService.latestApproved(3));
+
+        // Your existing cartCount logic (still fine)
         var cart = session.getAttribute("CART");
         m.addAttribute("cartCount", cart != null
-                ? com.example.foodapp.util.CartUtils.getCartTotalQuantity((com.example.foodapp.util.Cart) cart)
+                ? com.example.foodapp.util.CartUtils.getCartTotalQuantity((Cart) cart)
                 : 0);
+
         return "index";
     }
+
 
 
 
@@ -222,6 +251,8 @@ public class HomeController {
         List<Product> products = productService.filter(q, min, max, categoryId, sort);
         m.addAttribute("products", products);
 
+
+
         // 2) compute maps using the SAME list
         Map<Long, Double> avgMap = products.stream()
                 .collect(Collectors.toMap(Product::getId, p -> reviewService.avg(p)));
@@ -240,6 +271,9 @@ public class HomeController {
         m.addAttribute("categoryId", categoryId);
         m.addAttribute("sort", sort);
         m.addAttribute("cartCount", cartCount);
+        Map<Long,Integer> stockByProduct = inventoryService.getStocksForProductIds(
+                products.stream().map(Product::getId).toList());
+        m.addAttribute("stockByProduct", stockByProduct);
 
         return "menu";
     }
@@ -292,6 +326,17 @@ public class HomeController {
                             .thenComparing(Coupon::getCode, String.CASE_INSENSITIVE_ORDER))
                     .toList();
         }
+    }
+
+
+    protected User currentUser(HttpSession session) {
+        try {
+            User u = userService.getCurrentUser(session); // ok if null / not implemented
+            if (u != null) return u;
+        } catch (Throwable ignored) { /* fallback */ }
+
+        Object s = (session != null) ? session.getAttribute("USER") : null;
+        return (s instanceof User) ? (User) s : null;
     }
 
 

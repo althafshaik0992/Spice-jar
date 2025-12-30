@@ -2,14 +2,18 @@ package com.example.foodapp.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 public class Product {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
@@ -32,20 +36,32 @@ public class Product {
     private Integer weight;
 
     @Column(nullable = false)
-    private  Integer stock;
+    private Integer stock;
+
+    // total stock for this product (base or sum of variants).
+    // You can still persist this if you want, but the helpers below
+    // compute everything on the fly as well.
+    @Getter
+    @Setter
+    private Integer stockQty = 0;
+
+    @Getter
+    @Setter
+    // optional: custom low-stock threshold per product
+    private Integer lowStockThreshold;
 
     @Getter
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariant> variants = new ArrayList<>();
 
-
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("createdAt DESC")
-    private java.util.List<Review> reviews = new java.util.ArrayList<>();
+    private List<Review> reviews = new ArrayList<>();
 
     public Product() {}
 
-    public Product(Long id, String name, String description, BigDecimal price, String imageUrl, Category category, Integer weight, Integer stock) {
+    public Product(Long id, String name, String description, BigDecimal price,
+                   String imageUrl, Category category, Integer weight, Integer stock) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -74,31 +90,86 @@ public class Product {
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
 
-    public Integer getStock() {
-        return stock;
+    public Integer getStock() { return stock; }
+    public void setStock(Integer stock) { this.stock = stock; }
+
+    public Integer getWeight() { return weight; }
+    public void setWeight(Integer weight) { this.weight = weight; }
+
+    public void setVariants(List<ProductVariant> variants) {
+        this.variants = variants;
     }
 
-    public void setStock(Integer stock) {
-        this.stock = stock;
+    // --- NEW HELPERS ---
+
+    /**
+     * Total stock for this product:
+     *  - if variants exist, sum variant.stock
+     *  - otherwise use base stock
+     */
+    public int getTotalStock() {
+        if (variants != null && !variants.isEmpty()) {
+            return variants.stream()
+                    .map(ProductVariant::getStock)
+                    .filter(Objects::nonNull)
+                    .mapToInt(Integer::intValue)
+                    .sum();
+        }
+        return stock != null ? stock : 0;
     }
 
-    public Integer getWeight() {
-        return weight;
+    /**
+     * Minimum variant stock (ignoring nulls).
+     * Returns null if there are no variants or all stocks null.
+     */
+    public Integer getMinVariantStock() {
+        if (variants == null || variants.isEmpty()) {
+            return null;
+        }
+
+        return variants.stream()
+                .map(ProductVariant::getStock)
+                .filter(s -> s != null && s > 0)  // ✅ ignore null and 0
+                .min(Integer::compareTo)
+                .orElse(null);                    // all null/0 → return null
     }
 
-    public void setWeight(Integer weight) {
-        this.weight = weight;
+
+    /**
+     * Recompute and cache total stock into stockQty (optional).
+     * Call this from service if you want a persisted snapshot.
+     */
+    public void recomputeStockQtyFromVariants() {
+        this.stockQty = getTotalStock();
     }
 
+    public boolean isOutOfStock() {
+        return getTotalStock() <= 0;
+    }
 
-    public void setVariants(List<ProductVariant> variants) { this.variants = variants; }
+    public boolean isLowStock(int defaultThreshold) {
+        int total = getTotalStock();
+        if (total <= 0) return false; // already out of stock
+        int th = (lowStockThreshold == null ? defaultThreshold : lowStockThreshold);
+        return total <= th;
+    }
 
     // convenience for full replace (used on save/update)
     public void replaceVariants(List<ProductVariant> newOnes) {
         this.variants.clear();
         if (newOnes != null) this.variants.addAll(newOnes);
-        for (ProductVariant v : this.variants) v.setProduct(this);
+        for (ProductVariant v : this.variants) {
+            v.setProduct(this);
+        }
+        // keep cached field in sync
+        recomputeStockQtyFromVariants();
     }
 
-
+    public void addVariant(ProductVariant v) {
+        if (v == null) return;
+        v.setProduct(this);
+        this.variants.add(v);
+        // keep cached field in sync
+        recomputeStockQtyFromVariants();
+    }
 }

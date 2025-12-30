@@ -14,6 +14,10 @@ public class Review {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
+
+
+
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
     private Product product;
 

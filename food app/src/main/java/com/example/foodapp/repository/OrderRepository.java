@@ -1,16 +1,20 @@
 package com.example.foodapp.repository;
 
 import com.example.foodapp.model.Order;
+import com.example.foodapp.model.OrderStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
     List<Order> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
@@ -73,6 +77,41 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     Optional<BigDecimal> sumGrandTotalBetween(
             @Param("start") java.time.LocalDateTime start,
             @Param("end")   java.time.LocalDateTime end);
+
+
+
+
+
+//    @Query("""
+//        select oi.productName as product, sum(oi.quantity) as qty
+//        from OrderItem oi
+//        join oi.order o
+//        where o.status in :statuses
+//          and (:since is null or o.createdAt >= :since)
+//        group by oi.productName
+//        order by qty desc
+//        """)
+//    List<ProductSales> findTopSellingProducts(
+//            @Param("statuses") Collection<OrderStatus> statuses,
+//            @Param("since") Instant since,
+//            Pageable pageable);
+
+
+    // Native fallback (only if JPQL gives you trouble with entity name)
+    @Query(value = """
+    SELECT new com.example.foodapp.repository.ProductSales(oi.productName, SUM(oi.quantity))
+    FROM Order o
+      JOIN o.items oi
+    WHERE o.status IN :statusNames
+      AND (:since IS NULL OR o.createdAt >= :since)
+    GROUP BY oi.productName
+    ORDER BY SUM(oi.quantity) DESC
+""")
+    List<ProductSales> findTopSellingProductsNative(
+            @Param("statusNames") Set<String> statusNames,
+            @Param("since") LocalDateTime since,
+            Pageable pageable
+    );
 
 
 }

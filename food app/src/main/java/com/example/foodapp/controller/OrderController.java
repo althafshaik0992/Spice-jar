@@ -1,22 +1,25 @@
 // src/main/java/com/example/foodapp/controller/OrderController.java
 package com.example.foodapp.controller;
 
-import com.example.foodapp.Ai.CartService;
 import com.example.foodapp.model.*;
-import com.example.foodapp.repository.CouponRepository;
-import com.example.foodapp.service.*;
 import com.example.foodapp.util.Cart;
+import com.example.foodapp.repository.CouponRepository;
+import com.example.foodapp.repository.CouponRedemptionRepository;
+import com.example.foodapp.service.*;
 import com.example.foodapp.util.CartItem;
-import com.example.foodapp.util.GlobalData;
 import com.example.foodapp.util.SessionCart;
+import com.stripe.model.Refund;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -25,151 +28,114 @@ public class OrderController extends BaseController {
 
     private final OrderService orderService;
     private final AddressService addressService;
-
     private final InventoryService inventoryService;
-
     private final EmailService emailService;
-
     private final SessionCart sessionCart;
-
     private final CouponRepository couponRepository;
+    private final GiftCardService giftCardService;
+    private final CouponRedemptionRepository couponRedemptionRepository;
+    private final PaymentService paymentService;
+    private final PaypalService paypalService;
+    private final StripeService stripeService;
+    private final LoyaltyService loyaltyService;
 
-    public OrderController(OrderService orderService, AddressService addressService, InventoryService inventoryService, EmailService emailService, SessionCart sessionCart,  CouponRepository couponRepository) {
+
+    public OrderController(OrderService orderService,
+                           AddressService addressService,
+                           InventoryService inventoryService,
+                           EmailService emailService,
+                           SessionCart sessionCart,
+                           CouponRepository couponRepository,
+                           GiftCardService giftCardService,
+                           CouponRedemptionRepository couponRedemptionRepository, PaymentService paymentService, PaypalService paypalService, StripeService stripeService, LoyaltyService loyaltyService) {
         this.orderService = orderService;
         this.addressService = addressService;
         this.inventoryService = inventoryService;
         this.emailService = emailService;
         this.sessionCart = sessionCart;
         this.couponRepository = couponRepository;
+        this.giftCardService = giftCardService;
+        this.couponRedemptionRepository = couponRedemptionRepository;
+        this.paymentService = paymentService;
+        this.paypalService = paypalService;
+        this.stripeService = stripeService;
+        this.loyaltyService = loyaltyService;
     }
-
-//    @GetMapping("/checkout")
-//    public String checkout(Model m, HttpSession session) {
-//        User user = currentUser(session);
-//        if (user == null) return "redirect:/login";
-//
-//        Cart cart = (Cart) session.getAttribute("CART");
-//        if (cart == null || cart.isEmpty()) return "redirect:/cart/view";
-//
-//
-//
-//        m.addAttribute("currentUser", user);
-//        m.addAttribute("addresses", addressService.listForUser(user));
-//        m.addAttribute("cart", cart);
-//        return "checkout";
-//    }
-
-
-
-
-//    @GetMapping("/checkout")
-//    public String checkout(@RequestParam(required = false) Long orderId,
-//                           Model m, HttpSession session) {
-//        User user = currentUser(session);
-//        if (user == null) return "redirect:/login";
-//
-//        // 1) Try the session cart first (this is what your cart page uses)
-//        com.example.foodapp.util.Cart legacy = (com.example.foodapp.util.Cart) session.getAttribute("CART");
-//        if (legacy != null && legacy.getItems() != null && !legacy.getItems().isEmpty()) {
-//            sessionCart.syncFromCartItems(legacy.getItems());
-//        }
-//        // 2) If an orderId is provided, override using the order's items (real qty & unit price)
-//        else if (orderId != null) {
-//            var order = orderService.findById(orderId);
-//            if (order == null) return "redirect:/orders";
-//            sessionCart.syncFromOrderItems(order.getItems());
-//        }
-//        // 3) Fallback to legacy in-memory product list
-//        else if (GlobalData.cart != null && !GlobalData.cart.isEmpty()) {
-//            sessionCart.syncFromProducts(GlobalData.cart); // qty defaults to 1
-//        } else {
-//            // nothing to checkout
-//            return "redirect:/cart/view";
-//        }
-//
-//        sessionCart.recalc();
-//
-//        m.addAttribute("currentUser", user);
-//        m.addAttribute("addresses", addressService.listForUser(user));
-//        m.addAttribute("cart", sessionCart);              // IMPORTANT: pass SessionCart here
-//        m.addAttribute("cartCount", sessionCart.getCount());
-//        return "checkout";
-//    }
-
-
-    // OrderController.java
 
     @GetMapping("/checkout")
     public String checkout(@RequestParam(value = "orderId", required = false) Long orderId,
                            HttpSession session,
                            Model m) {
-        // 1) Must be logged in
-        User user = currentUser(session);
-        if (user == null) return "redirect:/login";
 
-        // 2) Hydrate SessionCart from the best available source
+        User user = currentUser(session);
+        if (user == null) {
+            return "redirect:/login";
+        }
+
         boolean hydrated = false;
 
         if (orderId != null) {
-            // From an existing order (has real qty & unitPrice)
             Order order = orderService.findById(orderId);
-            if (order == null) return "redirect:/orders";
+            if (order == null) {
+                return "redirect:/orders";
+            }
             sessionCart.syncFromOrderItems(order.getItems());
             hydrated = true;
         } else {
-            // Try session "CART" (legacy Cart with List<CartItem>)
             Object obj = session.getAttribute("CART");
-            if (obj instanceof com.example.foodapp.util.Cart sc
-                    && sc.getItems() != null && !sc.getItems().isEmpty()) {
+            if (obj instanceof Cart sc && sc.getItems() != null && !sc.getItems().isEmpty()) {
                 sessionCart.syncFromCartItems(sc.getItems());
                 hydrated = true;
             } else if (com.example.foodapp.util.GlobalData.cart != null
                     && !com.example.foodapp.util.GlobalData.cart.isEmpty()) {
-                // Fallback: in-memory List<Product>
                 sessionCart.syncFromProducts(com.example.foodapp.util.GlobalData.cart);
                 hydrated = true;
             }
         }
 
         if (!hydrated) {
-            // Nothing to checkout
             return "redirect:/cart/view";
         }
 
-        // Recompute totals now that items exist
         sessionCart.recalc();
 
-        // (Optional debug)
-        // sessionCart.debugPrint();
+        boolean cartHasGiftCard = sessionCart.containsGiftCard();
 
-        // 3) Load active coupons (robust fallback if you don't have a typed finder)
-        java.util.List<Coupon> availableCoupons;
-        try {
-            // If you have this method in CouponRepository, prefer it:
-            // List<Coupon> findByActiveTrueOrderByStartsOnAscCodeAsc();
-            availableCoupons = couponRepository.findByActiveTrueOrderByStartsOnAscCodeAsc();
-        } catch (Exception ignore) {
-            availableCoupons = couponRepository.findAll().stream()
-                    .filter(c -> Boolean.TRUE.equals(c.getActive()))
-                    .sorted(
-                            java.util.Comparator.comparing(
-                                    (Coupon c) -> c.getStartsOn() == null ? java.time.LocalDate.MIN : c.getStartsOn()
-                            ).thenComparing(Coupon::getCode, String.CASE_INSENSITIVE_ORDER)
-                    )
-                    .toList();
+        List<Coupon> availableCoupons = Collections.emptyList();
+        if (!cartHasGiftCard) {
+            List<Coupon> base;
+            try {
+                base = couponRepository.findActiveCurrentlyValid(LocalDate.now());
+            } catch (Exception e) {
+                base = couponRepository.findByActiveTrueOrderByStartsOnAscCodeAsc();
+            }
+
+            if (user != null) {
+                Set<Long> redeemedIds = couponRedemptionRepository.findByUser(user)
+                        .stream()
+                        .map(cr -> cr.getCoupon().getId())
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet());
+
+                availableCoupons = base.stream()
+                        .filter(c -> c.getId() != null && !redeemedIds.contains(c.getId()))
+                        .collect(Collectors.toList());
+            } else {
+                availableCoupons = base;
+            }
         }
 
-        // 4) Model attrs for the view
         m.addAttribute("currentUser", user);
         m.addAttribute("addresses", addressService.listForUser(user));
-        m.addAttribute("cart", sessionCart);                // IMPORTANT: use SessionCart here
+        m.addAttribute("cart", sessionCart);
         m.addAttribute("cartCount", sessionCart.getCount());
         m.addAttribute("availableCoupons", availableCoupons);
+        m.addAttribute("cartHasGiftCard", cartHasGiftCard);
+        m.addAttribute("walletPoints", loyaltyService.getBalance(user.getId()));
+
 
         return "checkout";
     }
-
-
 
     @PostMapping("/place")
     public String place(@RequestParam(required = false) Long addressId,
@@ -181,16 +147,38 @@ public class OrderController extends BaseController {
                         @RequestParam String state,
                         @RequestParam String zip,
                         @RequestParam String country,
-                        HttpSession session) {
+                        @RequestParam(required = false, defaultValue = "0") Integer pointsUsed,
+                        HttpSession session,
+                        Model m) {
+
         User user = currentUser(session);
         if (user == null) return "redirect:/login";
 
         Cart cart = (Cart) session.getAttribute("CART");
         if (cart == null || cart.isEmpty()) return "redirect:/cart/view";
 
+        // ensure SessionCart matches the latest cart items (for discount)
+        if (sessionCart.getCount() <= 0
+                && cart.getItems() != null
+                && !cart.getItems().isEmpty()) {
 
+            sessionCart.syncFromCartItems(cart.getItems());
+            sessionCart.recalc();
+        }
 
-        // override with saved address (defensive check)
+        BigDecimal discountFromSession = sessionCart.getDiscount() != null
+                ? sessionCart.getDiscount()
+                : BigDecimal.ZERO;
+
+        BigDecimal discountFromCart = cart.getDiscount() != null
+                ? cart.getDiscount()
+                : BigDecimal.ZERO;
+
+        BigDecimal effectiveDiscount =
+                discountFromSession.compareTo(BigDecimal.ZERO) > 0
+                        ? discountFromSession
+                        : discountFromCart;
+
         if (addressId != null) {
             Address a = addressService.findById(addressId).orElse(null);
             if (a != null && a.getUser() != null && a.getUser().getId().equals(user.getId())) {
@@ -218,6 +206,7 @@ public class OrderController extends BaseController {
         o.setZip(zip);
         o.setCountry(country);
         o.setConfirmationNumber(orderService.generateUniqueConfirmationNumber());
+
         o.setItems(cart.getItems().stream().map(ci -> {
             OrderItem it = new OrderItem();
             it.setProductId(ci.getProductId());
@@ -225,50 +214,316 @@ public class OrderController extends BaseController {
             it.setQuantity(ci.getQty());
             it.setPrice(ci.getPrice());
             it.setImageUrl(ci.getImageUrl());
-            it.setLineTotal(ci.getPrice()
-                    .multiply(BigDecimal.valueOf(ci.getQty()))
-                    .setScale(2, RoundingMode.HALF_UP));
+            it.setLineTotal(
+                    ci.getPrice()
+                            .multiply(BigDecimal.valueOf(ci.getQty()))
+                            .setScale(2, RoundingMode.HALF_UP)
+            );
             return it;
         }).collect(Collectors.toList()));
 
-
-       // sessionCart.syncFromProducts(GlobalData.cart);
-        BigDecimal subtotal = nz(cart.getSubtotal());
-        if (subtotal.signum() == 0) {
-            subtotal = cart.getItems().stream().map(CartItem::getSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
-        }
-        BigDecimal tax = subtotal.multiply(new BigDecimal("0.08")).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal grand = subtotal.add(tax).setScale(2, RoundingMode.HALF_UP);
-
-
+        o.setDiscount(effectiveDiscount);
+        o.setTotal(o.getGrandTotal());
         o.setStatus("PENDING_PAYMENT");
 
+        // save order
+        Order saved = orderService.save(o);
 
-        orderService.save(o);
+        // ✅ Loyalty redeem (wallet points) - add-on logic
+        if (pointsUsed != null && pointsUsed > 0) {
+
+            // 1) Do not allow points with gift cards
+            boolean cartHasGiftCard = sessionCart.containsGiftCard();
+            if (cartHasGiftCard) {
+                return "redirect:/checkout?error=Wallet+points+cannot+be+used+with+gift+cards";
+            }
+
+            // 2) Do not allow points with coupon (optional rule - keep if you want)
+            if (sessionCart.getAppliedCoupon() != null && effectiveDiscount.compareTo(BigDecimal.ZERO) > 0) {
+                return "redirect:/checkout?error=Use+either+coupon+or+wallet+points,+not+both";
+            }
+
+            // 3) Redeem points -> returns discount amount ($)
+            BigDecimal loyaltyDiscount = loyaltyService.redeem(user.getId(), saved.getId(), pointsUsed);
+
+            // 4) Update order discount + totals
+            BigDecimal newDiscount = effectiveDiscount.add(loyaltyDiscount);
+
+            saved.setDiscount(newDiscount);
+            saved.setTotal(saved.getGrandTotal());
+            saved = orderService.save(saved);
+        }
+
+
+        // 🔹 record coupon redemption (one-time per user)
+        if (user != null && sessionCart.getAppliedCoupon() != null
+                && effectiveDiscount.compareTo(BigDecimal.ZERO) > 0) {
+
+            CouponRedemption redemption = new CouponRedemption();
+            redemption.setUser(user);
+            redemption.setCoupon(sessionCart.getAppliedCoupon());
+            redemption.setOrder(saved);
+            redemption.setRedeemedAt(LocalDateTime.now()); // if field exists
+            couponRedemptionRepository.save(redemption);
+
+            // clear coupon from cart for next orders
+            sessionCart.setAppliedCoupon(null);
+            sessionCart.recalc();
+        }
+
+        // issue gift cards + emails
+        for (CartItem ci : cart.getItems()) {
+            if (ci.getProductId() != null && ci.getProductId() < 0) {
+                for (int i = 0; i < ci.getQty(); i++) {
+                    GiftCard gc = giftCardService.issuePurchasedCard(
+                            ci.getPrice(), user.getId()
+                    );
+                    emailService.sendGiftCardEmail(email, customerName, gc);
+                }
+            }
+        }
+
         cart.clear();
+       // emailService.sendOrderConfirmation(saved.getId());
+        inventoryService.applyOrder(saved);
+       // emailService.sendOrderSurveyEmail(saved);
+        m.addAttribute("cart", sessionCart);
 
-        emailService.sendOrderConfirmation(o.getId());
-
-
-        // ⬇️ decrement inventory immediately (or after payment success if you prefer)
-        inventoryService.applyOrder(o);
-
-
-        return "redirect:/payment/checkout?orderId=" + o.getId();
+        return "redirect:/payment/checkout?orderId=" + saved.getId();
     }
 
-    private static BigDecimal nz(BigDecimal v) {
-        return v == null ? BigDecimal.ZERO : v;
+
+
+
+
+    // =====================================================
+//  RETURN SINGLE ITEM
+//  URL: POST /orders/{orderId}/returnItem/{itemId}
+// =====================================================
+
+
+    // =====================================================
+    // ✅ RETURN SINGLE ITEM
+    // =====================================================
+    @PostMapping("/{orderId}/returnItem/{itemId}")
+    public String requestItemReturn(@PathVariable Long orderId,
+                                    @PathVariable Long itemId,
+                                    HttpSession session,
+                                    RedirectAttributes ra) {
+
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
+
+        Order order = orderService.findById(orderId);
+        if (order == null) throw new IllegalArgumentException("Order not found");
+
+        try {
+            assertOrderBelongsToUser(order, user);
+            assertReturnEligibleStatus(order);
+            assertWithinReturnWindow(order, 30);
+
+            OrderItem item = order.getItems().stream()
+                    .filter(it -> it.getId().equals(itemId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Order item not found"));
+
+            if (Boolean.TRUE.equals(item.getReturnRequested()) || Boolean.TRUE.equals(item.getReturned())) {
+                throw new IllegalStateException("Return already requested");
+            }
+
+            BigDecimal refundAmount = item.getLineTotal() != null ? item.getLineTotal() : BigDecimal.ZERO;
+            if (refundAmount.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalStateException("Refund amount is zero for this item");
+            }
+
+            item.setReturnRequested(true);
+            if (order.getRefundTotal() == null) order.setRefundTotal(BigDecimal.ZERO);
+            order.setRefundTotal(order.getRefundTotal().add(refundAmount));
+            order.setStatus("RETURN_REQUESTED");
+            orderService.save(order);
+
+            // ✅ 1) normal successful payment lookup
+            Payment originalCharge = paymentService.findLatestSuccessfulCharge(orderId);
+
+            // ✅ 2) if not found, try to SYNC from Stripe using latest payment
+            if (originalCharge == null) {
+                Payment latest = paymentService.findLatestByOrderId(orderId);
+                if (latest != null && "STRIPE".equalsIgnoreCase(latest.getProvider())) {
+                    stripeService.syncPaymentIfSucceeded(latest);
+                }
+                originalCharge = paymentService.findLatestSuccessfulCharge(orderId);
+            }
+
+            if (originalCharge == null) {
+                ra.addFlashAttribute("msg",
+                        "Return requested. No successful online payment found to refund (COD/manual).");
+                return "redirect:/orders/" + orderId;
+            }
+
+            Payment refundRecord = paymentService.createRefundRecord(
+                    order, originalCharge, refundAmount, "Refund for item " + item.getProductName()
+            );
+
+            String refundId = null;
+            String provider = originalCharge.getProvider();
+
+            if ("STRIPE".equalsIgnoreCase(provider)) {
+                refundId = stripeService.refundStripePayment(originalCharge.getTransactionId(), refundAmount);
+            } else if ("PAYPAL".equalsIgnoreCase(provider)) {
+                refundId = paypalService.refundPaypalPayment(originalCharge.getTransactionId(), refundAmount);
+            }
+
+            if (refundId != null) {
+                paymentService.markRefundCompleted(refundRecord, refundId, order);
+                ra.addFlashAttribute("msg", "Refund processed successfully. Confirmation email sent.");
+            } else {
+                ra.addFlashAttribute("msg", "Return requested. Refund pending (no gateway refund id).");
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            ra.addFlashAttribute("err", ex.getMessage());
+        }
+
+        return "redirect:/orders/" + orderId;
     }
+
+    // =====================================================
+    // ✅ RETURN FULL ORDER
+    // =====================================================
+    @PostMapping("/{orderId}/return")
+    public String requestOrderReturn(@PathVariable Long orderId,
+                                     HttpSession session,
+                                     RedirectAttributes ra) {
+
+        User user = currentUser(session);
+        if (user == null) return "redirect:/login";
+
+        Order order = orderService.findById(orderId);
+        if (order == null) throw new IllegalArgumentException("Order not found");
+
+        try {
+            assertOrderBelongsToUser(order, user);
+            assertReturnEligibleStatus(order);
+            assertWithinReturnWindow(order, 30);
+
+            if ("RETURN_REQUESTED".equals(order.getStatus()) || "RETURNED".equals(order.getStatus())) {
+                throw new IllegalStateException("Return already requested");
+            }
+
+            BigDecimal refundAmount = BigDecimal.ZERO;
+            for (OrderItem it : order.getItems()) {
+                if (!Boolean.TRUE.equals(it.getReturned())) {
+                    it.setReturnRequested(true);
+                    if (it.getLineTotal() != null) refundAmount = refundAmount.add(it.getLineTotal());
+                }
+            }
+
+            if (order.getRefundTotal() == null) order.setRefundTotal(BigDecimal.ZERO);
+            order.setRefundTotal(order.getRefundTotal().add(refundAmount));
+            order.setStatus("RETURN_REQUESTED");
+            orderService.save(order);
+
+            Payment originalCharge = paymentService.findLatestSuccessfulCharge(orderId);
+
+            if (originalCharge == null) {
+                Payment latest = paymentService.findLatestByOrderId(orderId);
+                if (latest != null && "STRIPE".equalsIgnoreCase(latest.getProvider())) {
+                    stripeService.syncPaymentIfSucceeded(latest);
+                }
+                originalCharge = paymentService.findLatestSuccessfulCharge(orderId);
+            }
+
+            if (originalCharge == null) {
+                ra.addFlashAttribute("msg",
+                        "Return requested. No successful online payment found to refund (COD/manual).");
+                return "redirect:/orders/" + orderId;
+            }
+
+            Payment refundRecord = paymentService.createRefundRecord(order, originalCharge, refundAmount, "Full order refund");
+
+            String refundId = null;
+            try {
+                if ("STRIPE".equalsIgnoreCase(originalCharge.getProvider())) {
+                    refundId = stripeService.refundStripePayment(originalCharge.getTransactionId(), refundAmount);
+                } else if ("PAYPAL".equalsIgnoreCase(originalCharge.getProvider())) {
+                    refundId = paypalService.refundPaypalPayment(originalCharge.getTransactionId(), refundAmount);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                paymentService.markRefundFailed(refundRecord, ex.getMessage());
+            }
+
+            if (refundId != null) {
+                paymentService.markRefundCompleted(refundRecord, refundId, order);
+                ra.addFlashAttribute("msg", "Return requested and refund started. You'll receive a confirmation email.");
+            } else {
+                ra.addFlashAttribute("msg", "Return requested. Refund could not be started (check logs).");
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            ra.addFlashAttribute("err", ex.getMessage());
+        }
+
+        return "redirect:/orders/" + orderId;
+    }
+
+
+
+
+
+
+
+
+    // -------------------------------------------------------
+    // validation helpers
+    // -------------------------------------------------------
+
+
+
+
+
+
 
     private static String nvl(String v, String fb) {
         return (v == null || v.isBlank()) ? fb : v;
     }
-
 
     private static String joinNonBlank(String... parts) {
         return java.util.Arrays.stream(parts)
                 .filter(s -> s != null && !s.isBlank())
                 .collect(java.util.stream.Collectors.joining(" "));
     }
+
+
+    private static final Set<String> RETURN_ELIGIBLE_STATUSES =
+            Set.of("PAID", "SHIPPED", "DELIVERED");
+
+    private void assertOrderBelongsToUser(Order order, User user) {
+        if (order == null) {
+            throw new IllegalArgumentException("Order not found");
+        }
+        if (!order.getUserId().equals(user.getId())) {
+            throw new IllegalStateException("You are not allowed to modify this order");
+        }
+    }
+
+    private void assertReturnEligibleStatus(Order order) {
+        if (!RETURN_ELIGIBLE_STATUSES.contains(order.getStatus())) {
+            throw new IllegalStateException("Order is not eligible for returns in status " + order.getStatus());
+        }
+    }
+
+    private void assertWithinReturnWindow(Order order, int days) {
+        if (order.getCreatedAt() == null) return; // be lenient if missing
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(days);
+        if (order.getCreatedAt().isBefore(cutoff)) {
+            throw new IllegalStateException("Return window has expired for this order");
+        }
+    }
+
+
+
+
 }

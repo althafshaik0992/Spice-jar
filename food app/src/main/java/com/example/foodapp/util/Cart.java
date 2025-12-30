@@ -1,24 +1,52 @@
 package com.example.foodapp.util;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
+@Getter
+@Setter
+@Entity
+@Table(name = "cart")
 public class Cart {
+
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    public enum Status { OPEN, CHECKED_OUT, ABANDONED }
 
     // === getters ===
     @Getter
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Where(clause = "saved_for_later = false")   // Hibernate: auto-filter active items
     private List<CartItem> items = new ArrayList<>();
+
+    // NEW: Saved-for-later items
     @Getter
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Where(clause = "saved_for_later = true")    // Hibernate: auto-filter saved items
     private List<CartItem> savedForLater = new ArrayList<>();
 
     @Getter
     @Setter
     private BigDecimal discount = BigDecimal.ZERO;
+
+
+    private Long userId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Status status = Status.OPEN;
+
 
 
 
@@ -103,5 +131,13 @@ public class Cart {
                 .mapToInt(CartItem::getQty)
                 .sum();
     }
+
+    // --- helpers ---
+
+    public void removeItem(CartItem item) {
+        this.items.remove(item);
+        item.setCart(null);
+    }
+
 
 }

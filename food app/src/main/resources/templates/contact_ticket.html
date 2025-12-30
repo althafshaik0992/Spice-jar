@@ -10,95 +10,133 @@
             .px{padding-left:18px!important;padding-right:18px!important}
         }
         .btn{
-            display:inline-block;background:#218838;color:#fff;text-decoration:none;
-            padding:10px 16px;border-radius:26px;font-family:Segoe UI,Arial,sans-serif;font-size:14px
+            display:inline-block;
+            background:#218838;
+            color:#fff;
+            text-decoration:none;
+            padding:10px 16px;
+            border-radius:26px;
+            font-family:Segoe UI,Arial,sans-serif;
+            font-size:14px;
         }
     </style>
 </head>
 <body style="margin:0;background:#f4fbf4">
 <!-- preheader (hidden preview text) -->
-<div style="display:none;max-height:0;overflow:hidden;opacity:0" th:text="${preheader}">New contact received</div>
+<div style="display:none;max-height:0;overflow:hidden;opacity:0" th:text="${preheader}">
+    New contact received
+</div>
 
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4fbf4">
-    <tr><td align="center">
+    <tr>
+        <td align="center">
 
-        <table role="presentation" width="640" class="container" cellspacing="0" cellpadding="0" style="width:640px;max-width:640px;background:#fff">
-            <!-- Header -->
-            <tr>
-                <td class="px" style="padding:14px 24px;border-bottom:1px solid #e7efe7">
-                    <table role="presentation" width="100%">
-                        <tr>
-                            <td align="left">
-                                <a th:href="${linkHome}" style="text-decoration:none">
-<!--                                    <img th:src="${assetsLogo}" alt="The Spice Jar" width="150" style="display:block;border:0;height:auto">-->
-                                    <video src="/images/Spice-Jar.mp4" autoplay muted loop playsinline></video>
-                                </a>
-                            </td>
-                            <td align="right" style="font-family:Segoe UI,Arial,sans-serif;font-size:13px">
-                                <a th:href="${linkHome}" style="color:#218838;text-decoration:none;margin-left:12px">Home</a>
-                                <a th:href="${linkShop}" style="color:#218838;text-decoration:none;margin-left:12px">Shop</a>
-                                <a th:href="${linkContact}" style="color:#218838;text-decoration:none;margin-left:12px">Contact</a>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
+            <table role="presentation" width="640" class="container" cellspacing="0" cellpadding="0"
+                   style="width:640px;max-width:640px;background:#ffffff">
+                <!-- Header -->
+                <tr>
+                    <td class="px" style="padding:14px 24px;border-bottom:1px solid #e7efe7">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td align="left">
+                                    <a th:href="${linkHome}" style="text-decoration:none">
+                                        <!-- Use image logo in emails (better support than video) -->
+                                        <img th:src="${assetsLogo}"
+                                             alt="The Spice Jar"
+                                             width="150"
+                                             style="display:block;border:0;height:auto">
+                                    </a>
+                                </td>
+                                <td align="right"
+                                    style="font-family:Segoe UI,Arial,sans-serif;font-size:13px;white-space:nowrap">
+                                    <a th:href="${linkHome}"
+                                       style="color:#218838;text-decoration:none;margin-left:12px">Home</a>
+                                    <a th:href="${linkShop}"
+                                       style="color:#218838;text-decoration:none;margin-left:12px">Shop</a>
+                                    <a th:href="${linkContact}"
+                                       style="color:#218838;text-decoration:none;margin-left:12px">Contact</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
 
-            <!-- Hero -->
-            <tr>
-                <td style="background:#218838 url('https://images.unsplash.com/photo-1547844111-a83a45c3b173?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat">
-                    <div style="padding:28px 24px;background:rgba(33,136,56,.78)">
-                        <h1 style="margin:0;color:#fff;font-family:Georgia,Times,serif;font-size:32px;letter-spacing:.3px">INBOX • NEW MESSAGE</h1>
-                        <p style="margin:8px 0 0;color:#eaf6ee;font-family:Segoe UI,Arial,sans-serif">
-                            Ticket <b>#<span th:text="${ticketId}">TKT</span></b>
+                <!-- Hero -->
+                <tr>
+                    <td style="background:#218838 url('https://images.unsplash.com/photo-1547844111-a83a45c3b173?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat">
+                        <div style="padding:28px 24px;background:rgba(33,136,56,.78)">
+                            <h1 style="margin:0;color:#ffffff;font-family:Georgia,Times,serif;font-size:32px;letter-spacing:.3px">
+                                INBOX • NEW MESSAGE
+                            </h1>
+                            <p style="margin:8px 0 0;color:#eaf6ee;font-family:Segoe UI,Arial,sans-serif;font-size:14px">
+                                Ticket
+                                <b>#<span th:text="${ticketId}">TKT</span></b>
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                    <td class="px" style="padding:20px 24px">
+                        <h2 style="margin:0 0 10px;font-family:Segoe UI,Arial,sans-serif;color:#111;font-size:18px">
+                            Summary
+                        </h2>
+
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                               style="border:1px solid #e9efe9;border-radius:10px">
+                            <tr>
+                                <td style="padding:12px 14px;font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.5">
+                                    <b>From:</b>
+                                    <span th:text="${form.name}">Name</span>
+                                    &lt;<span th:text="${form.email}">email@example.com</span>&gt;<br>
+                                    <b>Phone:</b>
+                                    <span th:text="${form.phone != null && !#strings.isEmpty(form.phone) ? form.phone : '—'}">—</span><br>
+                                    <b>Topic:</b>
+                                    <span th:text="${form.topic}">GENERAL</span><br>
+                                    <b>Subject:</b>
+                                    <span th:text="${form.subject}">—</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <h2 style="margin:16px 0 8px;font-family:Segoe UI,Arial,sans-serif;color:#111;font-size:18px">
+                            Message
+                        </h2>
+
+                        <div style="border:1px solid #e9efe9;border-radius:10px;padding:14px;
+                                    font-family:Georgia,Times,serif;color:#222;line-height:1.6;font-size:14px"
+                             th:utext="${#strings.replace(form.message, '\n', '<br/>')}">
+                            Message body…
+                        </div>
+
+                        <p style="margin:16px 0;font-family:Segoe UI,Arial,sans-serif;font-size:14px">
+                            <a class="btn" th:href="'mailto:' + ${form.email}">
+                                Reply to customer
+                            </a>
                         </p>
-                    </div>
-                </td>
-            </tr>
+                    </td>
+                </tr>
 
-            <!-- Body -->
-            <tr>
-                <td class="px" style="padding:20px 24px">
-                    <h2 style="margin:0 0 10px;font-family:Segoe UI,Arial,sans-serif;color:#111;font-size:18px">Summary</h2>
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #e9efe9;border-radius:10px">
-                        <tr>
-                            <td style="padding:12px 14px;font-family:Segoe UI,Arial,sans-serif;font-size:14px">
-                                <b>From:</b>
-                                <span th:text="${form.name}">Name</span>
-                                &lt;<span th:text="${form.email}">email@example.com</span>&gt;<br>
-                                <b>Phone:</b> <span th:text="${form.phone}">—</span><br>
-                                <b>Topic:</b> <span th:text="${form.topic}">GENERAL</span><br>
-                                <b>Subject:</b> <span th:text="${form.subject}">—</span>
-                            </td>
-                        </tr>
-                    </table>
+                <!-- Footer -->
+                <tr>
+                    <td style="background:#0f1010;color:#dfe9e3">
+                        <div style="padding:16px 24px;font-family:Segoe UI,Arial,sans-serif;font-size:12px">
+                            © <span th:text="${year}">2025</span> The Spice Jar • Internal notification
+                        </div>
+                    </td>
+                </tr>
+            </table>
 
-                    <h2 style="margin:16px 0 8px;font-family:Segoe UI,Arial,sans-serif;color:#111;font-size:18px">Message</h2>
-                    <div style="border:1px solid #e9efe9;border-radius:10px;padding:14px;font-family:Georgia,Times,serif;color:#222;line-height:1.6"
-                         th:utext="${#strings.replace(form.message, '\n', '<br/>')}">
-                        Message body…
-                    </div>
+            <!-- spacer -->
+            <table role="presentation" width="640" class="container">
+                <tr>
+                    <td style="height:22px;line-height:22px;font-size:0">&nbsp;</td>
+                </tr>
+            </table>
 
-                    <p style="margin:16px 0;font-family:Segoe UI,Arial,sans-serif">
-                        <a class="btn" th:href="'mailto:' + ${form.email}">Reply to customer</a>
-                    </p>
-                </td>
-            </tr>
-
-            <!-- Footer -->
-            <tr>
-                <td style="background:#0f1010;color:#dfe9e3">
-                    <div style="padding:16px 24px;font-family:Segoe UI,Arial,sans-serif;font-size:12px">
-                        © <span th:text="${year}">2025</span> The Spice Jar • Internal notification
-                    </div>
-                </td>
-            </tr>
-        </table>
-
-        <!-- spacer -->
-        <table role="presentation" width="640" class="container"><tr><td style="height:22px;line-height:22px;font-size:0">&nbsp;</td></tr></table>
-
-    </td></tr>
+        </td>
+    </tr>
 </table>
 </body>
 </html>
