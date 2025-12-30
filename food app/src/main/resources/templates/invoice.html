@@ -2,8 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
-    <!-- Title must not contain HTML; use th:text -->
-    <title th:text="${'Invoice #' + order.confirmationNumber}">Invoice #123</title>
+    <title th:text="|Invoice #${order.confirmationNumber}|">Invoice</title>
 
     <style>
         body{
@@ -16,17 +15,54 @@
             margin:24px auto;
             padding:0 24px;
         }
+
         .hdr{
             display:flex;
             justify-content:space-between;
             align-items:center;
             margin:18px 0;
+            gap:12px;
+            flex-wrap:wrap;
         }
         .brand{
             font-weight:800;
             font-size:20px;
             color:#16a34a;
         }
+        .hdr-right{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            flex-wrap:wrap;
+            justify-content:flex-end;
+        }
+
+        .btn{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding:10px 14px;
+            border-radius:999px;
+            font-size:13px;
+            font-weight:700;
+            text-decoration:none;
+            cursor:pointer;
+            border:1px solid transparent;
+            line-height:1;
+        }
+        .btn-primary{
+            background:#16a34a;
+            color:#fff;
+        }
+        .btn-primary:hover{ background:#15803d; }
+
+        .btn-secondary{
+            background:#fff;
+            color:#111;
+            border-color:#e5e7eb;
+        }
+        .btn-secondary:hover{ background:#f9fafb; }
+
         .box{
             border:1px solid #e5e7eb;
             border-radius:10px;
@@ -48,12 +84,9 @@
             text-align:left;
             font-size:14px;
         }
-        thead th{
-            background:#f7faf7;
-        }
-        .totals{
-            margin-top:14px;
-        }
+        thead th{ background:#f7faf7; }
+
+        .totals{ margin-top:14px; }
         .row{
             display:flex;
             justify-content:space-between;
@@ -66,26 +99,48 @@
             margin-top:6px;
             padding-top:10px;
         }
+
         .muted{
             color:#64748b;
             font-size:12px;
             margin-top:18px;
         }
-        /* PDF-friendly: no external fonts, no fixed/absolute positioning */
+
+        @media print{
+            .no-print{ display:none !important; }
+            .wrap{ margin:0; padding:0 12px; }
+        }
     </style>
 </head>
+
 <body>
 <div class="wrap">
+
     <div class="hdr">
         <div class="brand">The Spice Jar</div>
-        <div>
-            Invoice #
-            <span th:text="${order.confirmationNumber}">123</span>
+
+        <div class="hdr-right">
+            <div>
+                Invoice #
+                <span th:text="${order.confirmationNumber}">123</span>
+            </div>
+
+            <!-- ✅ DOWNLOAD PDF -->
+            <a class="btn btn-primary no-print"
+               th:href="@{/orders/{id}/invoice.pdf(id=${order.id})}">
+                ⬇ Download PDF
+            </a>
+
+            <!-- ✅ PRINT -->
+            <button class="btn btn-secondary no-print" type="button" onclick="window.print()">
+                🖨 Print
+            </button>
         </div>
     </div>
 
     <div class="box">
         <h1>Billing Details</h1>
+
         <div>
             <strong>Name:</strong>
             <span th:text="${order.customerName}">Jane Doe</span>
@@ -110,7 +165,9 @@
 
         <div style="margin-top:8px;">
             <strong>Date:</strong>
-            <span th:text="${#temporals.format(order.createdAt,'MMM d, yyyy h:mm a')}">
+
+            <!-- ✅ SAFE DATE: works when createdAt is LocalDateTime/Instant/Date, and won't crash if null -->
+            <span th:text="${order.createdAt != null ? #temporals.format(order.createdAt,'MMM d, yyyy h:mm a') : '—'}">
                 Sep 24, 2025
             </span>
         </div>
@@ -129,13 +186,11 @@
         <tr th:each="it : ${order.items}">
             <td th:text="${it.productName}">Spice Name</td>
             <td th:text="${it.quantity}">1</td>
-            <!-- show $ + formatted price -->
-            <td th:text="${'$' + #numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">
-                $0.00
-            </td>
-            <td th:text="${'$' + #numbers.formatDecimal(it.price.multiply(new java.math.BigDecimal(it.quantity)),1,'COMMA',2,'POINT')}">
-                $0.00
-            </td>
+
+            <td th:text="${'$' + #numbers.formatDecimal(it.price,1,'COMMA',2,'POINT')}">$0.00</td>
+
+            <!-- ✅ Prefer it.lineTotal from backend (recommended) -->
+            <td th:text="${it.lineTotal != null ? ('$' + #numbers.formatDecimal(it.lineTotal,1,'COMMA',2,'POINT')) : '—'}">$0.00</td>
         </tr>
         </tbody>
     </table>
@@ -143,21 +198,15 @@
     <div class="totals">
         <div class="row">
             <div>Subtotal</div>
-            <div th:text="${'$' + #numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">
-                $0.00
-            </div>
+            <div th:text="${'$' + #numbers.formatDecimal(order.subtotal,1,'COMMA',2,'POINT')}">$0.00</div>
         </div>
         <div class="row">
             <div>Tax</div>
-            <div th:text="${'$' + #numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">
-                $0.00
-            </div>
+            <div th:text="${'$' + #numbers.formatDecimal(order.tax,1,'COMMA',2,'POINT')}">$0.00</div>
         </div>
         <div class="row total">
             <div>Total</div>
-            <div th:text="${'$' + #numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">
-                $0.00
-            </div>
+            <div th:text="${'$' + #numbers.formatDecimal(order.grandTotal,1,'COMMA',2,'POINT')}">$0.00</div>
         </div>
     </div>
 

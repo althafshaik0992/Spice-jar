@@ -46,33 +46,50 @@ public class InvoiceController {
 
 
     @GetMapping(value = "/orders/{id}/invoice.pdf", produces = MediaType.APPLICATION_PDF_VALUE)
-    @ResponseBody
-    public ResponseEntity<byte[]> invoicePdfHtml(@PathVariable Long id) {
+    public ResponseEntity<byte[]> invoicePdf(@PathVariable Long id) {
         Order order = orderService.getOrderById(id);
 
-        // 1) Render Thymeleaf HTML string (same data as your HTML invoice view)
+        // Render Thymeleaf HTML to string
         Context ctx = new Context();
         ctx.setVariable("order", order);
-        String html = templateEngine.process("invoice", ctx); // templates/invoice.html
+        ctx.setVariable("baseUrl", baseUrl); // if you use it in HTML for absolute urls
 
-        // 2) Convert HTML to PDF
+        String html = templateEngine.process("invoice", ctx);
+
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            new PdfRendererBuilder()
-                    .useFastMode()
-                    .withHtmlContent(html, null)
-                    .toStream(baos)
-                    .run();
+
+            PdfRendererBuilder builder = new PdfRendererBuilder();
+            builder.useFastMode();
+
+            // ✅ IMPORTANT: give baseUri so relative resources can be resolved
+            // Example: http://localhost:8080  (or your deployed domain)
+            builder.withHtmlContent(html, baseUrl);
+
+            builder.toStream(baos);
+            builder.run();
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDisposition(ContentDisposition.inline()
-                    .filename("invoice-" + id + ".pdf").build());
+
+            // ✅ Download as file
+            headers.setContentDisposition(
+                    ContentDisposition.attachment()
+                            .filename("invoice-" + order.getConfirmationNumber() + ".pdf")
+                            .build()
+            );
+
+            // Optional but nice
+            headers.setCacheControl(CacheControl.noStore());
+
             return new ResponseEntity<>(baos.toByteArray(), headers, HttpStatus.OK);
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER)
-                    .header(HttpHeaders.LOCATION, "/orders/" + id + "/invoice")
-                    .build();
+            // ✅ Don’t redirect for PDF downloads; return a real error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body(("PDF generation failed: " + e.getMessage()).getBytes());
         }
     }
+
 
 }
