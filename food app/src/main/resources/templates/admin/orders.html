@@ -222,6 +222,24 @@
                 Details
               </a>
 
+              <!-- ✅ Track (only if tracking exists) -->
+              <a th:if="${o.trackingNumber != null and !#strings.isEmpty(o.trackingNumber)}"
+                 th:href="@{/orders/{id}/track(id=${o.id})}"
+                 class="text-blue-300 hover:text-blue-200 hover:underline">
+                Track
+              </a>
+
+              <!-- ✅ Create FedEx Shipment (Auto) icon (only if not shipped/delivered) -->
+              <form th:if="${o.status != 'SHIPPED' and o.status != 'DELIVERED'}"
+                    th:action="@{/admin/create-fedex-shipment/{orderId}(orderId=${o.id})}"
+                    method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit"
+                        class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-blue-600/15 text-blue-300 hover:bg-blue-600/30 hover:text-blue-100"
+                        title="Create FedEx shipment (auto)">
+                  <i class="fa-solid fa-truck-fast text-sm"></i>
+                </button>
+              </form>
 
               <!-- ✉️ Send survey email button -->
               <form th:action="@{/admin/orders/{id}/send-survey(id=${o.id})}"

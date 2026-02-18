@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -41,6 +42,8 @@ public class AdminController {
     private final OrderService orderService;
     private final EmailService emailService;
 
+    private final ShippingService shippingService;
+
     // ✅ ADD
     private final PaymentService paymentService;
 
@@ -49,7 +52,7 @@ public class AdminController {
                            AnalyticsService analyticsService,
                            CategoryService categoryService,
                            OrderService orderService,
-                           EmailService emailService,
+                           EmailService emailService, ShippingService shippingService,
                            PaymentService paymentService) {
         this.productService = productService;
         this.categoryRepository = categoryRepository;
@@ -57,6 +60,7 @@ public class AdminController {
         this.categoryService = categoryService;
         this.orderService = orderService;
         this.emailService = emailService;
+        this.shippingService = shippingService;
         this.paymentService = paymentService;
     }
 
@@ -389,5 +393,22 @@ public class AdminController {
 
         return "admin/order_details";
     }
+
+
+    @PostMapping("/create-fedex-shipment/{orderId}")
+    public String createFedExShipment(@PathVariable Long orderId, RedirectAttributes ra) {
+        try {
+            shippingService.createFedExShipment(orderId);
+
+            ra.addFlashAttribute("alertType", "success");
+            ra.addFlashAttribute("alertMsg", "FedEx shipment created. Tracking number saved.");
+        } catch (Exception ex) {
+            ra.addFlashAttribute("alertType", "error");
+            ra.addFlashAttribute("alertMsg", "Create shipment failed: " + ex.getMessage());
+        }
+        return "redirect:/admin/orders/" + orderId;
+    }
+
+
 
 }
