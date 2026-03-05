@@ -424,14 +424,23 @@
         <div class="timeline">
             <div class="event"
                  th:each="ev, iStat : ${events}"
-                 th:classappend="${iStat.last} ? ' now' : ' done'">
+                 th:classappend="${iStat.index == 0} ? ' now' : ' done'">
                 <span class="dot"></span>
-                <h3 th:text="${ev.title}">Shipped</h3>
+
+                <h3 th:text="${ev.status}">Shipped</h3>
+
                 <div class="meta"
-                     th:text="${ev.time != null ? #temporals.format(ev.time, 'MMM d, yyyy • h:mm a') : ''}">
+                     th:text="${ev.when != null ? #temporals.format(ev.when, 'MMM d, yyyy • h:mm a') : ''}">
                     Sep 2, 2025 • 10:05 AM
                 </div>
-                <div class="note" th:text="${ev.note}">Carrier picked up the package.</div>
+
+                <div class="note" th:text="${ev.description}">Carrier picked up the package.</div>
+
+                <div class="meta"
+                     th:if="${ev.location != null and !#strings.isEmpty(ev.location)}"
+                     th:text="${ev.location}">
+                    Memphis, TN
+                </div>
             </div>
 
             <!-- Empty state -->
@@ -465,7 +474,7 @@
             <form
                     th:if="${#lists.contains({'DELIVERED','SHIPPED','PAID'}, order.status)
                        and order.createdAt != null
-                       and #temporals.createNow().minusDays(30).isBefore(order.createdAt)}"
+                       and T(java.time.LocalDateTime).now().minusDays(30).isBefore(order.createdAt)}"
                     th:action="@{/orders/{id}/return(id=${order.id})}"
                     method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>

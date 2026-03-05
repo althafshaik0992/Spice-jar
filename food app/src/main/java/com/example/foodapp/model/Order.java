@@ -2,6 +2,7 @@ package com.example.foodapp.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -50,6 +51,22 @@ public class Order {
     private String zip;
     private String country;
 
+
+    // in com.example.foodapp.model.Order
+
+    private String trackingNumber;          // FedEx tracking number
+
+    private LocalDateTime shippedAt;
+    private LocalDateTime deliveredAt;
+
+    // Optional (nice-to-have)
+    private String trackingStatus;          // e.g. "IN_TRANSIT", "DELIVERED"
+    private String lastTrackingCity;
+    private String lastTrackingState;
+    private LocalDateTime lastTrackingAt;
+
+
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "order_id")
     private List<OrderItem> items;
@@ -73,6 +90,10 @@ public class Order {
     // OrderItem.java
     private boolean returnRequested;
     private boolean returned;
+
+    private String carrier;
+
+    private String ShippingService;
 
 
 
@@ -169,4 +190,6 @@ public class Order {
         if (zip != null && !zip.isBlank()) sb.append(" ").append(zip);
         return sb.toString();
     }
+
+
 }

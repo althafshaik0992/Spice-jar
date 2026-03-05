@@ -1,19 +1,15 @@
-package com.example.model;
+package com.example.foodapp.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
+@Data
+@AllArgsConstructor
 public class TrackingEvent {
-    private String title;
-    private LocalDateTime time;
-    private String note;
-
-    public TrackingEvent(String title, LocalDateTime time, String note) {
-        this.title = title;
-        this.time = time;
-        this.note = note;
-    }
-
-    public String getTitle() { return title; }
-    public LocalDateTime getTime() { return time; }
-    public String getNote() { return note; }
+    private LocalDateTime when;
+    private String status;
+    private String description;
+    private String location;
 }
